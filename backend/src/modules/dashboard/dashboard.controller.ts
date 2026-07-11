@@ -4,7 +4,8 @@ import * as dashboardService from './dashboard.service.js';
 export async function stats(req: Request, res: Response, next: NextFunction) {
   try {
     const locale = req.query.locale as string || 'ar';
-    const result = await dashboardService.getStats(locale);
+    const period = (req.query.period as string) || 'monthly';
+    const result = await dashboardService.getStats(locale, period as 'daily' | 'weekly' | 'monthly');
     res.json(result);
   } catch (err) { next(err); }
 }

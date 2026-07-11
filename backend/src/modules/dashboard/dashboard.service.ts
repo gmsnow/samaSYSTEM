@@ -30,7 +30,7 @@ function daysToSaturday(dow: number): number {
   return dow === 6 ? 0 : dow + 1;
 }
 
-export async function getStats(locale = 'ar') {
+export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'monthly' = 'monthly') {
   const now = new Date();
   const ksa = getKsaDate(now);
   const { year: ksaYear, month: ksaMonth, day: ksaDay, dayOfWeek: ksaDow } = ksa;
@@ -48,10 +48,28 @@ export async function getStats(locale = 'ar') {
   const thisMonthStr = `${ksaYear}-${pad(ksaMonth + 1)}`;
   const lastMonthStr = `${pm.year}-${pad(pm.month + 1)}`;
 
+  const startOfPeriod = period === 'daily' ? startOfDay : period === 'weekly' ? startOfWeek : startOfMonth;
+  const endOfPeriod = period === 'daily' ? ksaMidnight(ksaYear, ksaMonth, ksaDay + 1) : period === 'weekly' ? ksaMidnight(ksaYear, ksaMonth, ksaDay - daysToSaturday(ksaDow) + 7) : ksaMidnight(ksaYear, ksaMonth + 1, 1);
+  const startOfPrevPeriod = period === 'daily'
+    ? ksaMidnight(ksaYear, ksaMonth, ksaDay - 1)
+    : period === 'weekly'
+      ? ksaMidnight(ksaYear, ksaMonth, ksaDay - daysToSaturday(ksaDow) - 7)
+      : startOfLastMonth;
+  const endOfPrevPeriod = period === 'monthly' ? startOfPeriod : period === 'weekly' ? ksaMidnight(ksaYear, ksaMonth, ksaDay - daysToSaturday(ksaDow)) : ksaMidnight(ksaYear, ksaMonth, ksaDay);
+
+  const weekStartKsa = getKsaDate(startOfWeek);
+  const weekEndKsa = getKsaDate(endOfPeriod);
+  const thisPeriodStr = period === 'daily' ? todayStr : period === 'weekly' ? `${weekStartKsa.year}-${pad(weekStartKsa.month+1)}-${pad(weekStartKsa.day)}` : thisMonthStr;
+  const thisPeriodEndStr = period === 'daily' ? todayStr : period === 'weekly' ? `${weekEndKsa.year}-${pad(weekEndKsa.month+1)}-${pad(weekEndKsa.day)}` : thisMonthStr;
+  const prevWeekStart = period === 'weekly' ? getKsaDate(startOfPrevPeriod) : null;
+  const prevWeekEnd = period === 'weekly' ? getKsaDate(new Date(endOfPrevPeriod.getTime() - 86400000)) : null;
+  const lastPeriodStr = period === 'daily' ? yesterdayStr : period === 'weekly' ? (prevWeekStart ? `${prevWeekStart.year}-${pad(prevWeekStart.month+1)}-${pad(prevWeekStart.day)}` : '') : lastMonthStr;
+  const lastPeriodEndStr = period === 'daily' ? yesterdayStr : period === 'weekly' ? (prevWeekEnd ? `${prevWeekEnd.year}-${pad(prevWeekEnd.month+1)}-${pad(prevWeekEnd.day)}` : '') : lastMonthStr;
+
   const [
     totalPatients,
-    patientsThisMonth,
-    patientsLastMonth,
+    patientsThisPeriod,
+    patientsPrevPeriod,
     dailyPatients,
     weeklyPatients,
     patientsMonth,
@@ -59,62 +77,66 @@ export async function getStats(locale = 'ar') {
     totalFemales,
     todaysAppointments,
     yesterdaysAppointments,
-    totalAppointmentsThisMonth,
-    totalAppointmentsLastMonth,
+    totalAppointmentsThisPeriod,
+    totalAppointmentsPrevPeriod,
     therapists,
-    revenueThisMonth,
-    revenueLastMonth,
-    patientRevenueThisMonth,
-    patientRevenueLastMonth,
-    sessionsThisMonth,
-    sessionsLastMonth,
+    revenueThisPeriod,
+    revenuePrevPeriod,
+    patientRevenueThisPeriod,
+    patientRevenuePrevPeriod,
+    sessionsThisPeriod,
+    sessionsPrevPeriod,
     sessionTypes,
     recentAppointments,
     appointmentStatuses,
     recentPatients,
-    totalExpensesThisMonth,
-    totalExpensesLastMonth,
+    totalExpensesThisPeriod,
+    totalExpensesPrevPeriod,
     totalSessions,
-    invoicesThisMonth,
+    invoicesThisPeriod,
   ] = await Promise.all([
     prisma.patient.count({ where: { deletedAt: null } }),
-    prisma.patient.count({ where: { deletedAt: null, createdAt: { gte: startOfMonth } } }),
+    prisma.patient.count({ where: { deletedAt: null, createdAt: { gte: startOfPeriod } } }),
     prisma.patient.count({
-      where: { deletedAt: null, createdAt: { gte: startOfLastMonth, lt: startOfMonth } },
+      where: { deletedAt: null, createdAt: { gte: startOfPrevPeriod, lt: startOfPeriod } },
     }),
     prisma.patient.count({ where: { deletedAt: null, createdAt: { gte: startOfDay } } }),
     prisma.patient.count({ where: { deletedAt: null, createdAt: { gte: startOfWeek } } }),
-    prisma.patient.count({ where: { deletedAt: null, createdAt: { gte: startOfMonth } } }),
+    prisma.patient.count({ where: { deletedAt: null, createdAt: { gte: startOfPeriod } } }),
     prisma.patient.count({ where: { deletedAt: null, gender: { in: ['ذكر', 'male'] } } }),
     prisma.patient.count({ where: { deletedAt: null, gender: { in: ['أنثى', 'female'] } } }),
     prisma.appointment.count({ where: { deletedAt: null, date: todayStr } }),
     prisma.appointment.count({ where: { deletedAt: null, date: yesterdayStr } }),
-    prisma.appointment.count({ where: { deletedAt: null, date: { startsWith: thisMonthStr } } }),
-    prisma.appointment.count({ where: { deletedAt: null, date: { startsWith: lastMonthStr } } }),
+    period === 'monthly'
+      ? prisma.appointment.count({ where: { deletedAt: null, date: { startsWith: thisPeriodStr } } })
+      : prisma.appointment.count({ where: { deletedAt: null, date: { gte: thisPeriodStr, lte: thisPeriodEndStr } } }),
+    period === 'monthly'
+      ? prisma.appointment.count({ where: { deletedAt: null, date: { startsWith: lastPeriodStr } } })
+      : prisma.appointment.count({ where: { deletedAt: null, date: { gte: lastPeriodStr, lte: lastPeriodEndStr } } }),
     prisma.user.count({ where: { deletedAt: null, role: 'THERAPIST', isActive: true } }),
     prisma.session.aggregate({
-      where: { deletedAt: null, sessionDate: { gte: startOfMonth } },
+      where: { deletedAt: null, sessionDate: { gte: startOfPeriod } },
       _sum: { price: true },
     }),
     prisma.session.aggregate({
-      where: { deletedAt: null, sessionDate: { gte: startOfLastMonth, lt: startOfMonth } },
+      where: { deletedAt: null, sessionDate: { gte: startOfPrevPeriod, lt: startOfPeriod } },
       _sum: { price: true },
     }),
     prisma.patient.aggregate({
-      where: { deletedAt: null, createdAt: { gte: startOfMonth } },
+      where: { deletedAt: null, createdAt: { gte: startOfPeriod } },
       _sum: { price: true },
     }),
     prisma.patient.aggregate({
-      where: { deletedAt: null, createdAt: { gte: startOfLastMonth, lt: startOfMonth } },
+      where: { deletedAt: null, createdAt: { gte: startOfPrevPeriod, lt: startOfPeriod } },
       _sum: { price: true },
     }),
-    prisma.session.count({ where: { deletedAt: null, sessionDate: { gte: startOfMonth } } }),
+    prisma.session.count({ where: { deletedAt: null, sessionDate: { gte: startOfPeriod } } }),
     prisma.session.count({
-      where: { deletedAt: null, sessionDate: { gte: startOfLastMonth, lt: startOfMonth } },
+      where: { deletedAt: null, sessionDate: { gte: startOfPrevPeriod, lt: startOfPeriod } },
     }),
     prisma.session.groupBy({
       by: ['sessionType'],
-      where: { deletedAt: null },
+      where: { deletedAt: null, sessionDate: { gte: startOfPeriod } },
       _count: true,
     }),
     prisma.appointment.findMany({
@@ -132,32 +154,30 @@ export async function getStats(locale = 'ar') {
       orderBy: { createdAt: 'desc' },
       take: 5,
     }),
-    prisma.expense.aggregate({
-      where: { deletedAt: null, date: { startsWith: thisMonthStr } },
-      _sum: { amount: true },
-    }),
-    prisma.expense.aggregate({
-      where: { deletedAt: null, date: { startsWith: lastMonthStr } },
-      _sum: { amount: true },
-    }),
+    period === 'monthly'
+      ? prisma.expense.aggregate({ where: { deletedAt: null, date: { startsWith: thisPeriodStr } }, _sum: { amount: true } })
+      : prisma.expense.aggregate({ where: { deletedAt: null, date: { gte: thisPeriodStr, lte: thisPeriodEndStr } }, _sum: { amount: true } }),
+    period === 'monthly'
+      ? prisma.expense.aggregate({ where: { deletedAt: null, date: { startsWith: lastPeriodStr } }, _sum: { amount: true } })
+      : prisma.expense.aggregate({ where: { deletedAt: null, date: { gte: lastPeriodStr, lte: lastPeriodEndStr } }, _sum: { amount: true } }),
     prisma.session.count({ where: { deletedAt: null } }),
-    prisma.session.count({ where: { deletedAt: null, sessionDate: { gte: startOfMonth } } }),
+    prisma.session.count({ where: { deletedAt: null, sessionDate: { gte: startOfPeriod } } }),
   ]);
 
-  const revThis = (revenueThisMonth._sum.price ?? 0) + (patientRevenueThisMonth._sum.price ?? 0);
-  const revLast = (revenueLastMonth._sum.price ?? 0) + (patientRevenueLastMonth._sum.price ?? 0);
+  const revThis = (revenueThisPeriod._sum.price ?? 0) + (patientRevenueThisPeriod._sum.price ?? 0);
+  const revLast = (revenuePrevPeriod._sum.price ?? 0) + (patientRevenuePrevPeriod._sum.price ?? 0);
   const revChange = revLast > 0 ? ((revThis - revLast) / revLast) * 100 : 0;
-  const patientGrowth = patientsLastMonth > 0
-    ? ((patientsThisMonth - patientsLastMonth) / patientsLastMonth) * 100
+  const patientGrowth = patientsPrevPeriod > 0
+    ? ((patientsThisPeriod - patientsPrevPeriod) / patientsPrevPeriod) * 100
     : 0;
-  const apptGrowth = totalAppointmentsLastMonth > 0
-    ? ((totalAppointmentsThisMonth - totalAppointmentsLastMonth) / totalAppointmentsLastMonth) * 100
+  const apptGrowth = totalAppointmentsPrevPeriod > 0
+    ? ((totalAppointmentsThisPeriod - totalAppointmentsPrevPeriod) / totalAppointmentsPrevPeriod) * 100
     : 0;
-  const sessionsGrowth = sessionsLastMonth > 0
-    ? ((sessionsThisMonth - sessionsLastMonth) / sessionsLastMonth) * 100
+  const sessionsGrowth = sessionsPrevPeriod > 0
+    ? ((sessionsThisPeriod - sessionsPrevPeriod) / sessionsPrevPeriod) * 100
     : 0;
-  const expenseLastAmt = totalExpensesLastMonth._sum.amount ?? 0;
-  const expenseThisAmt = totalExpensesThisMonth._sum.amount ?? 0;
+  const expenseLastAmt = totalExpensesPrevPeriod._sum.amount ?? 0;
+  const expenseThisAmt = totalExpensesThisPeriod._sum.amount ?? 0;
   const expenseGrowth = expenseLastAmt > 0
     ? ((expenseThisAmt - expenseLastAmt) / expenseLastAmt) * 100
     : 0;
@@ -198,8 +218,8 @@ export async function getStats(locale = 'ar') {
     color: ['#3e5679', '#2e7d32', '#7c4dff', '#e65100'][i % 4],
   }));
 
-  const expensesMonth = totalExpensesThisMonth._sum.amount ?? 0;
-  const netProfit = revThis - expensesMonth;
+  const expensesPeriod = totalExpensesThisPeriod._sum.amount ?? 0;
+  const netProfit = revThis - expensesPeriod;
 
   const apptDailyGrowth = yesterdaysAppointments > 0
     ? ((todaysAppointments - yesterdaysAppointments) / yesterdaysAppointments) * 100
@@ -221,12 +241,12 @@ export async function getStats(locale = 'ar') {
     },
     revenueOverview: {
       revenue: revThis,
-      expenses: expensesMonth,
+      expenses: expensesPeriod,
       netProfit,
-      sessions: sessionsThisMonth,
-      patientRevenue: patientRevenueThisMonth._sum.price ?? 0,
-      sessionRevenue: revenueThisMonth._sum.price ?? 0,
-      invoices: invoicesThisMonth,
+      sessions: sessionsThisPeriod,
+      patientRevenue: patientRevenueThisPeriod._sum.price ?? 0,
+      sessionRevenue: revenueThisPeriod._sum.price ?? 0,
+      invoices: invoicesThisPeriod,
     },
     monthlyRevenue: monthlyRevArr.map((r, i) => ({ month: monthNames[i], revenue: r })),
     monthlyPatients: monthlyPatArr.map((c, i) => ({ month: monthNames[i], count: c })),
@@ -237,7 +257,7 @@ export async function getStats(locale = 'ar') {
     totals: {
       totalPatients,
       totalSessions,
-      totalAppointments: totalAppointmentsThisMonth,
+      totalAppointments: totalAppointmentsThisPeriod,
       totalTherapists: therapists,
     },
     growthRates: {

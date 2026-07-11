@@ -18,7 +18,7 @@ export default function ReportsPage({ period }: { period: string }) {
   const [data, setData] = useState<any>(null);
 
   useEffect(() => {
-    api.get('/dashboard/stats', { params: { locale } }).then(r => setData(r.data)).catch(() => {});
+    api.get('/dashboard/stats', { params: { locale, period } }).then(r => setData(r.data)).catch(() => {});
   }, [locale]);
 
   if (!data) {
