@@ -24,12 +24,24 @@ import logger from './shared/logger.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const isVercel = !!process.env.VERCEL;
+
+const viewsDir = isVercel
+  ? path.join(process.cwd(), 'backend', 'src', 'views')
+  : path.join(__dirname, 'views');
+const assetsDir = isVercel
+  ? path.join(process.cwd(), 'backend', 'src', 'public', 'assets')
+  : path.join(__dirname, 'public', 'assets');
+const uploadsDir = isVercel
+  ? path.join(process.cwd(), 'backend', 'uploads')
+  : path.join(__dirname, '..', 'uploads');
+
 const app = express();
 
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-app.use('/assets', express.static(path.join(__dirname, 'public/assets')));
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.set('views', viewsDir);
+app.use('/assets', express.static(assetsDir));
+app.use('/uploads', express.static(uploadsDir));
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
