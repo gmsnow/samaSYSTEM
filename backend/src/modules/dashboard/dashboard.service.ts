@@ -2,21 +2,33 @@ import { prisma } from '../../config/database.js';
 
 const monthsAr = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 
+const utcNow = () => {
+  const n = new Date();
+  return {
+    year: n.getUTCFullYear(),
+    month: n.getUTCMonth(),
+    day: n.getUTCDate(),
+    dow: n.getUTCDay(),
+    date: n,
+  };
+};
+
+const utcDate = (year: number, month: number, day: number) =>
+  new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
+
 export async function getStats(locale = 'ar') {
-  const now = new Date();
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - now.getDay());
-  startOfWeek.setHours(0, 0, 0, 0);
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const { year, month, day, dow } = utcNow();
+  const startOfDay = utcDate(year, month, day);
+  const startOfWeek = utcDate(year, month, day - (dow === 6 ? 0 : dow + 1));
+  const startOfMonth = utcDate(year, month, 1);
+  const startOfLastMonth = utcDate(year, month - 1, 1);
   const monthNames = locale === 'ar' ? monthsAr : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-  const thisMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  const lastMonthStr = now.getMonth() === 0
-    ? `${now.getFullYear() - 1}-12`
-    : `${now.getFullYear()}-${String(now.getMonth()).padStart(2, '0')}`;
+  const todayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  const thisMonthStr = `${year}-${String(month + 1).padStart(2, '0')}`;
+  const lastMonthStr = month === 0
+    ? `${year - 1}-12`
+    : `${year}-${String(month).padStart(2, '0')}`;
 
   const [
     totalPatients,
@@ -132,8 +144,8 @@ export async function getStats(locale = 'ar') {
 
   const formatTrend = (val: number) => val >= 0 ? `+${val.toFixed(1)}%` : `${val.toFixed(1)}%`;
 
-  const monthlyRevArr = await getMonthlyRevenue(now.getFullYear());
-  const monthlyPatArr = await getMonthlyPatients(now.getFullYear());
+  const monthlyRevArr = await getMonthlyRevenue(year);
+  const monthlyPatArr = await getMonthlyPatients(year);
 
   const recent = recentAppointments.map(a => ({
     id: a.id,
@@ -215,17 +227,14 @@ export async function getStats(locale = 'ar') {
 }
 
 export async function getDailyReportData() {
-  const now = new Date();
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const { year, month, day, dow } = utcNow();
+  const startOfDay = utcDate(year, month, day);
+  const endOfDay = utcDate(year, month, day + 1);
+  const todayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
   const days = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-  const dayName = days[now.getDay()];
-  const day = String(now.getDate()).padStart(2, '0');
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const year = now.getFullYear();
-  const dateDisplay = `${dayName} ${day}/${month}/${year}م`;
+  const dayName = days[dow];
+  const dateDisplay = `${dayName} ${String(day).padStart(2, '0')}/${String(month + 1).padStart(2, '0')}/${year}م`;
 
   const [sessions, patients, expenses, advances] = await Promise.all([
     prisma.session.findMany({
@@ -248,7 +257,7 @@ export async function getDailyReportData() {
 
   const calcAge = (dob: Date | null) => {
     if (!dob) return '';
-    return (now.getFullYear() - new Date(dob).getFullYear()).toString();
+    return (year - new Date(dob).getFullYear()).toString();
   };
 
   const mappedSessions = sessions.map(s => ({
@@ -284,14 +293,14 @@ export async function getDailyReportData() {
 }
 
 export async function getMonthlyReportData(month?: number, year?: number) {
-  const now = new Date();
-  const m = month !== undefined ? month : now.getMonth();
-  const y = year !== undefined ? year : now.getFullYear();
+  const n = new Date();
+  const m = month !== undefined ? month : n.getUTCMonth();
+  const y = year !== undefined ? year : n.getUTCFullYear();
 
   const monthNames = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
   const monthName = monthNames[m];
 
-  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const daysInMonth = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
   const weeklyData: { weekNumber: number; startDate: string; endDate: string; totalIncome: number; totalExpense: number; net: number }[] = [];
 
   const weekRanges = [
@@ -307,19 +316,19 @@ export async function getMonthlyReportData(month?: number, year?: number) {
     const weekNum = weekRanges.indexOf(range) + 1;
     const actualEnd = Math.min(range.end, daysInMonth);
 
-    const startDate = new Date(y, m, range.start, 0, 0, 0, 0);
-    const endDate = new Date(y, m, actualEnd, 23, 59, 59, 999);
+    const startDate = utcDate(y, m, range.start);
+    const endDate = utcDate(y, m, actualEnd + 1);
 
     const startStr = `${range.start} ${monthName}`;
     const endStr = `${actualEnd} ${monthName}`;
 
     const [sessionRev, patientRev, expenseSum, advanceSum] = await Promise.all([
       prisma.session.aggregate({
-        where: { deletedAt: null, sessionDate: { gte: startDate, lte: endDate } },
+        where: { deletedAt: null, sessionDate: { gte: startDate, lt: endDate } },
         _sum: { price: true },
       }),
       prisma.patient.aggregate({
-        where: { deletedAt: null, createdAt: { gte: startDate, lte: endDate } },
+        where: { deletedAt: null, createdAt: { gte: startDate, lt: endDate } },
         _sum: { price: true },
       }),
       prisma.expense.aggregate({
@@ -355,14 +364,8 @@ export async function getMonthlyReportData(month?: number, year?: number) {
 }
 
 export async function getWeeklyReportData() {
-  const now = new Date();
-  const dayOfWeek = now.getDay(); // 0=Sun..6=Sat
-  const saturday = new Date(now);
-  saturday.setDate(now.getDate() - (dayOfWeek === 6 ? 0 : dayOfWeek + 1));
-  saturday.setHours(0, 0, 0, 0);
-  const friday = new Date(saturday);
-  friday.setDate(saturday.getDate() + 6);
-  friday.setHours(23, 59, 59, 999);
+  const { year, month, day, dow } = utcNow();
+  const saturday = utcDate(year, month, day - (dow === 6 ? 0 : dow + 1));
 
   const dayNames = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
   const monthNames = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
@@ -370,14 +373,13 @@ export async function getWeeklyReportData() {
   const weekData: { day: string; date: string; income: number; expense: number }[] = [];
 
   for (let d = 0; d < 7; d++) {
-    const dayStart = new Date(saturday);
-    dayStart.setDate(saturday.getDate() + d);
-    const dayEnd = new Date(dayStart);
-    dayEnd.setDate(dayStart.getDate() + 1);
+    const dayStart = utcDate(saturday.getUTCFullYear(), saturday.getUTCMonth(), saturday.getUTCDate() + d);
+    const dayEnd = utcDate(dayStart.getUTCFullYear(), dayStart.getUTCMonth(), dayStart.getUTCDate() + 1);
 
-    const dayIdx = dayStart.getDay(); // 0=Sun..6=Sat
-    const arabicDay = dayNames[dayIdx];
-    const dateStr = `${dayStart.getDate()} ${monthNames[dayStart.getMonth()]} ${dayStart.getFullYear()}`;
+    const arabicDay = dayNames[dayStart.getUTCDay()];
+    const dateStr = `${dayStart.getUTCDate()} ${monthNames[dayStart.getUTCMonth()]} ${dayStart.getUTCFullYear()}`;
+
+    const dateStrFmt = `${dayStart.getUTCFullYear()}-${String(dayStart.getUTCMonth() + 1).padStart(2, '0')}-${String(dayStart.getUTCDate()).padStart(2, '0')}`;
 
     const [sessionRev, patientRev, expenseSum, advanceSum] = await Promise.all([
       prisma.session.aggregate({
@@ -389,11 +391,11 @@ export async function getWeeklyReportData() {
         _sum: { price: true },
       }),
       prisma.expense.aggregate({
-        where: { deletedAt: null, date: `${dayStart.getFullYear()}-${String(dayStart.getMonth() + 1).padStart(2, '0')}-${String(dayStart.getDate()).padStart(2, '0')}` },
+        where: { deletedAt: null, date: dateStrFmt },
         _sum: { amount: true },
       }),
       prisma.salaryAdvance.aggregate({
-        where: { deletedAt: null, date: `${dayStart.getFullYear()}-${String(dayStart.getMonth() + 1).padStart(2, '0')}-${String(dayStart.getDate()).padStart(2, '0')}` },
+        where: { deletedAt: null, date: dateStrFmt },
         _sum: { amount: true },
       }),
     ]);
@@ -404,8 +406,10 @@ export async function getWeeklyReportData() {
     weekData.push({ day: arabicDay, date: dateStr, income, expense });
   }
 
-  const weekStartStr = `${saturday.getDate()} ${monthNames[saturday.getMonth()]} ${saturday.getFullYear()}`;
-  const weekEndStr = `${friday.getDate()} ${monthNames[friday.getMonth()]} ${friday.getFullYear()}`;
+  const weekStartStr = `${saturday.getUTCDate()} ${monthNames[saturday.getUTCMonth()]} ${saturday.getUTCFullYear()}`;
+  const fridayEnd = utcDate(saturday.getUTCFullYear(), saturday.getUTCMonth(), saturday.getUTCDate() + 7);
+  const fridayDate = new Date(fridayEnd.getTime() - 1);
+  const weekEndStr = `${fridayDate.getUTCDate()} ${monthNames[fridayDate.getUTCMonth()]} ${fridayDate.getUTCFullYear()}`;
   const weekLabel = `من تاريخ ${weekStartStr} - إلى ${weekEndStr}`;
 
   return { weekData, weekLabel };
@@ -414,8 +418,8 @@ export async function getWeeklyReportData() {
 async function getMonthlyRevenue(year: number) {
   const results = [];
   for (let m = 0; m < 12; m++) {
-    const start = new Date(year, m, 1);
-    const end = new Date(year, m + 1, 1);
+    const start = utcDate(year, m, 1);
+    const end = utcDate(year, m + 1, 1);
     const [sessionRev, patientRev] = await Promise.all([
       prisma.session.aggregate({
         where: { deletedAt: null, sessionDate: { gte: start, lt: end } },
@@ -434,8 +438,8 @@ async function getMonthlyRevenue(year: number) {
 async function getMonthlyPatients(year: number) {
   const results = [];
   for (let m = 0; m < 12; m++) {
-    const start = new Date(year, m, 1);
-    const end = new Date(year, m + 1, 1);
+    const start = utcDate(year, m, 1);
+    const end = utcDate(year, m + 1, 1);
     const count = await prisma.patient.count({
       where: { deletedAt: null, createdAt: { gte: start, lt: end } },
     });
