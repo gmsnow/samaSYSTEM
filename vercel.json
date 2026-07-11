@@ -1,17 +1,12 @@
 {
-  "services": {
-    "server": {
-      "root": ".",
-      "entrypoint": "backend/index.ts"
+  "installCommand": "cd frontend && npm ci && cd ../backend && npm ci",
+  "buildCommand": "cd frontend && npm run build && cd ../backend && npm run build",
+  "functions": {
+    "backend/index.ts": {
+      "includeFiles": "frontend/dist/**"
     }
   },
   "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": {
-        "type": "service",
-        "service": "server"
-      }
-    }
+    { "source": "/(.*)", "destination": "backend/index.ts" }
   ]
 }
