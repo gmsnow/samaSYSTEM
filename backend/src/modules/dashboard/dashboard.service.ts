@@ -25,6 +25,8 @@ export async function getStats(locale = 'ar') {
   const monthNames = locale === 'ar' ? monthsAr : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
   const todayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  const yesterdayDate = new Date(Date.UTC(year, month, day - 1));
+  const yesterdayStr = `${yesterdayDate.getUTCFullYear()}-${String(yesterdayDate.getUTCMonth() + 1).padStart(2, '0')}-${String(yesterdayDate.getUTCDate()).padStart(2, '0')}`;
   const thisMonthStr = `${year}-${String(month + 1).padStart(2, '0')}`;
   const lastMonthStr = month === 0
     ? `${year - 1}-12`
@@ -40,6 +42,7 @@ export async function getStats(locale = 'ar') {
     totalMales,
     totalFemales,
     todaysAppointments,
+    yesterdaysAppointments,
     totalAppointmentsThisMonth,
     totalAppointmentsLastMonth,
     therapists,
@@ -69,6 +72,7 @@ export async function getStats(locale = 'ar') {
     prisma.patient.count({ where: { deletedAt: null, gender: { in: ['ذكر', 'male'] } } }),
     prisma.patient.count({ where: { deletedAt: null, gender: { in: ['أنثى', 'female'] } } }),
     prisma.appointment.count({ where: { deletedAt: null, date: todayStr } }),
+    prisma.appointment.count({ where: { deletedAt: null, date: yesterdayStr } }),
     prisma.appointment.count({ where: { deletedAt: null, date: { startsWith: thisMonthStr } } }),
     prisma.appointment.count({ where: { deletedAt: null, date: { startsWith: lastMonthStr } } }),
     prisma.user.count({ where: { deletedAt: null, role: 'THERAPIST', isActive: true } }),
@@ -181,12 +185,16 @@ export async function getStats(locale = 'ar') {
   const expensesMonth = totalExpensesThisMonth._sum.amount ?? 0;
   const netProfit = revThis - expensesMonth;
 
+  const apptDailyGrowth = yesterdaysAppointments > 0
+    ? ((todaysAppointments - yesterdaysAppointments) / yesterdaysAppointments) * 100
+    : todaysAppointments > 0 ? 100 : 0;
+
   return {
     mainCards: {
-      totalPatients: { value: totalPatients, trend: formatTrend(patientGrowth), up: patientGrowth >= 0 },
-      todaysAppointments: { value: todaysAppointments, trend: formatTrend(apptGrowth), up: apptGrowth >= 0 },
-      activeTherapists: { value: therapists, trend: '+0%', up: true },
-      monthlyRevenue: { value: revThis, trend: formatTrend(revChange), up: revChange >= 0 },
+      totalPatients: { value: totalPatients, trend: formatTrend(patientGrowth), up: patientGrowth >= 0, trendLabel: 'dashboard.vsLastMonth' },
+      todaysAppointments: { value: todaysAppointments, trend: formatTrend(apptDailyGrowth), up: apptDailyGrowth >= 0, trendLabel: 'dashboard.vsYesterday' },
+      activeTherapists: { value: therapists, trend: '+0%', up: true, trendLabel: '' },
+      monthlyRevenue: { value: revThis, trend: formatTrend(revChange), up: revChange >= 0, trendLabel: 'dashboard.vsLastMonth' },
     },
     patientTileStats: {
       daily: dailyPatients,

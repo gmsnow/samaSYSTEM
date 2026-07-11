@@ -23,10 +23,10 @@ const greetingTime = () => {
 
 interface DashboardData {
   mainCards: {
-    totalPatients: { value: number; trend: string; up: boolean };
-    todaysAppointments: { value: number; trend: string; up: boolean };
-    activeTherapists: { value: number; trend: string; up: boolean };
-    monthlyRevenue: { value: number; trend: string; up: boolean };
+    totalPatients: { value: number; trend: string; up: boolean; trendLabel: string };
+    todaysAppointments: { value: number; trend: string; up: boolean; trendLabel: string };
+    activeTherapists: { value: number; trend: string; up: boolean; trendLabel: string };
+    monthlyRevenue: { value: number; trend: string; up: boolean; trendLabel: string };
   };
   patientTileStats: { daily: number; weekly: number; monthly: number; males: number; females: number };
   revenueOverview: { revenue: number; expenses: number; netProfit: number; sessions: number; invoices: number };
@@ -54,10 +54,10 @@ export default function DashboardPage() {
   const statusColor = (k: string) => k === 'dashboard.paid' ? 'success' : k === 'dashboard.cancelled' ? 'error' : 'warning';
 
   const statCards = data ? [
-    { labelKey: 'dashboard.statTotalPatients', value: data.mainCards.totalPatients.value.toLocaleString(), icon: <People />, color: '#3e5679', trend: data.mainCards.totalPatients.trend, up: data.mainCards.totalPatients.up },
-    { labelKey: 'dashboard.statTodayAppointments', value: data.mainCards.todaysAppointments.value.toLocaleString(), icon: <CalendarMonth />, color: '#2e7d32', trend: data.mainCards.todaysAppointments.trend, up: data.mainCards.todaysAppointments.up },
-    { labelKey: 'dashboard.statActiveTherapists', value: data.mainCards.activeTherapists.value.toLocaleString(), icon: <MedicalServices />, color: '#7c4dff', trend: data.mainCards.activeTherapists.trend, up: data.mainCards.activeTherapists.up },
-    { labelKey: 'dashboard.statMonthlyRevenue', value: `YER ${data.mainCards.monthlyRevenue.value.toLocaleString()}`, icon: <Paid />, color: '#e65100', trend: data.mainCards.monthlyRevenue.trend, up: data.mainCards.monthlyRevenue.up },
+    { labelKey: 'dashboard.statTotalPatients', value: data.mainCards.totalPatients.value.toLocaleString(), icon: <People />, color: '#3e5679', trend: data.mainCards.totalPatients.trend, up: data.mainCards.totalPatients.up, trendLabel: data.mainCards.totalPatients.trendLabel },
+    { labelKey: 'dashboard.statTodayAppointments', value: data.mainCards.todaysAppointments.value.toLocaleString(), icon: <CalendarMonth />, color: '#2e7d32', trend: data.mainCards.todaysAppointments.trend, up: data.mainCards.todaysAppointments.up, trendLabel: data.mainCards.todaysAppointments.trendLabel },
+    { labelKey: 'dashboard.statActiveTherapists', value: data.mainCards.activeTherapists.value.toLocaleString(), icon: <MedicalServices />, color: '#7c4dff', trend: data.mainCards.activeTherapists.trend, up: data.mainCards.activeTherapists.up, trendLabel: data.mainCards.activeTherapists.trendLabel },
+    { labelKey: 'dashboard.statMonthlyRevenue', value: `YER ${data.mainCards.monthlyRevenue.value.toLocaleString()}`, icon: <Paid />, color: '#e65100', trend: data.mainCards.monthlyRevenue.trend, up: data.mainCards.monthlyRevenue.up, trendLabel: data.mainCards.monthlyRevenue.trendLabel },
   ] : [];
 
   const patientTileStats = data ? [
@@ -115,7 +115,7 @@ export default function DashboardPage() {
                         {card.up ? <TrendingUp sx={{ fontSize: 12 }} /> : <TrendingDown sx={{ fontSize: 12 }} />}
                         <Typography variant="caption" sx={{ fontWeight: 700, fontSize: 11 }}>{card.trend}</Typography>
                       </Box>
-                      <Typography variant="caption" color="text.secondary">{t('dashboard.vsLastMonth')}</Typography>
+                      {card.trendLabel && <Typography variant="caption" color="text.secondary">{t(card.trendLabel)}</Typography>}
                     </Box>
                   </Box>
                   <Avatar sx={{ width: 48, height: 48, bgcolor: `${card.color}18`, color: card.color }}>

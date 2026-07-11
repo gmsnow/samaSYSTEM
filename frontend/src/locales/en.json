@@ -120,6 +120,7 @@
   "dashboard.statActiveTherapists": "Active Therapists",
   "dashboard.statMonthlyRevenue": "Monthly Revenue",
   "dashboard.vsLastMonth": "vs last month",
+  "dashboard.vsYesterday": "vs yesterday",
   "dashboard.orders": "Orders",
   "dashboard.earnings": "Earnings",
   "dashboard.refunds": "Refunds",
