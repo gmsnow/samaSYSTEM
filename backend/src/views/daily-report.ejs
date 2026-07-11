@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التقرير اليومي - مركز سما</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Cairo', 'Arial', sans-serif;
+            background: #f0f4ff;
+            direction: rtl;
+            padding: 10px;
+            color: #1a1a2e;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #fff;
+        }
+        .header-left { text-align: left; font-size: 9px; font-weight: 600; line-height: 1.5; opacity: 0.9; letter-spacing: 0.3px; }
+        .header-right { text-align: right; font-size: 11px; font-weight: 700; line-height: 1.5; }
+        .header-center { text-align: center; }
+        .logo-wrapper {
+            width: 44px; height: 44px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        .logo-wrapper img { width: 32px; height: 32px; object-fit: cover; border-radius: 50%; }
+        .title-section {
+            background: linear-gradient(135deg, #06b6d4, #0ea5e9, #3b82f6);
+            color: #fff;
+            text-align: center;
+            padding: 8px 16px;
+            font-size: 15px;
+            font-weight: 800;
+            position: relative;
+        }
+        .title-section::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #fbbf24, #f59e0b, #fbbf24);
+        }
+        .title-section p { margin: 0; color: #fff; }
+        .title-section .subtitle { font-size: 11px; font-weight: 500; opacity: 0.85; }
+        .section-header {
+            padding: 6px 12px;
+            margin: 0;
+            font-size: 12px;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .section-header .b {
+            display: inline-block; width: 6px; height: 6px;
+            border-radius: 50%; margin-left: 6px;
+        }
+        .section-sessions { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+        .section-patients { background: linear-gradient(135deg, #10b981, #059669); }
+        .section-expenses { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .section-advances { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .section-spacing { height: 3px; background: #f8fafc; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+        thead th {
+            background: #f1f5f9;
+            color: #1e293b;
+            font-weight: 700;
+            padding: 5px 4px;
+            text-align: center;
+            font-size: 10px;
+            border-bottom: 1.5px solid #e2e8f0;
+        }
+        tbody td {
+            padding: 4px 4px;
+            text-align: center;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 11px;
+        }
+        .cell-num {
+            background: #e0f2fe;
+            color: #0369a1;
+            font-weight: 800;
+            width: 28px;
+        }
+        .cell-name { font-weight: 600; color: #1e293b; }
+        .cell-service { color: #0f766e; font-weight: 600; }
+        .cell-price { color: #dc2626; font-weight: 700; direction: ltr; font-size: 11px; }
+        .cell-id { color: #ea580c; font-weight: 600; font-size: 10px; direction: ltr; }
+        .cell-notes { color: #64748b; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .total-row td {
+            background: #fef2f2 !important;
+            font-weight: 700;
+            padding: 6px 4px;
+            border-top: 1.5px solid #fecaca;
+            font-size: 12px;
+        }
+        .total-row .tl { text-align: center; }
+        .total-row .tv { color: #dc2626; font-weight: 800; direction: ltr; }
+        .grand-total td {
+            background: #fffbeb !important;
+            font-weight: 800;
+            padding: 6px 4px;
+            border-top: 1.5px solid #fde68a;
+        }
+        .grand-total .tl { color: #92400e; text-align: center; font-size: 12px; }
+        .grand-total .tv { color: #dc2626; font-weight: 900; font-size: 14px; direction: ltr; }
+        .final-result {
+            background: #ecfdf5;
+            border-top: 2px solid #10b981;
+            text-align: center;
+            padding: 10px 16px;
+        }
+        .final-result .label { font-size: 12px; color: #065f46; font-weight: 600; }
+        .final-result .value { font-size: 20px; font-weight: 900; color: #059669; direction: ltr; }
+        .summary-row {
+            display: flex;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .summary-card {
+            flex: 1;
+            background: #fff;
+            border-radius: 6px;
+            padding: 6px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+        .summary-card .label { font-size: 9px; color: #64748b; font-weight: 600; }
+        .summary-card .value { font-size: 14px; font-weight: 800; direction: ltr; }
+        .sc-income .value { color: #059669; }
+        .sc-expense .value { color: #dc2626; }
+        .sc-advance .value { color: #7c3aed; }
+        .sc-profit .value { color: #059669; }
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 10px 20px 14px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+        .footer div { font-weight: 600; color: #475569; text-align: center; font-size: 11px; }
+        .footer .sign-line {
+            display: inline-block;
+            width: 110px;
+            border-bottom: 1.5px dashed #94a3b8;
+            margin-top: 4px;
+            padding-bottom: 2px;
+        }
+        .footer .foot-center { font-size: 9px; color: #94a3b8; text-align: center; }
+        .empty-state { padding: 10px; text-align: center; color: #94a3b8; font-size: 12px; }
+        @media print {
+            body { background: #fff; padding: 0; }
+            .container { box-shadow: none; border-radius: 0; }
+            .header, .title-section, .section-sessions, .section-patients,
+            .section-expenses, .section-advances,
+            .total-row td, .grand-total td, .final-result, .summary-card,
+            .summary-row { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="header">
+        <div class="header-left">SAMA CENTER FOR<br>PHYSIOTHERAPY & REHABILITATION</div>
+        <div class="header-center">
+            <div class="logo-wrapper">
+                <img src="/assets/img/logos/center.png" alt="Logo" onerror="this.style.display='none'">
+            </div>
+        </div>
+        <div class="header-right">مركز سما للعلاج الطبيعي<br>وإعادة التأهيل</div>
+    </div>
+
+    <div class="title-section">
+        <p>التقرير اليومي للمرضى (الفترة الصباحية)</p>
+        <div class="subtitle"><%= dateDisplay %></div>
+    </div>
+
+    <% 
+        let sumSessions = 0;
+        sessions.forEach(s => { sumSessions += Number(s.price || 0); });
+        let sumPatients = 0;
+        patients.forEach(p => { sumPatients += Number(p.price || 0); });
+        let sumExpenses = 0;
+        expenses.forEach(e => { sumExpenses += Number(e.amount || 0); });
+        let sumAdvances = 0;
+        advances.forEach(a => { sumAdvances += Number(a.amount || 0); });
+        let incomeTotal = sumSessions + sumPatients;
+        let netTotal = incomeTotal - (sumExpenses + sumAdvances);
+    %>
+    <div class="summary-row">
+        <div class="summary-card sc-income"><div class="label">إجمالي الدخل</div><div class="value"><%= incomeTotal.toLocaleString('en-US') %></div></div>
+        <div class="summary-card sc-expense"><div class="label">المصروفات</div><div class="value"><%= sumExpenses.toLocaleString('en-US') %></div></div>
+        <div class="summary-card sc-advance"><div class="label">السلف</div><div class="value"><%= sumAdvances.toLocaleString('en-US') %></div></div>
+        <div class="summary-card sc-profit"><div class="label">الصافي</div><div class="value"><%= netTotal.toLocaleString('en-US') %></div></div>
+    </div>
+
+    <div class="section-header section-sessions">
+        <span class="b" style="background:#a5f3fc"></span>
+        جدول الجلسات
+        <span style="margin-right:auto;font-size:10px;opacity:0.8;font-weight:500;"><%= sessions.length %> جلسات</span>
+    </div>
+    <table>
+        <thead><tr>
+            <th style="width:28px">م</th><th>اسم المريض</th><th>نوع الخدمة</th><th style="width:70px">السعر</th><th style="width:60px">رقم السند</th><th>ملاحظات</th>
+        </tr></thead>
+        <tbody>
+            <% if (sessions.length === 0) { %>
+                <tr><td colspan="6"><div class="empty-state">لا توجد جلسات اليوم</div></td></tr>
+            <% } else { %>
+                <% sessions.forEach((s, i) => { %>
+                    <tr>
+                        <td class="cell-num"><%= i + 1 %></td>
+                        <td class="cell-name"><%= s.fullname %></td>
+                        <td class="cell-service"><%= s.session_type %></td>
+                        <td class="cell-price"><%= Number(s.price || 0).toLocaleString('en-US') %></td>
+                        <td class="cell-id"><%= s.id || '' %></td>
+                        <td class="cell-notes"><%= s.note || '—' %></td>
+                    </tr>
+                <% }) %>
+                <tr class="total-row">
+                    <td colspan="2" class="tl">إجمالي الجلسات</td>
+                    <td></td><td class="tv" colspan="3"><%= sumSessions.toLocaleString('en-US') %></td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+
+    <div class="section-spacing"></div>
+
+    <div class="section-header section-patients">
+        <span class="b" style="background:#6ee7b7"></span>
+        جدول المرضى
+        <span style="margin-right:auto;font-size:10px;opacity:0.8;font-weight:500;"><%= patients.length %> مرضى</span>
+    </div>
+    <table>
+        <thead><tr>
+            <th style="width:28px">م</th><th>اسم المريض</th><th>نوع الخدمة</th><th style="width:40px">العمر</th><th style="width:35px">النوع</th><th>رقم الهاتف</th><th style="width:70px">السعر</th>
+        </tr></thead>
+        <tbody>
+            <% if (patients.length === 0) { %>
+                <tr><td colspan="7"><div class="empty-state">لا يوجد مرضى اليوم</div></td></tr>
+            <% } else { %>
+                <% patients.forEach((p, i) => { %>
+                    <tr>
+                        <td class="cell-num"><%= i + 1 %></td>
+                        <td class="cell-name"><%= p.fullname %></td>
+                        <td class="cell-service"><%= p.exam_type %></td>
+                        <td><%= p.age %></td>
+                        <td><%= p.sex %></td>
+                        <td dir="ltr"><%= p.phone %></td>
+                        <td class="cell-price"><%= Number(p.price || 0).toLocaleString('en-US') %></td>
+                    </tr>
+                <% }) %>
+                <tr class="total-row">
+                    <td colspan="3" class="tl">إجمالي المرضى</td><td></td><td></td><td></td>
+                    <td class="tv"><%= sumPatients.toLocaleString('en-US') %></td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+
+    <table>
+        <tbody>
+            <tr class="grand-total">
+                <td></td>
+                <td colspan="2" class="tl">الإجمالي الكلي (جلسات + مرضى)</td>
+                <td></td>
+                <td class="tv" colspan="3"><%= incomeTotal.toLocaleString('en-US') %></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="section-spacing"></div>
+
+    <div class="section-header section-expenses">
+        <span class="b" style="background:#fcd34d"></span>
+        المصروفات
+        <span style="margin-right:auto;font-size:10px;opacity:0.8;font-weight:500;"><%= expenses.length %> مدخلات</span>
+    </div>
+    <table>
+        <thead><tr>
+            <th style="width:28px">م</th><th colspan="2">نوع المصروف</th><th style="width:70px">المبلغ</th><th>ملاحظات</th>
+        </tr></thead>
+        <tbody>
+            <% if (expenses.length === 0) { %>
+                <tr><td colspan="5"><div class="empty-state">لا توجد مصروفات اليوم</div></td></tr>
+            <% } else { %>
+                <% expenses.forEach((e, i) => { %>
+                    <tr>
+                        <td class="cell-num"><%= i + 1 %></td>
+                        <td colspan="2" class="cell-name"><%= e.category %></td>
+                        <td class="cell-price"><%= Number(e.amount).toLocaleString('en-US') %></td>
+                        <td class="cell-notes"><%= e.notes || '—' %></td>
+                    </tr>
+                <% }) %>
+                <tr class="total-row">
+                    <td colspan="2" class="tl">إجمالي المصروفات</td><td></td>
+                    <td class="tv"><%= sumExpenses.toLocaleString('en-US') %></td><td></td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+
+    <div class="section-spacing"></div>
+
+    <div class="section-header section-advances">
+        <span class="b" style="background:#c4b5fd"></span>
+        السلف
+        <span style="margin-right:auto;font-size:10px;opacity:0.8;font-weight:500;"><%= advances.length %> سلف</span>
+    </div>
+    <table>
+        <thead><tr>
+            <th style="width:28px">م</th><th colspan="2">اسم الموظف</th><th style="width:70px">المبلغ</th><th>ملاحظات</th>
+        </tr></thead>
+        <tbody>
+            <% if (advances.length === 0) { %>
+                <tr><td colspan="5"><div class="empty-state">لا توجد سلف اليوم</div></td></tr>
+            <% } else { %>
+                <% advances.forEach((a, i) => { %>
+                    <tr>
+                        <td class="cell-num"><%= i + 1 %></td>
+                        <td colspan="2" class="cell-name"><%= a.employee_name %></td>
+                        <td class="cell-price"><%= Number(a.amount).toLocaleString('en-US') %></td>
+                        <td class="cell-notes"><%= a.note || '—' %></td>
+                    </tr>
+                <% }) %>
+                <tr class="total-row">
+                    <td colspan="2" class="tl">إجمالي السلف</td><td></td>
+                    <td class="tv"><%= sumAdvances.toLocaleString('en-US') %></td><td></td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+
+    <div class="final-result">
+        <div class="label">الإجمالي بعد الصرف اليومي</div>
+        <div class="value"><%= netTotal.toLocaleString('en-US') %></div>
+    </div>
+
+    <div class="footer">
+        <div>إدارة المركز<span class="sign-line"></span></div>
+        <div class="foot-center">مركز سما للعلاج الطبيعي وإعادة التأهيل</div>
+        <div>السكرتارية<span class="sign-line"></span></div>
+    </div>
+
+</div>
+<script>window.onload=function(){window.print()}</script>
+</body>
+</html>
