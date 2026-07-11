@@ -1,27 +1,18 @@
 {
   "services": {
-    "frontend": {
-      "root": "frontend",
-      "buildCommand": "npm run build"
-    },
-    "backend": {
+    "server": {
       "root": "backend",
-      "entrypoint": "index.ts"
+      "entrypoint": "index.ts",
+      "installCommand": "cd ../frontend && npm ci && cd ../backend && npm ci",
+      "buildCommand": "cd ../frontend && npm run build && cd ../backend && npm run build"
     }
   },
   "rewrites": [
     {
-      "source": "/api(/.*)?",
-      "destination": {
-        "type": "service",
-        "service": "backend"
-      }
-    },
-    {
       "source": "/(.*)",
       "destination": {
         "type": "service",
-        "service": "frontend"
+        "service": "server"
       }
     }
   ]
