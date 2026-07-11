@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import express from 'express';
 import cors from 'cors';
@@ -48,6 +49,17 @@ app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(generalLimiter);
 
+// Serve built React SPA (frontend/dist) if it exists
+const frontendDistPaths = [
+  path.join(process.cwd(), 'frontend', 'dist'),
+  path.join(__dirname, '..', '..', 'frontend', 'dist'),
+  path.join(__dirname, '..', 'frontend', 'dist'),
+];
+const frontendDist = frontendDistPaths.find(p => { try { return fs.existsSync(p); } catch { return false; } });
+if (frontendDist) {
+  app.use(express.static(frontendDist));
+}
+
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/patients', patientRoutes);
@@ -67,6 +79,15 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.use(errorHandler);
+
+// SPA catch-all — serve index.html for any non-API route (client-side routing)
+if (frontendDist) {
+  app.use((req, res) => {
+    if (!req.path.startsWith('/api')) {
+      res.sendFile(path.join(frontendDist, 'index.html'));
+    }
+  });
+}
 
 if (!process.env.VERCEL) {
   app.listen(env.PORT, () => {
