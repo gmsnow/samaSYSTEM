@@ -3,7 +3,7 @@
     "server": {
       "root": "backend",
       "entrypoint": "index.ts",
-      "buildCommand": "cd ../frontend && npm ci && npm run build && cd ../backend && npm ci && npm run build && mkdir -p dist/public && cp -r ../frontend/dist/. dist/public"
+      "buildCommand": "npm --prefix ../frontend ci && npm --prefix ../frontend run build && npm ci && npm run build && mkdir -p dist/public && cp -r ../frontend/dist/. dist/public"
     }
   },
   "rewrites": [
