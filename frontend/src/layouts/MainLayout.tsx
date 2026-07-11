@@ -74,7 +74,8 @@ export default function MainLayout() {
   useEffect(() => {
     fetchNotifs();
     const interval = setInterval(fetchNotifs, 15000);
-    return () => clearInterval(interval);
+    const keepAlive = setInterval(() => { api.get('/health').catch(() => {}); }, 60000);
+    return () => { clearInterval(interval); clearInterval(keepAlive); };
   }, [fetchNotifs]);
 
   const formatRelativeTime = (dateStr: string) => {
