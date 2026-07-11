@@ -1,27 +1,17 @@
 {
   "services": {
-    "frontend": {
-      "root": "frontend",
-      "framework": "vite"
-    },
-    "backend": {
+    "server": {
       "root": "backend",
-      "entrypoint": "index.ts"
+      "entrypoint": "index.ts",
+      "buildCommand": "cd ../frontend && npm ci && npm run build && cd ../backend && npm ci && npm run build && mkdir -p dist/public && cp -r ../frontend/dist/. dist/public"
     }
   },
   "rewrites": [
     {
-      "source": "/api(/.*)?",
-      "destination": {
-        "type": "service",
-        "service": "backend"
-      }
-    },
-    {
       "source": "/(.*)",
       "destination": {
         "type": "service",
-        "service": "frontend"
+        "service": "server"
       }
     }
   ]
