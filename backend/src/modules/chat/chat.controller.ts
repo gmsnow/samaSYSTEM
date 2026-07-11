@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import * as chatService from './chat.service.js';
+import { uploadFile as supabaseUpload } from '../../shared/supabase.js';
+import { v4 as uuid } from 'uuid';
 
 export async function listConversations(req: Request, res: Response, next: NextFunction) {
   try {
@@ -54,12 +56,15 @@ export async function getUsers(req: Request, res: Response, next: NextFunction) 
 export async function uploadFile(req: Request, res: Response, next: NextFunction) {
   try {
     if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+    const ext = req.file.originalname.split('.').pop();
+    const filename = `${uuid()}.${ext}`;
+    const publicUrl = await supabaseUpload('chat-attachments', filename, req.file.buffer, req.file.mimetype);
     res.json({
-      filename: req.file.filename,
+      filename,
       originalname: req.file.originalname,
       size: req.file.size,
       mimetype: req.file.mimetype,
-      path: `/uploads/chat/${req.file.filename}`,
+      path: publicUrl,
     });
   } catch (err) { next(err); }
 }

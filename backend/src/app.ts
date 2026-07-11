@@ -56,8 +56,10 @@ app.get('/api/health', (_req, res) => {
 
 app.use(errorHandler);
 
-app.listen(env.PORT, () => {
-  logger.info(`Server running on port ${env.PORT} in ${env.NODE_ENV} mode`);
-});
+if (!process.env.VERCEL) {
+  app.listen(env.PORT, () => {
+    logger.info(`Server running on port ${env.PORT} in ${env.NODE_ENV} mode`);
+  });
+}
 
 export default app;

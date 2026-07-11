@@ -12,6 +12,8 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   UPLOAD_DIR: z.string().default('./uploads'),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
+  SUPABASE_URL: z.string().default(''),
+  SUPABASE_SERVICE_KEY: z.string().default(''),
 });
 
 const parsed = envSchema.safeParse(process.env);
