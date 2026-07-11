@@ -67,7 +67,7 @@ app.get('/api/health', (_req, res) => {
 });
 
 if (isVercel) {
-  const frontendDist = path.join(__dirname, '..', 'public');
+  const frontendDist = path.join(process.cwd(), 'backend', 'frontend-dist');
   app.use(express.static(frontendDist));
   app.get('*', (_req, res, next) => {
     const filePath = path.join(frontendDist, 'index.html');

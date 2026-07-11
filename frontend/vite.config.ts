@@ -4,7 +4,7 @@ import path from 'path';
 
 export default defineConfig({
   build: {
-    outDir: process.env.VERCEL ? '../backend/dist/public' : 'dist',
+    outDir: process.env.VERCEL ? '../backend/frontend-dist' : 'dist',
   },
   plugins: [react()],
   resolve: {
