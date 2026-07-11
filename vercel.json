@@ -1,15 +1,27 @@
 {
-  "installCommand": "cd frontend && npm ci && cd ../backend && npm ci",
-  "builds": [
+  "services": {
+    "frontend": {
+      "root": "frontend",
+      "framework": "vite"
+    },
+    "backend": {
+      "root": "backend"
+    }
+  },
+  "rewrites": [
     {
-      "src": "backend/index.ts",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["frontend/dist/**"]
+      "source": "/api(/.*)?",
+      "destination": {
+        "type": "service",
+        "service": "backend"
+      }
+    },
+    {
+      "source": "/(.*)",
+      "destination": {
+        "type": "service",
+        "service": "frontend"
       }
     }
-  ],
-  "routes": [
-    { "source": "/(.*)", "dest": "backend/index.ts" }
   ]
 }
