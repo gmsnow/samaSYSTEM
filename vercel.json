@@ -1,12 +1,28 @@
 {
-  "installCommand": "cd frontend && npm ci && cd ../backend && npm ci",
-  "buildCommand": "cd frontend && npm run build && cd ../backend && npm run build",
-  "functions": {
-    "backend/index.ts": {
-      "includeFiles": "frontend/dist/**"
+  "services": {
+    "frontend": {
+      "root": "frontend",
+      "framework": "vite"
+    },
+    "backend": {
+      "root": "backend",
+      "entrypoint": "index.ts"
     }
   },
   "rewrites": [
-    { "source": "/(.*)", "destination": "backend/index.ts" }
+    {
+      "source": "/api(/.*)?",
+      "destination": {
+        "type": "service",
+        "service": "backend"
+      }
+    },
+    {
+      "source": "/(.*)",
+      "destination": {
+        "type": "service",
+        "service": "frontend"
+      }
+    }
   ]
 }
