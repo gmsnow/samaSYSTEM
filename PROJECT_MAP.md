@@ -26,6 +26,7 @@
 | `date-fns` | `^4.4.0` | Date utilities. |
 | `zod` | `^4.4.3` | Validation schema. |
 | `vite` | `^8.1.3` | Build tool (Rolldown-based). |
+| PWA | — | Manifest + service worker for installable app. |
 | `@vitejs/plugin-react` | `^5.x` | Vite React plugin. |
 | `typescript` | `~5.8` | Type safety. |
 | `vitest` | `^4.1.9` | Testing framework. |
@@ -396,7 +397,6 @@ Audit logs are append-only (no soft delete).
 - No real-time chat / messaging
 - No telemedicine / video calls
 - No SMS integration (email notifications only)
-- No mobile app (responsive web only)
 - No multi-language (English only)
 - No drag-and-drop calendar (MUI pickers suffice)
 - No complex billing codes (CPT/ICD-10 codes tracked as text, no full medical coding)
@@ -460,6 +460,7 @@ logger.error('Failed to create invoice', { error, userId });
 | 7 | Phase 7: Reports + Analytics | 🔲 Pending | |
 | 8 | Phase 8: Notifications + File Uploads | 🔲 Pending | |
 | 9 | Phase 9: Testing + Optimization + Docker | 🔲 Pending | Dockerfiles + docker-compose written |
+| 10 | PWA support | ✅ Complete | Manifest, service worker, PWA meta tags added |
 
 ### What Was Built (Phase 1)
 
@@ -492,6 +493,7 @@ logger.error('Failed to create invoice', { error, userId });
 - **Email service** — Notifications log to DB + console in v1. SMTP integration deferred.
 - **PDF templates** — pdf-lib installed for invoice generation; template work deferred to phase 6.
 - **Dashboard real data** — Uses placeholder data until backend modules for stats are built (phase 2-3).
+- **PWA icons** — SVG only. PNG icons needed for full mobile Chrome support.
 
 ### Next Action
 Phase 2: Patient + Therapist management (backend CRUD endpoints + frontend pages).
