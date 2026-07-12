@@ -1,5 +1,4 @@
 import path from 'path';
-import { fileURLToPath } from 'url';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -21,27 +20,12 @@ import userRoutes from './modules/users/users.routes.js';
 import notificationRoutes from './modules/notifications/notifications.routes.js';
 import logger from './shared/logger.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const isVercel = !!process.env.VERCEL;
-
-const viewsDir = isVercel
-  ? path.join(process.cwd(), 'backend', 'src', 'views')
-  : path.join(__dirname, 'views');
-const assetsDir = isVercel
-  ? path.join(process.cwd(), 'backend', 'src', 'public', 'assets')
-  : path.join(__dirname, 'public', 'assets');
-const uploadsDir = isVercel
-  ? path.join(process.cwd(), 'backend', 'uploads')
-  : path.join(__dirname, '..', 'uploads');
-
 const app = express();
 
 app.set('view engine', 'ejs');
-app.set('views', viewsDir);
-app.use('/assets', express.static(assetsDir));
-app.use('/uploads', express.static(uploadsDir));
+app.set('views', path.join(process.cwd(), 'src', 'views'));
+app.use('/assets', express.static(path.join(process.cwd(), 'src', 'public', 'assets')));
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
@@ -66,14 +50,12 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-if (isVercel) {
-  const frontendDist = path.join(process.cwd(), 'backend', 'frontend-dist');
-  app.use(express.static(frontendDist));
-  app.get('*', (_req, res, next) => {
-    const filePath = path.join(frontendDist, 'index.html');
-    res.sendFile(filePath, (err) => { if (err) next(err); });
-  });
-}
+const frontendDist = path.join(process.cwd(), 'frontend-dist');
+app.use(express.static(frontendDist));
+app.get('*', (_req, res, next) => {
+  const filePath = path.join(frontendDist, 'index.html');
+  res.sendFile(filePath, (err) => { if (err) next(err); });
+});
 
 app.use(errorHandler);
 
