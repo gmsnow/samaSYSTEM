@@ -10,8 +10,7 @@
     },
     "backend": {
       "root": "backend",
-      "entrypoint": "index.ts",
-      "installCommand": "npm install --include=dev"
+      "entrypoint": "index.ts"
     }
   },
   "rewrites": [
