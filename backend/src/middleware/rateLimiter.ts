@@ -1,16 +1,14 @@
 import rateLimit from 'express-rate-limit';
 
-const opts = {
-  validate: { xForwardedForHeader: false },
-};
-
 export const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: process.env.NODE_ENV === 'production' ? 500 : 2000,
   message: { error: 'Too many requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
-  ...opts,
+  keyGenerator: (req) => {
+    return (req.headers['x-forwarded-for'] as string) || req.ip || 'unknown';
+  },
 });
 
 export const authLimiter = rateLimit({
@@ -19,5 +17,7 @@ export const authLimiter = rateLimit({
   message: { error: 'Too many login attempts, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
-  ...opts,
+  keyGenerator: (req) => {
+    return (req.headers['x-forwarded-for'] as string) || req.ip || 'unknown';
+  },
 });

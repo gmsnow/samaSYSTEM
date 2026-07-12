@@ -2,11 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { env } from './env.js';
 
-const projectRef = env.DATABASE_URL.match(/postgres\.([^.@]+)/)?.[1];
-const adapter = new PrismaPg({
-  connectionString: env.DATABASE_URL,
-  ...(projectRef ? { sni_hostname: `db.${projectRef}.supabase.co` } : {}),
-});
+const adapter = new PrismaPg({ connectionString: env.DATABASE_URL });
 
 export const prisma = new PrismaClient({
   adapter,
