@@ -244,6 +244,7 @@ export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'mont
       expenses: expensesPeriod,
       netProfit,
       sessions: sessionsThisPeriod,
+      patients: patientsThisPeriod,
       patientRevenue: patientRevenueThisPeriod._sum.price ?? 0,
       sessionRevenue: revenueThisPeriod._sum.price ?? 0,
       invoices: invoicesThisPeriod,

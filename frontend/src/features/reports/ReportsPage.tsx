@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Box, Typography, Grid, Card, CardContent, Table, TableHead, TableBody, TableRow, TableCell, Chip, Avatar } from '@mui/material';
-import { People, Paid, Receipt, TrendingUp } from '@mui/icons-material';
+import { People, Paid, Receipt } from '@mui/icons-material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../services/api';
@@ -45,32 +45,25 @@ export default function ReportsPage({ period }: { period: string }) {
       <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>{t(periodLabel[period] || periodLabel.monthly)}</Typography>
 
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <Card><CardContent sx={{ textAlign: 'center', py: 3 }}>
             <Avatar sx={{ width: 48, height: 48, bgcolor: '#3e567915', color: '#3e5679', mx: 'auto', mb: 1 }}><Paid /></Avatar>
             <Typography variant="h4" sx={{ fontWeight: 800 }}>YER {data.revenueOverview.revenue.toLocaleString()}</Typography>
             <Typography variant="body2" color="text.secondary">{t('dashboard.earnings')}</Typography>
           </CardContent></Card>
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <Card><CardContent sx={{ textAlign: 'center', py: 3 }}>
             <Avatar sx={{ width: 48, height: 48, bgcolor: '#2e7d3215', color: '#2e7d32', mx: 'auto', mb: 1 }}><Receipt /></Avatar>
             <Typography variant="h4" sx={{ fontWeight: 800 }}>{data.revenueOverview.sessions}</Typography>
             <Typography variant="body2" color="text.secondary">{t('dashboard.totalSessions')}</Typography>
           </CardContent></Card>
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <Card><CardContent sx={{ textAlign: 'center', py: 3 }}>
             <Avatar sx={{ width: 48, height: 48, bgcolor: '#7c4dff15', color: '#7c4dff', mx: 'auto', mb: 1 }}><People /></Avatar>
-            <Typography variant="h4" sx={{ fontWeight: 800 }}>{data.totals.totalPatients}</Typography>
+            <Typography variant="h4" sx={{ fontWeight: 800 }}>{data.revenueOverview.patients}</Typography>
             <Typography variant="body2" color="text.secondary">{t('dashboard.statTotalPatients')}</Typography>
-          </CardContent></Card>
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <Card><CardContent sx={{ textAlign: 'center', py: 3 }}>
-            <Avatar sx={{ width: 48, height: 48, bgcolor: '#e6510015', color: '#e65100', mx: 'auto', mb: 1 }}><TrendingUp /></Avatar>
-            <Typography variant="h4" sx={{ fontWeight: 800 }}>{data.growthRates.revenue}</Typography>
-            <Typography variant="body2" color="text.secondary">{t('dashboard.vsLastMonth')}</Typography>
           </CardContent></Card>
         </Grid>
       </Grid>
