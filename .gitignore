@@ -1,5 +1,6 @@
 node_modules/
 dist/
+.next/
 .env
 *.log
 uploads/*
@@ -9,4 +10,5 @@ logs/*
 .DS_Store
 Thumbs.db
 *.tsbuildinfo
+next-env.d.ts
 supabase-schema.sql
