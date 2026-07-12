@@ -7,7 +7,7 @@
     "backend": {
       "root": "backend",
       "entrypoint": "index.ts",
-      "buildCommand": "npm install && npx prisma generate"
+      "buildCommand": "npm install"
     }
   },
   "rewrites": [
