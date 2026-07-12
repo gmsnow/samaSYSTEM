@@ -6,6 +6,7 @@
     },
     "backend": {
       "root": "backend",
+      "entrypoint": "index.ts",
       "buildCommand": "npm ci && npx prisma generate"
     }
   },
