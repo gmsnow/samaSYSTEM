@@ -1,10 +1,28 @@
 {
-  "builds": [
-    { "src": "backend/index.ts" }
-  ],
-  "routes": [
-    { "src": "/(.*)", "dest": "backend/index.ts" }
-  ],
-  "buildCommand": "cd backend && npm ci && npm run build",
-  "installCommand": "cd backend && npm ci"
+  "services": {
+    "frontend": {
+      "root": "frontend",
+      "framework": "vite"
+    },
+    "backend": {
+      "root": "backend",
+      "buildCommand": "npm ci && npx prisma generate"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api(/.*)?",
+      "destination": {
+        "type": "service",
+        "service": "backend"
+      }
+    },
+    {
+      "source": "/(.*)",
+      "destination": {
+        "type": "service",
+        "service": "frontend"
+      }
+    }
+  ]
 }
