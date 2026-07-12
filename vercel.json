@@ -1,12 +1,5 @@
 {
-  "builds": [
-    {
-      "src": "backend/index.ts",
-      "use": "@vercel/node"
-    }
-  ],
   "routes": [
-    { "src": "/(.*)", "dest": "backend/index.ts" }
-  ],
-  "buildCommand": "cd backend && npm ci && npm run build"
+    { "src": "/(.*)", "dest": "/api/index" }
+  ]
 }
