@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "npx prisma generate && npx prisma db push --skip-generate --accept-data-loss",
+    "postinstall": "npx prisma generate && npx prisma db push --accept-data-loss",
     "db:seed": "npx tsx prisma/seed.ts",
     "db:generate": "npx prisma generate",
     "db:push": "npx prisma db push"
