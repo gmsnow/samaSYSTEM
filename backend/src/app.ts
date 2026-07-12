@@ -23,9 +23,17 @@ import logger from './shared/logger.js';
 const app = express();
 
 app.set('view engine', 'ejs');
-app.set('views', path.join(process.cwd(), 'src', 'views'));
-app.use('/assets', express.static(path.join(process.cwd(), 'src', 'public', 'assets')));
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+const viewsDir = process.env.VERCEL
+  ? path.join(process.cwd(), 'backend', 'src', 'views')
+  : path.join(process.cwd(), 'src', 'views');
+app.set('views', viewsDir);
+const assetsDir = process.env.VERCEL
+  ? path.join(process.cwd(), 'backend', 'src', 'public', 'assets')
+  : path.join(process.cwd(), 'src', 'public', 'assets');
+app.use('/assets', express.static(assetsDir));
+if (!process.env.VERCEL) {
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+}
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
@@ -50,12 +58,14 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-const frontendDist = path.join(process.cwd(), 'frontend-dist');
-app.use(express.static(frontendDist));
-app.get('/{*path}', (_req, res, next) => {
-  const filePath = path.join(frontendDist, 'index.html');
-  res.sendFile(filePath, (err) => { if (err) next(err); });
-});
+if (!process.env.VERCEL) {
+  const frontendDist = path.join(process.cwd(), 'frontend-dist');
+  app.use(express.static(frontendDist));
+  app.get('/{*path}', (_req, res, next) => {
+    const filePath = path.join(frontendDist, 'index.html');
+    res.sendFile(filePath, (err) => { if (err) next(err); });
+  });
+}
 
 app.use(errorHandler);
 
