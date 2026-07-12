@@ -2,7 +2,7 @@
   "services": {
     "server": {
       "root": "backend",
-      "entrypoint": "index.ts",
+      "entrypoint": "dist/index.js",
       "buildCommand": "npm ci && npm run build"
     }
   },

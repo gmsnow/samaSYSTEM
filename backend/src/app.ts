@@ -52,7 +52,7 @@ app.get('/api/health', (_req, res) => {
 
 const frontendDist = path.join(process.cwd(), 'frontend-dist');
 app.use(express.static(frontendDist));
-app.get('*', (_req, res, next) => {
+app.get('/{*path}', (_req, res, next) => {
   const filePath = path.join(frontendDist, 'index.html');
   res.sendFile(filePath, (err) => { if (err) next(err); });
 });
