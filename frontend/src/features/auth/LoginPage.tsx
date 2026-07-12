@@ -20,7 +20,9 @@ export default function LoginPage() {
       await login(username, password);
       navigate('/dashboard');
     } catch (err: unknown) {
-      setError((err as { response?: { data?: { error?: string } } })?.response?.data?.error || t('auth.login.failed'));
+      const axiosErr = err as { response?: { data?: Record<string, unknown> } };
+      const serverErr = axiosErr?.response?.data?.error;
+      setError(typeof serverErr === 'string' ? serverErr : t('auth.login.failed'));
     } finally { setLoading(false); }
   };
 
