@@ -8,5 +8,5 @@
   "routes": [
     { "src": "/(.*)", "dest": "backend/index.ts" }
   ],
-  "buildCommand": "npm ci && npm run build"
+  "buildCommand": "cd backend && npm ci && npm run build"
 }
