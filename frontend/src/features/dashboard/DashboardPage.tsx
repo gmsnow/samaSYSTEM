@@ -46,9 +46,11 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const [data, setData] = useState<DashboardData | null>(null);
   const [revenueTab, setRevenueTab] = useState('ALL');
+  const [services, setServices] = useState<{ name: string; price: number }[]>([]);
 
   useEffect(() => {
     api.get('/dashboard/stats', { params: { locale } }).then(r => setData(r.data)).catch(() => {});
+    api.get('/services').then(r => setServices(r.data)).catch(() => {});
   }, [locale]);
 
   const statusColor = (k: string) => k === 'dashboard.paid' ? 'success' : k === 'dashboard.cancelled' ? 'error' : 'warning';
@@ -127,6 +129,20 @@ export default function DashboardPage() {
           </Grid>
         ))}
       </Grid>
+
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>قائمة الأسعار</Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }, gap: 1 }}>
+            {services.map((s, i) => (
+              <Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', px: 1.5, py: 1, bgcolor: 'action.hover', borderRadius: 1 }}>
+                <Typography variant="body2">{s.name}</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: 'primary.main', whiteSpace: 'nowrap' }}>{s.price.toLocaleString()} ريال</Typography>
+              </Box>
+            ))}
+          </Box>
+        </CardContent>
+      </Card>
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {patientTileStats.map((s) => (
