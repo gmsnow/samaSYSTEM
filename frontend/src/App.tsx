@@ -20,12 +20,13 @@ import WeeklyReportPage from './features/reports/WeeklyReportPage';
 import MonthlyReportPage from './features/reports/MonthlyReportPage';
 import ProfilePage from './features/profile/ProfilePage';
 import NotFoundPage from './features/NotFoundPage';
+import UnauthorizedPage from './features/auth/UnauthorizedPage';
 
 function ProtectedRoute({ roles }: { roles?: string[] }) {
   const { user, isLoading } = useAuth();
   const { t } = useLanguage();
   if (isLoading) return <div>{t('app.loading')}</div>;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/unauthorized" replace />;
   if (roles && !roles.includes(user.role)) return <Navigate to="/dashboard" replace />;
   return <Outlet />;
 }
@@ -42,6 +43,7 @@ export default function App() {
     <Routes>
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/unauthorized" element={<UnauthorizedPage />} />
       </Route>
       <Route element={<ProtectedRoute />}>
         <Route element={<MainLayout />}>

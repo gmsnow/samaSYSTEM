@@ -8,12 +8,11 @@ import * as controller from './employees.controller.js';
 const router = Router();
 
 router.use(authenticate);
-router.use(requirePermission('employees'));
 
 router.get('/', controller.list);
 router.get('/:id', controller.getById);
-router.post('/', validate(createEmployeeSchema), controller.create);
-router.put('/:id', validate(updateEmployeeSchema), controller.update);
-router.delete('/:id', controller.remove);
+router.post('/', requirePermission('employees'), validate(createEmployeeSchema), controller.create);
+router.put('/:id', requirePermission('employees'), validate(updateEmployeeSchema), controller.update);
+router.delete('/:id', requirePermission('employees'), controller.remove);
 
 export default router;
