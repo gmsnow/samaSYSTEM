@@ -225,12 +225,7 @@ export default function SessionsPage() {
             <Box component="form" onSubmit={handleSubmit} sx={{ '& .MuiTextField-root': { mb: 2.5 } }}>
               <TextField fullWidth label={t('patients.add.form.name')} value={form.fullname} onChange={handleChange('fullname')} required />
 
-              <TextField select fullWidth label={t('sessions.type')} value={form.session_type} onChange={handleChange('session_type')} required>
-                <MenuItem value="" disabled>{t('sessions.type')}</MenuItem>
-                {services.map(s => (
-                  <MenuItem key={s.id} value={s.name}>{s.name} - {s.price} YER</MenuItem>
-                ))}
-              </TextField>
+              <TextField fullWidth label={t('sessions.type')} value={form.session_type} onChange={handleChange('session_type')} required />
 
               <TextField select fullWidth label={t('sessions.therapist')} value={form.speacial} onChange={handleChange('speacial')}>
                 <MenuItem value="">{t('sessions.noTherapist')}</MenuItem>
@@ -424,12 +419,7 @@ export default function SessionsPage() {
           <DialogContent>
             <TextField fullWidth label={t('patients.add.form.name')} value={form.fullname} onChange={handleChange('fullname')} sx={{ mb: 2 }} required />
 
-              <TextField select fullWidth label={t('sessions.type')} value={form.session_type} onChange={handleChange('session_type')} sx={{ mb: 2 }} required>
-                <MenuItem value="" disabled>{t('sessions.type')}</MenuItem>
-                {services.map(s => (
-                  <MenuItem key={s.id} value={s.name}>{s.name}</MenuItem>
-                ))}
-              </TextField>
+              <TextField fullWidth label={t('sessions.type')} value={form.session_type} onChange={handleChange('session_type')} sx={{ mb: 2 }} required />
 
             <TextField select fullWidth label={t('sessions.therapist')} value={form.speacial} onChange={handleChange('speacial')} sx={{ mb: 2 }}>
               <MenuItem value="">{t('sessions.noTherapist')}</MenuItem>
