@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('refreshToken');
     setUser(null);
     setIsLocked(false);
-    window.location.href = '/login';
+    window.location.href = '/';
   };
 
   const lock = () => setIsLocked(true);
