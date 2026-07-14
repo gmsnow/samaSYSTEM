@@ -11,7 +11,7 @@ import {
   Logout, DarkMode, LightMode,
   NotificationsNone, Mail, Warning, Fullscreen, FullscreenExit,
   ExpandMore, ExpandLess, FiberManualRecord, Search as SearchIcon,
-  Person, EventNote, CalendarMonth, HelpOutlined, Lock, Message, Payments, Receipt, People, Assessment,
+  Person, EventNote, CalendarMonth, HelpOutlined, Lock, Message, Payments, Receipt, People, Assessment, MedicalServices,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useThemeMode } from '../contexts/ThemeContext';
@@ -175,6 +175,7 @@ export default function MainLayout() {
       { text: t('nav.sessions'), icon: <EventNote />, path: '/sessions', permission: 'sessions' },
       { text: t('nav.appointments'), icon: <EventNote />, path: '/appointments', permission: 'appointments' },
       { text: t('nav.calendar'), icon: <CalendarMonth />, path: '/calendar', permission: 'calendar' },
+      { text: t('nav.services'), icon: <MedicalServices />, path: '/services', permission: 'services' },
       { text: t('nav.advances'), icon: <Payments />, path: '/advances', permission: 'advances' },
       { text: t('nav.expenses'), icon: <Receipt />, path: '/expenses', permission: 'expenses' },
       { text: t('nav.employees'), icon: <People />, path: '/employees', permission: 'employees' },
