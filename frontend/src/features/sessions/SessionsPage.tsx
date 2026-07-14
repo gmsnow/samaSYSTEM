@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Box, Card, CardContent, Typography, TextField, Button, MenuItem, IconButton, Collapse,
   Table, TableHead, TableBody, TableRow, TableCell, Dialog, DialogTitle, DialogContent,
-  DialogActions, FormControl, InputLabel, Select, Chip, Pagination,
+  DialogActions, FormControl, InputLabel, Select, Chip, Pagination, Stack,
 } from '@mui/material';
 import { KeyboardArrowUp, Close, Edit, Delete, Add, FilterList } from '@mui/icons-material';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -66,9 +66,27 @@ export default function SessionsPage() {
   const rowsPerPage = 10;
   const [statusFilter, setStatusFilter] = useState('');
   const [statusForm, setStatusForm] = useState({ patient: '', sessionType: '', status: '' });
+  const [periodFilter, setPeriodFilter] = useState('all');
+  const [periodDate, setPeriodDate] = useState('');
 
   const filteredSessions = sessions.filter(s => {
     if (statusFilter && s.status !== statusFilter) return false;
+    if (periodFilter !== 'all' && periodDate && s.sessionDate) {
+      const d = new Date(s.sessionDate);
+      const ref = new Date(periodDate);
+      if (!isNaN(d.getTime()) && !isNaN(ref.getTime())) {
+        let match = false;
+        if (periodFilter === 'day') match = d.toISOString().slice(0, 10) === ref.toISOString().slice(0, 10);
+        else if (periodFilter === 'week') {
+          const weekStart = new Date(ref);
+          weekStart.setDate(ref.getDate() - ref.getDay());
+          const weekEnd = new Date(weekStart);
+          weekEnd.setDate(weekStart.getDate() + 6);
+          match = d >= weekStart && d <= weekEnd;
+        } else if (periodFilter === 'month') match = d.getFullYear() === ref.getFullYear() && d.getMonth() === ref.getMonth();
+        if (!match) return false;
+      }
+    }
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
     return s.fullname.toLowerCase().includes(q)
@@ -356,6 +374,25 @@ export default function SessionsPage() {
               </Button>
             ))}
           </Box>
+          <FormControl size="small" sx={{ minWidth: 100 }}>
+            <InputLabel>الفترة</InputLabel>
+            <Select value={periodFilter} label="الفترة" onChange={e => { setPeriodFilter(e.target.value); setPeriodDate(''); }}>
+              <MenuItem value="all">الكل</MenuItem>
+              <MenuItem value="day">يوم</MenuItem>
+              <MenuItem value="week">أسبوع</MenuItem>
+              <MenuItem value="month">شهر</MenuItem>
+            </Select>
+          </FormControl>
+          {periodFilter !== 'all' && (
+            <TextField
+              size="small"
+              type={periodFilter === 'month' ? 'month' : 'date'}
+              value={periodDate}
+              onChange={e => setPeriodDate(e.target.value)}
+              slotProps={{ inputLabel: { shrink: true } }}
+              sx={{ maxWidth: 180 }}
+            />
+          )}
         </Box>
         <Box sx={{ overflowX: 'auto' }}>
           <Table>
