@@ -104,6 +104,8 @@ export default function SessionsPage() {
     session_date: '',
     price: '',
     notes: '',
+    subscription_period: 'month',
+    subscription_amount: '',
   });
 
   const fetchSessions = useCallback(async () => {
@@ -138,7 +140,7 @@ export default function SessionsPage() {
     try {
       const { data } = await api.post('/sessions', form);
       setMessage({ text: data.message, type: 'success' });
-      setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '' });
+      setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: 'month', subscription_amount: '' });
       fetchSessions();
     } catch (err: any) {
       setMessage({ text: err.response?.data?.error || 'Error', type: 'error' });
@@ -157,6 +159,8 @@ export default function SessionsPage() {
         session_date: data.sessionDate ? data.sessionDate.substring(0, 16) : '',
         price: data.price?.toString() || '',
         notes: data.notes || '',
+        subscription_period: (data as any).subscription_period || 'month',
+        subscription_amount: (data as any).subscription_amount || '',
       });
       setEditOpen(true);
     } catch { /* ignore */ }
@@ -258,10 +262,22 @@ export default function SessionsPage() {
 
               <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} required />
 
+              <Stack direction="row" spacing={2}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>الاشتراكات</InputLabel>
+                  <Select value={form.subscription_period} label="الاشتراكات" onChange={e => setForm(f => ({ ...f, subscription_period: e.target.value }))}>
+                    <MenuItem value="month">شهر</MenuItem>
+                    <MenuItem value="week">أسبوع</MenuItem>
+                    <MenuItem value="day">يوم</MenuItem>
+                  </Select>
+                </FormControl>
+                <TextField fullWidth label="مبلغ الاشتراك" type="number" value={form.subscription_amount} onChange={handleChange('subscription_amount')} />
+              </Stack>
+
               <TextField fullWidth label={t('patients.add.form.notes')} multiline rows={2} value={form.notes} onChange={handleChange('notes')} />
 
               <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2, flexWrap: 'wrap' }}>
-                <Button variant="outlined" color="warning" onClick={() => setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '' })}>{t('patients.add.form.cancel')}</Button>
+                <Button variant="outlined" color="warning" onClick={() => setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: 'month', subscription_amount: '' })}>{t('patients.add.form.cancel')}</Button>
                 <Button variant="contained" color="success" type="submit">{t('patients.add.form.save')}</Button>
               </Box>
             </Box>
@@ -468,6 +484,18 @@ export default function SessionsPage() {
             <TextField fullWidth label={t('sessions.date')} type="datetime-local" value={form.session_date} onChange={handleChange('session_date')} sx={{ mb: 2 }} slotProps={{ inputLabel: { shrink: true } }} />
 
             <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} sx={{ mb: 2 }} required />
+
+            <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>الاشتراكات</InputLabel>
+                <Select value={form.subscription_period} label="الاشتراكات" onChange={e => setForm(f => ({ ...f, subscription_period: e.target.value }))}>
+                  <MenuItem value="month">شهر</MenuItem>
+                  <MenuItem value="week">أسبوع</MenuItem>
+                  <MenuItem value="day">يوم</MenuItem>
+                </Select>
+              </FormControl>
+              <TextField fullWidth label="مبلغ الاشتراك" type="number" value={form.subscription_amount} onChange={handleChange('subscription_amount')} />
+            </Stack>
 
             <TextField fullWidth label={t('patients.add.form.notes')} multiline rows={2} value={form.notes} onChange={handleChange('notes')} />
           </DialogContent>
