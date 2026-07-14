@@ -28,6 +28,7 @@ export default function EmployeesPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [departmentFilter, setDepartmentFilter] = useState('');
   const [form, setForm] = useState({ name: '', department: '', phone: '', salary: '' });
   const [editing, setEditing] = useState<Employee | null>(null);
 
@@ -41,14 +42,15 @@ export default function EmployeesPage() {
   useEffect(() => { fetchEmployees(); }, []);
 
   const filtered = useMemo(() => {
-    if (!searchQuery) return employees;
-    const q = searchQuery.toLowerCase();
-    return employees.filter(e =>
-      e.name.toLowerCase().includes(q)
-      || (e.department && e.department.toLowerCase().includes(q))
-      || (e.phone && e.phone.includes(q))
-    );
-  }, [employees, searchQuery]);
+    return employees.filter(e => {
+      if (departmentFilter && e.department !== departmentFilter) return false;
+      if (!searchQuery) return true;
+      const q = searchQuery.toLowerCase();
+      return e.name.toLowerCase().includes(q)
+        || (e.department && e.department.toLowerCase().includes(q))
+        || (e.phone && e.phone.includes(q));
+    });
+  }, [employees, searchQuery, departmentFilter]);
 
   const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
@@ -113,11 +115,20 @@ export default function EmployeesPage() {
         </Button>
       </Stack>
 
-      <TextField
-        size="small" placeholder={t('employees.search')} value={searchQuery}
-        onChange={e => { setSearchQuery(e.target.value); setPage(0); }}
-        sx={{ mb: 1.5, maxWidth: 320 }}
-      />
+      <Stack direction="row" spacing={1} sx={{ mb: 1.5, flexWrap: 'wrap' }}>
+        <TextField
+          size="small" placeholder={t('employees.search')} value={searchQuery}
+          onChange={e => { setSearchQuery(e.target.value); setPage(0); }}
+          sx={{ maxWidth: 320 }}
+        />
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <InputLabel>{t('employees.form.department')}</InputLabel>
+          <Select value={departmentFilter} label={t('employees.form.department')} onChange={e => { setDepartmentFilter(e.target.value); setPage(0); }}>
+            <MenuItem value="">الكل</MenuItem>
+            {DEPARTMENTS.map(d => <MenuItem key={d} value={d}>{d}</MenuItem>)}
+          </Select>
+        </FormControl>
+      </Stack>
 
       <TableContainer component={Paper}>
         <Table>
