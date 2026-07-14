@@ -76,9 +76,9 @@ export default function ServicesPage() {
   return (
     <Box>
       <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>{t('services.title') || 'الخدمات'}</Typography>
+        <Typography variant="h5" sx={{ fontWeight: 700 }}>{t('services.title')}</Typography>
         <Button variant="contained" startIcon={<Add />} onClick={handleOpenAdd}>
-          {t('services.add') || 'إضافة خدمة'}
+          {t('services.add')}
         </Button>
       </Stack>
 
@@ -86,10 +86,10 @@ export default function ServicesPage() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>{t('services.col.name') || 'الاسم'}</TableCell>
-              <TableCell>{t('services.col.price') || 'السعر'}</TableCell>
-              <TableCell>{t('services.col.status') || 'الحالة'}</TableCell>
-              <TableCell>{t('services.col.actions') || 'إجراءات'}</TableCell>
+              <TableCell>{t('services.col.name')}</TableCell>
+              <TableCell>{t('services.col.price')}</TableCell>
+              <TableCell>{t('services.col.status')}</TableCell>
+              <TableCell>{t('services.col.actions')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -98,7 +98,7 @@ export default function ServicesPage() {
                 <TableCell sx={{ fontWeight: 600 }}>{s.name}</TableCell>
                 <TableCell>{s.price.toLocaleString()} YER</TableCell>
                 <TableCell>
-                  <Chip label={s.isActive ? 'نشط' : 'غير نشط'} size="small" color={s.isActive ? 'success' : 'default'} variant="outlined" />
+                  <Chip label={s.isActive ? t('services.active') : t('services.inactive')} size="small" color={s.isActive ? 'success' : 'default'} variant="outlined" />
                 </TableCell>
                 <TableCell>
                   <Tooltip title={t('common.edit')}>
@@ -111,7 +111,7 @@ export default function ServicesPage() {
               </TableRow>
             ))}
             {paginated.length === 0 && (
-              <TableRow><TableCell colSpan={4} align="center">{t('services.empty') || 'لا توجد خدمات'}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={4} align="center">{t('services.empty')}</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
@@ -127,11 +127,11 @@ export default function ServicesPage() {
       </TableContainer>
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{editing ? (t('services.edit') || 'تعديل الخدمة') : (t('services.add') || 'إضافة خدمة')}</DialogTitle>
+        <DialogTitle>{editing ? t('services.edit') : t('services.add')}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField label={t('services.form.name') || 'الاسم'} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} fullWidth required />
-            <TextField label={t('services.form.price') || 'السعر'} type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} fullWidth required />
+            <TextField label={t('services.form.name')} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} fullWidth required />
+            <TextField label={t('services.form.price')} type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} fullWidth required />
           </Stack>
         </DialogContent>
         <DialogActions>

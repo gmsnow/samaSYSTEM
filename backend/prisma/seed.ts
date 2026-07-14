@@ -10,7 +10,7 @@ async function main() {
   const password = await bcrypt.hash('123', 12);
 
   const users = [
-    { username: 'admin', email: 'admin@sama.com', firstName: 'Admin', lastName: 'User', role: 'ADMIN' as const, password, permissions: ['dashboard', 'patients', 'sessions', 'appointments', 'calendar', 'advances', 'expenses', 'employees', 'chat', 'users'] },
+    { username: 'admin', email: 'admin@sama.com', firstName: 'Admin', lastName: 'User', role: 'ADMIN' as const, password, permissions: ['dashboard', 'patients', 'sessions', 'appointments', 'calendar', 'advances', 'expenses', 'services', 'employees', 'chat', 'users'] },
     { username: 'samacenter', email: 'samacenter@sama.com', firstName: 'أحمد', lastName: 'علي', role: 'THERAPIST' as const, password },
     { username: 'therapist2', email: 'therapist2@sama.com', firstName: 'سارة', lastName: 'محمد', role: 'THERAPIST' as const, password },
     { username: 'receptionist', email: 'receptionist@sama.com', firstName: 'نورا', lastName: 'حسن', role: 'RECEPTIONIST' as const, password },
