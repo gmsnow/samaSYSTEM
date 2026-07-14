@@ -106,6 +106,7 @@ export default function SessionsPage() {
     notes: '',
     subscription_period: 'month',
     subscription_amount: '',
+    subscription_day: '',
   });
 
   const fetchSessions = useCallback(async () => {
@@ -140,7 +141,7 @@ export default function SessionsPage() {
     try {
       const { data } = await api.post('/sessions', form);
       setMessage({ text: data.message, type: 'success' });
-      setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: 'month', subscription_amount: '' });
+      setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: 'month', subscription_amount: '', subscription_day: '' });
       fetchSessions();
     } catch (err: any) {
       setMessage({ text: err.response?.data?.error || 'Error', type: 'error' });
@@ -161,6 +162,7 @@ export default function SessionsPage() {
         notes: data.notes || '',
         subscription_period: (data as any).subscription_period || 'month',
         subscription_amount: (data as any).subscription_amount || '',
+        subscription_day: (data as any).subscription_day || '',
       });
       setEditOpen(true);
     } catch { /* ignore */ }
@@ -272,12 +274,13 @@ export default function SessionsPage() {
                   </Select>
                 </FormControl>
                 <TextField fullWidth label="مبلغ الاشتراك" type="number" value={form.subscription_amount} onChange={handleChange('subscription_amount')} />
+                <TextField fullWidth label="اليوم" type="number" value={form.subscription_day} onChange={handleChange('subscription_day')} slotProps={{ htmlInput: { min: 1, max: 31 } }} />
               </Stack>
 
               <TextField fullWidth label={t('patients.add.form.notes')} multiline rows={2} value={form.notes} onChange={handleChange('notes')} />
 
               <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2, flexWrap: 'wrap' }}>
-                <Button variant="outlined" color="warning" onClick={() => setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: 'month', subscription_amount: '' })}>{t('patients.add.form.cancel')}</Button>
+                <Button variant="outlined" color="warning" onClick={() => setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: 'month', subscription_amount: '', subscription_day: '' })}>{t('patients.add.form.cancel')}</Button>
                 <Button variant="contained" color="success" type="submit">{t('patients.add.form.save')}</Button>
               </Box>
             </Box>
@@ -495,6 +498,7 @@ export default function SessionsPage() {
                 </Select>
               </FormControl>
               <TextField fullWidth label="مبلغ الاشتراك" type="number" value={form.subscription_amount} onChange={handleChange('subscription_amount')} />
+              <TextField fullWidth label="اليوم" type="number" value={form.subscription_day} onChange={handleChange('subscription_day')} slotProps={{ htmlInput: { min: 1, max: 31 } }} />
             </Stack>
 
             <TextField fullWidth label={t('patients.add.form.notes')} multiline rows={2} value={form.notes} onChange={handleChange('notes')} />
