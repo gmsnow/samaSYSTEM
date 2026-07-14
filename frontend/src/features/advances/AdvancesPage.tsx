@@ -245,22 +245,12 @@ export default function AdvancesPage() {
         <DialogTitle>{editing ? t('advances.edit') : t('advances.add')}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
-            <FormControl fullWidth>
-              <InputLabel>{t('advances.form.employee')}</InputLabel>
-              <Select
-                value={form.employee}
-                label={t('advances.form.employee')}
-                onChange={e => {
-                  const empName = e.target.value;
-                  const emp = employees.find(em => em.name === empName);
-                  setForm(f => ({ ...f, employee: empName, specialty: emp?.department || f.specialty }));
-                }}
-              >
-                {employees.map(emp => (
-                  <MenuItem key={emp.id} value={emp.name}>{emp.name}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <TextField
+              label={t('advances.form.employee')}
+              value={form.employee}
+              onChange={e => setForm(f => ({ ...f, employee: e.target.value, specialty: f.specialty }))}
+              fullWidth
+            />
             <TextField
               label={t('advances.form.specialty')}
               value={form.specialty}
