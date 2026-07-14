@@ -308,6 +308,8 @@
   "calendar.noUpcoming": "No upcoming events",
   "calendar.fullDay": "Full day event",
   "nav.services": "Services",
+  "nav.subscribers": "Subscribers",
+  "subscribers.title": "Subscribers Management",
   "nav.advances": "Advances",
   "advances.title": "Salary Advances",
   "advances.add": "Add Advance",

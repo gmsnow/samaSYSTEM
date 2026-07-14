@@ -13,6 +13,7 @@ import CalendarPage from './features/calendar/CalendarPage';
 import AdvancesPage from './features/advances/AdvancesPage';
 import ExpensesPage from './features/expenses/ExpensesPage';
 import ServicesPage from './features/services/ServicesPage';
+import SubscribersPage from './features/subscribers/SubscribersPage';
 import EmployeesPage from './features/employees/EmployeesPage';
 import UsersPage from './features/users/UsersPage';
 import DailyReportPage from './features/reports/DailyReportPage';
@@ -55,6 +56,7 @@ export default function App() {
           <Route path="/advances" element={<PermissionGuard permission="advances"><AdvancesPage /></PermissionGuard>} />
           <Route path="/expenses" element={<PermissionGuard permission="expenses"><ExpensesPage /></PermissionGuard>} />
           <Route path="/services" element={<PermissionGuard permission="services"><ServicesPage /></PermissionGuard>} />
+          <Route path="/subscribers" element={<PermissionGuard permission="subscribers"><SubscribersPage /></PermissionGuard>} />
           <Route path="/employees" element={<PermissionGuard permission="employees"><EmployeesPage /></PermissionGuard>} />
           <Route path="/users" element={<PermissionGuard permission="users"><UsersPage /></PermissionGuard>} />
           <Route path="/reports/daily" element={<DailyReportPage />} />

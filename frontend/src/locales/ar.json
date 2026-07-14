@@ -308,6 +308,8 @@
   "calendar.noUpcoming": "لا توجد أحداث قادمة",
   "calendar.fullDay": "حدث ليوم كامل",
   "nav.services": "الخدمات",
+  "nav.subscribers": "المشتركين",
+  "subscribers.title": "إدارة المشتركين",
   "nav.advances": "السلف",
   "advances.title": "السلف",
   "advances.add": "إضافة سلفة",
