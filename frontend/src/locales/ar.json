@@ -310,6 +310,7 @@
   "nav.services": "الخدمات",
   "nav.subscribers": "المشتركين",
   "subscribers.title": "إدارة المشتركين",
+  "subscribers.empty": "لا يوجد مشتركين",
   "nav.advances": "السلف",
   "advances.title": "السلف",
   "advances.add": "إضافة سلفة",

@@ -8,13 +8,12 @@ import * as controller from './sessions.controller.js';
 const router = Router();
 
 router.use(authenticate);
-router.use(requirePermission('sessions'));
 
 router.get('/', controller.list);
 router.get('/:id', controller.getById);
-router.post('/', validate(createSessionSchema), controller.create);
-router.put('/:id', validate(updateSessionSchema), controller.update);
-router.put('/:id/status', controller.updateStatus);
-router.delete('/:id', controller.remove);
+router.post('/', requirePermission('sessions'), validate(createSessionSchema), controller.create);
+router.put('/:id', requirePermission('sessions'), validate(updateSessionSchema), controller.update);
+router.put('/:id/status', requirePermission('sessions'), controller.updateStatus);
+router.delete('/:id', requirePermission('sessions'), controller.remove);
 
 export default router;

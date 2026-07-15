@@ -310,6 +310,7 @@
   "nav.services": "Services",
   "nav.subscribers": "Subscribers",
   "subscribers.title": "Subscribers Management",
+  "subscribers.empty": "No subscribers found",
   "nav.advances": "Advances",
   "advances.title": "Salary Advances",
   "advances.add": "Add Advance",
