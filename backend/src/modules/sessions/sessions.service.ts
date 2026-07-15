@@ -21,6 +21,9 @@ export async function createSession(data: {
   session_date?: string | null;
   price?: number;
   notes?: string;
+  subscription_period?: string;
+  subscription_amount?: number;
+  subscription_day?: number;
 }) {
   return prisma.session.create({
     data: {
@@ -30,6 +33,9 @@ export async function createSession(data: {
       sessionDate: data.session_date ? new Date(data.session_date) : new Date(),
       price: data.price ?? null,
       notes: data.notes || null,
+      subscriptionPeriod: data.subscription_period || null,
+      subscriptionAmount: data.subscription_amount ?? null,
+      subscriptionDay: data.subscription_day ?? null,
     },
   });
 }
@@ -41,6 +47,9 @@ export async function updateSession(id: string, data: {
   session_date?: string | null;
   price?: number;
   notes?: string;
+  subscription_period?: string;
+  subscription_amount?: number;
+  subscription_day?: number;
 }) {
   const existing = await prisma.session.findUnique({ where: { id } });
   if (!existing || existing.deletedAt) throw new NotFoundError('Session');
@@ -54,6 +63,9 @@ export async function updateSession(id: string, data: {
       sessionDate: data.session_date !== undefined ? (data.session_date ? new Date(data.session_date) : new Date()) : undefined,
       price: data.price,
       notes: data.notes,
+      subscriptionPeriod: data.subscription_period,
+      subscriptionAmount: data.subscription_amount,
+      subscriptionDay: data.subscription_day,
     },
   });
 }

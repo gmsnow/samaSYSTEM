@@ -151,10 +151,13 @@ model Session {
   status      String?   @default("progress")
   sessionDate DateTime? @map("session_date")
   price       Float?
-  notes       String?
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  deletedAt   DateTime? @map("deleted_at")
+  notes            String?
+  subscriptionPeriod String?  @map("subscription_period")
+  subscriptionAmount Float?   @map("subscription_amount")
+  subscriptionDay   Int?      @map("subscription_day")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
 
   @@map("sessions")
 }

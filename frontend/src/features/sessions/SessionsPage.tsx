@@ -17,6 +17,9 @@ interface Session {
   sessionDate: string | null;
   price: number | null;
   notes: string | null;
+  subscriptionPeriod: string | null;
+  subscriptionAmount: number | null;
+  subscriptionDay: number | null;
 }
 
 interface Employee {
@@ -426,6 +429,8 @@ export default function SessionsPage() {
                 <TableCell>{t('sessions.date')}</TableCell>
                 <TableCell>{t('patients.add.form.price')}</TableCell>
                 <TableCell>{t('patients.add.form.notes')}</TableCell>
+                <TableCell>{t('sessions.subscription') || 'الاشتراك'}</TableCell>
+                <TableCell>{t('sessions.days') || 'عدد الأيام'}</TableCell>
                 <TableCell>{t('patients.col.actions')}</TableCell>
               </TableRow>
             </TableHead>
@@ -441,6 +446,8 @@ export default function SessionsPage() {
                   <TableCell>{formatDate(s.sessionDate)}</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{s.price ?? ''}</TableCell>
                   <TableCell sx={{ maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.notes || '-'}</TableCell>
+                  <TableCell>{s.subscriptionPeriod && s.subscriptionAmount ? `${s.subscriptionAmount} YER / ${s.subscriptionPeriod === 'month' ? 'شهر' : s.subscriptionPeriod === 'week' ? 'أسبوع' : 'يوم'}` : '-'}</TableCell>
+                  <TableCell>{s.subscriptionDay ?? '-'}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
                       <IconButton size="small" onClick={() => openEdit(s.id)} sx={{ bgcolor: '#007bff15', color: '#007bff', '&:hover': { bgcolor: '#007bff25' } }}>
@@ -455,7 +462,7 @@ export default function SessionsPage() {
               ))}
               {filteredSessions.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
+                  <TableCell colSpan={10} sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
                     {searchQuery ? `${t('sessions.empty')} — "${searchQuery}"` : t('sessions.empty')}
                   </TableCell>
                 </TableRow>
