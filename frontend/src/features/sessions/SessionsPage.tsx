@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Box, Card, CardContent, Typography, TextField, Button, MenuItem, IconButton, Collapse,
   Table, TableHead, TableBody, TableRow, TableCell, Dialog, DialogTitle, DialogContent,
-  DialogActions, FormControl, InputLabel, Select, Chip, Pagination, Stack,
+  DialogActions,   FormControl, FormControlLabel, FormLabel, InputLabel, Select, Chip, Pagination, Stack, Radio, RadioGroup,
 } from '@mui/material';
 import { KeyboardArrowUp, Close, Edit, Delete, Add, FilterList } from '@mui/icons-material';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -104,7 +104,7 @@ export default function SessionsPage() {
     session_date: '',
     price: '',
     notes: '',
-    subscription_period: 'month',
+    subscription_period: 'normal',
     subscription_amount: '',
     subscription_day: '',
   });
@@ -264,23 +264,25 @@ export default function SessionsPage() {
 
               <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} required />
 
-              <Stack direction="row" spacing={2}>
-                <FormControl fullWidth size="small">
-                  <InputLabel>الاشتراكات</InputLabel>
-                  <Select value={form.subscription_period} label="الاشتراكات" onChange={e => setForm(f => ({ ...f, subscription_period: e.target.value }))}>
-                    <MenuItem value="month">شهر</MenuItem>
-                    <MenuItem value="week">أسبوع</MenuItem>
-                    <MenuItem value="day">يوم</MenuItem>
-                  </Select>
-                </FormControl>
-                <TextField fullWidth label="مبلغ الاشتراك" type="number" value={form.subscription_amount} onChange={handleChange('subscription_amount')} />
-                <TextField fullWidth label="اليوم" type="number" value={form.subscription_day} onChange={handleChange('subscription_day')} slotProps={{ htmlInput: { min: 1, max: 31 } }} />
-              </Stack>
+              <FormControl>
+                <FormLabel sx={{ mb: 0.5 }}>الاشتراكات</FormLabel>
+                <RadioGroup row value={form.subscription_period} onChange={e => setForm(f => ({ ...f, subscription_period: e.target.value }))}>
+                  <FormControlLabel value="subscribe" control={<Radio size="small" />} label="اشتراك" />
+                  <FormControlLabel value="normal" control={<Radio size="small" />} label="جلسة عادية" />
+                </RadioGroup>
+              </FormControl>
+
+              {form.subscription_period === 'subscribe' && (
+                <Stack direction="row" spacing={2}>
+                  <TextField fullWidth label="مبلغ الاشتراك" type="number" value={form.subscription_amount} onChange={handleChange('subscription_amount')} />
+                  <TextField fullWidth label="اليوم" type="number" value={form.subscription_day} onChange={handleChange('subscription_day')} slotProps={{ htmlInput: { min: 1, max: 31 } }} />
+                </Stack>
+              )}
 
               <TextField fullWidth label={t('patients.add.form.notes')} multiline rows={2} value={form.notes} onChange={handleChange('notes')} />
 
               <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2, flexWrap: 'wrap' }}>
-                <Button variant="outlined" color="warning" onClick={() => setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: 'month', subscription_amount: '', subscription_day: '' })}>{t('patients.add.form.cancel')}</Button>
+                <Button variant="outlined" color="warning" onClick={() => setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: 'normal', subscription_amount: '', subscription_day: '' })}>{t('patients.add.form.cancel')}</Button>
                 <Button variant="contained" color="success" type="submit">{t('patients.add.form.save')}</Button>
               </Box>
             </Box>
@@ -488,18 +490,20 @@ export default function SessionsPage() {
 
             <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} sx={{ mb: 2 }} required />
 
-            <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-              <FormControl fullWidth size="small">
-                <InputLabel>الاشتراكات</InputLabel>
-                <Select value={form.subscription_period} label="الاشتراكات" onChange={e => setForm(f => ({ ...f, subscription_period: e.target.value }))}>
-                  <MenuItem value="month">شهر</MenuItem>
-                  <MenuItem value="week">أسبوع</MenuItem>
-                  <MenuItem value="day">يوم</MenuItem>
-                </Select>
-              </FormControl>
-              <TextField fullWidth label="مبلغ الاشتراك" type="number" value={form.subscription_amount} onChange={handleChange('subscription_amount')} />
-              <TextField fullWidth label="اليوم" type="number" value={form.subscription_day} onChange={handleChange('subscription_day')} slotProps={{ htmlInput: { min: 1, max: 31 } }} />
-            </Stack>
+            <FormControl sx={{ mb: 2 }}>
+              <FormLabel sx={{ mb: 0.5 }}>الاشتراكات</FormLabel>
+              <RadioGroup row value={form.subscription_period} onChange={e => setForm(f => ({ ...f, subscription_period: e.target.value }))}>
+                <FormControlLabel value="subscribe" control={<Radio size="small" />} label="اشتراك" />
+                <FormControlLabel value="normal" control={<Radio size="small" />} label="جلسة عادية" />
+              </RadioGroup>
+            </FormControl>
+
+            {form.subscription_period === 'subscribe' && (
+              <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+                <TextField fullWidth label="مبلغ الاشتراك" type="number" value={form.subscription_amount} onChange={handleChange('subscription_amount')} />
+                <TextField fullWidth label="اليوم" type="number" value={form.subscription_day} onChange={handleChange('subscription_day')} slotProps={{ htmlInput: { min: 1, max: 31 } }} />
+              </Stack>
+            )}
 
             <TextField fullWidth label={t('patients.add.form.notes')} multiline rows={2} value={form.notes} onChange={handleChange('notes')} />
           </DialogContent>
