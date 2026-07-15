@@ -265,7 +265,7 @@ export default function SessionsPage() {
                 slotProps={{ inputLabel: { shrink: true } }}
               />
 
-              <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} required />
+              <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} required={form.subscription_period !== 'subscribe'} />
 
               <FormControl>
                 <FormLabel sx={{ mb: 0.5 }}>الاشتراكات</FormLabel>
@@ -277,7 +277,12 @@ export default function SessionsPage() {
 
               {form.subscription_period === 'subscribe' && (
                 <Stack direction="row" spacing={2}>
-                  <TextField fullWidth label="مبلغ الاشتراك" type="number" value={form.subscription_amount} onChange={handleChange('subscription_amount')} />
+                  <TextField select fullWidth label="مدة الاشتراك" value={form.subscription_amount} onChange={handleChange('subscription_amount')}>
+                    <MenuItem value="">اختر المدة</MenuItem>
+                    <MenuItem value="شهر">شهر</MenuItem>
+                    <MenuItem value="أسبوع">أسبوع</MenuItem>
+                    <MenuItem value="يوم">يوم</MenuItem>
+                  </TextField>
                   <TextField fullWidth label="اليوم" type="number" value={form.subscription_day} onChange={handleChange('subscription_day')} slotProps={{ htmlInput: { min: 1, max: 31 } }} />
                 </Stack>
               )}
@@ -495,7 +500,7 @@ export default function SessionsPage() {
 
             <TextField fullWidth label={t('sessions.date')} type="datetime-local" value={form.session_date} onChange={handleChange('session_date')} sx={{ mb: 2 }} slotProps={{ inputLabel: { shrink: true } }} />
 
-            <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} sx={{ mb: 2 }} required />
+            <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} sx={{ mb: 2 }} required={form.subscription_period !== 'subscribe'} />
 
             <FormControl sx={{ mb: 2 }}>
               <FormLabel sx={{ mb: 0.5 }}>الاشتراكات</FormLabel>
@@ -507,7 +512,12 @@ export default function SessionsPage() {
 
             {form.subscription_period === 'subscribe' && (
               <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-                <TextField fullWidth label="مبلغ الاشتراك" type="number" value={form.subscription_amount} onChange={handleChange('subscription_amount')} />
+                <TextField select fullWidth label="مدة الاشتراك" value={form.subscription_amount} onChange={handleChange('subscription_amount')}>
+                  <MenuItem value="">اختر المدة</MenuItem>
+                  <MenuItem value="شهر">شهر</MenuItem>
+                  <MenuItem value="أسبوع">أسبوع</MenuItem>
+                  <MenuItem value="يوم">يوم</MenuItem>
+                </TextField>
                 <TextField fullWidth label="اليوم" type="number" value={form.subscription_day} onChange={handleChange('subscription_day')} slotProps={{ htmlInput: { min: 1, max: 31 } }} />
               </Stack>
             )}
