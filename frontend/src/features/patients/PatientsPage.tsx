@@ -53,8 +53,6 @@ export default function PatientsPage() {
     return new Date(d).toISOString().split('T')[0];
   };
 
-  const calcPrice = (age: number) => (age < 14 ? '1500' : '3000');
-
   const fetchPatients = useCallback(async () => {
     try { const { data } = await api.get('/patients'); setPatients(data); } catch { /* ignore */ }
   }, []);
@@ -79,8 +77,7 @@ export default function PatientsPage() {
     setForm(prev => {
       const next = { ...prev, [field]: value };
       if (field === 'age') {
-        const age = parseInt(value, 10);
-        next.price = isNaN(age) ? '' : calcPrice(age);
+        next.price = '1000';
       }
       return next;
     });
@@ -118,7 +115,7 @@ export default function PatientsPage() {
         gender: p.gender || '',
         phone: p.phone || '',
         date: formatDate(p.registrationDate),
-        price: age ? calcPrice(parseInt(age)) : '',
+        price: '1000',
       });
       setEditOpen(true);
     } catch { /* ignore */ }
@@ -129,8 +126,7 @@ export default function PatientsPage() {
     setEditForm(prev => {
       const next = { ...prev, [field]: value };
       if (field === 'age') {
-        const age = parseInt(value, 10);
-        next.price = isNaN(age) ? '' : calcPrice(age);
+        next.price = '1000';
       }
       return next;
     });
