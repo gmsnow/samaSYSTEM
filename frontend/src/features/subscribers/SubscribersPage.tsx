@@ -138,24 +138,22 @@ export default function SubscribersPage() {
 <meta charset="UTF-8">
 <title>كشف اشتراك - ${s.fullname}</title>
 <style>
-  @page{ size:A4 landscape; margin:6mm; }
-  body{ margin:0; font-family:"Cairo",sans-serif; direction:rtl; }
-  .page{ width:297mm; min-height:210mm; margin:auto; background:white; padding:6mm 8mm; box-sizing:border-box; }
-  header{ display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #1a5276; padding-bottom:8px; margin-bottom:15px; }
+  @page{ size:A4 landscape; margin:4mm; }
+  body{ margin:0; font-family:"Cairo",sans-serif; direction:rtl; font-size:9px; }
+  .page{ width:297mm; min-height:210mm; margin:auto; background:white; padding:4mm 6mm; box-sizing:border-box; }
+  header{ display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #1a5276; padding-bottom:4px; margin-bottom:6px; }
   header .left, header .right{ text-align:center; }
-  header .left h2, header .right h2{ margin:0; font-size:16px; color:#1a5276; font-weight:900; }
-  header .left p, header .right p{ margin:0; font-size:10px; color:#888; }
-  .title-bar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-  .title-bar h1{ font-size:18px; color:#1a5276; margin:0; font-weight:900; }
-  .title-bar .patient-info{ font-size:14px; color:#333; }
+  header .left h2, header .right h2{ margin:0; font-size:12px; color:#1a5276; font-weight:900; }
+  header .left p, header .right p{ margin:0; font-size:8px; color:#888; }
+  .title-bar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+  .title-bar h1{ font-size:13px; color:#1a5276; margin:0; font-weight:900; }
+  .title-bar .patient-info{ font-size:10px; color:#333; }
   .title-bar .patient-info strong{ color:#1a5276; }
-  table{ width:100%; border-collapse:collapse; font-size:13px; }
-  th{ background:#1a5276; color:white; padding:6px; font-weight:700; font-size:12px; }
-  td{ border:1px solid #bbb; padding:5px; text-align:center; }
+  table{ width:100%; border-collapse:collapse; font-size:9px; }
+  th{ background:#1a5276; color:white; padding:2px 3px; font-weight:700; font-size:9px; }
+  td{ border:1px solid #bbb; padding:2px 3px; text-align:center; }
   tr:nth-child(even){ background:#f8fbff; }
-  .signed{ color:#1a5276; font-weight:900; font-size:18px; }
-  .pending{ color:#ddd; }
-  .footer{ margin-top:15px; display:flex; justify-content:space-between; font-size:12px; color:#555; }
+  .footer{ margin-top:6px; display:flex; justify-content:space-between; font-size:8px; color:#555; }
 </style>
 </head>
 <body>
