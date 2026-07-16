@@ -142,22 +142,22 @@ export default function SubscribersPage() {
 <title>كشف اشتراك - ${s.fullname}</title>
 <style>
 *{ box-sizing:border-box; font-family:Tahoma, Arial, sans-serif; }
-body{ background:#eee; margin:20px; }
-.sheet{ width:210mm; margin:auto; background:#fff; padding:8mm; border:2px solid #000; }
+body{ margin:10px; }
+.sheet{ width:210mm; margin:auto; background:#fff; padding:5mm; border:1px solid #000; }
 table{ width:100%; border-collapse:collapse; }
-th,td{ border:1px solid #000; padding:4px; text-align:center; vertical-align:middle; font-size:13px; height:34px; }
+th,td{ border:1px solid #000; padding:2px 3px; text-align:center; vertical-align:middle; font-size:11px; height:26px; }
 thead th{ background:#f7f7f7; font-weight:bold; }
-.title{ font-size:20px; font-weight:bold; border:2px solid #000; padding:8px; }
-.patient{ text-align:right; padding-right:10px; font-weight:bold; }
+.title{ font-size:16px; font-weight:bold; border:1px solid #000; padding:5px; }
+.patient{ text-align:right; padding-right:8px; font-weight:bold; font-size:12px; }
 .amount{ color:#0b8d2b; font-weight:bold; }
 .free{ color:#d30000; font-weight:bold; }
-.signature{ width:120px; }
-.notes{ width:180px; }
-.no{ width:40px; }
-.date{ width:110px; }
-.day{ width:90px; }
-.service{ width:180px; }
-@media print{ body{ background:#fff; margin:0; } .sheet{ border:none; width:100%; padding:0; } }
+.signature{ width:90px; }
+.notes{ width:130px; }
+.no{ width:30px; }
+.date{ width:85px; }
+.day{ width:70px; }
+.service{ width:140px; }
+@media print{ body{ margin:0; } .sheet{ border:none; width:100%; padding:0; } }
 </style>
 </head>
 <body>
