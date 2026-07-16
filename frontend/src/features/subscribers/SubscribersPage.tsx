@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, IconButton, Pagination, Dialog, DialogTitle, DialogContent, DialogActions, Button, Stack, Checkbox, Tooltip, Chip } from '@mui/material';
-import { Edit, Delete, Close, Download, Autorenew } from '@mui/icons-material';
+import { Edit, Delete, Close, Download, Autorenew, CheckCircle } from '@mui/icons-material';
 import api from '../../services/api';
 import { useLanguage } from '../../contexts/LanguageContext';
 
@@ -123,6 +123,26 @@ export default function SubscribersPage() {
         subscription_attendance: '{"a":[],"f":[]}',
       });
       setRenewOpen(false);
+      fetch();
+    } catch { /* ignore */ }
+  };
+
+  const quickAttend = async (s: Session) => {
+    const { attended, free } = getAttendance(s);
+    const totalDays = s.subscriptionPeriod === 'شهر' ? 30 : s.subscriptionPeriod === 'أسبوع' ? 7 : 1;
+    let nextIdx = -1;
+    for (let i = 0; i < totalDays; i++) {
+      const d = new Date(s.sessionDate || new Date());
+      d.setDate(d.getDate() + i);
+      if (d.getDay() === 5) continue;
+      if (!attended.includes(i) && !free.includes(i)) { nextIdx = i; break; }
+    }
+    if (nextIdx === -1) return;
+    try {
+      await api.put(`/sessions/${s.id}`, {
+        subscription_attendance: JSON.stringify({ a: [...attended, nextIdx], f: free }),
+        subscription_day: Math.max(0, (s.subscriptionDay ?? 0) - 1),
+      });
       fetch();
     } catch { /* ignore */ }
   };
@@ -255,6 +275,9 @@ ${rows}
                   <Box sx={{ display: 'flex', gap: 0.5 }}>
                     <IconButton size="small" onClick={() => openEdit(s)} sx={{ bgcolor: '#007bff15', color: '#007bff', '&:hover': { bgcolor: '#007bff25' } }}>
                       <Edit sx={{ fontSize: 18 }} />
+                    </IconButton>
+                    <IconButton size="small" onClick={() => quickAttend(s)} sx={{ bgcolor: '#28a74515', color: '#28a745', '&:hover': { bgcolor: '#28a74525' } }}>
+                      <CheckCircle sx={{ fontSize: 18 }} />
                     </IconButton>
                     <IconButton size="small" onClick={() => handleDownload(s)} sx={{ bgcolor: '#17a2b815', color: '#17a2b8', '&:hover': { bgcolor: '#17a2b825' } }}>
                       <Download sx={{ fontSize: 18 }} />
