@@ -74,6 +74,7 @@ export default function SessionsPage() {
 
   const filteredSessions = sessions.filter(s => {
     if (statusFilter && s.status !== statusFilter) return false;
+    if (s.subscriptionPeriod && s.subscriptionAmount) return false;
     if (periodFilter !== 'all' && periodDate && s.sessionDate) {
       const d = new Date(s.sessionDate);
       const ref = new Date(periodDate);
