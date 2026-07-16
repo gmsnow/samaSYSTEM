@@ -27,7 +27,7 @@ function ProtectedRoute({ roles }: { roles?: string[] }) {
   const { user, isLoading } = useAuth();
   const { t } = useLanguage();
   if (isLoading) return <div>{t('app.loading')}</div>;
-  if (!user) return <Navigate to="/unauthorized" replace />;
+  if (!user) return <Navigate to="/login" replace />;
   if (roles && !roles.includes(user.role)) return <Navigate to="/dashboard" replace />;
   return <Outlet />;
 }
