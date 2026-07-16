@@ -89,7 +89,7 @@ export default function SubscribersPage() {
   const handleAttend = async (s: Session) => {
     try {
       await api.put(`/sessions/${s.id}`, {
-        subscription_day: (s.subscriptionDay ?? 1) - 1,
+        subscription_day: Math.max(0, (s.subscriptionDay ?? 1) - 1),
       });
       fetch();
     } catch { /* ignore */ }
