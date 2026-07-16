@@ -107,10 +107,11 @@ export default function SessionsPage() {
     session_date: '',
     price: '',
     notes: '',
-    subscription_period: 'normal',
+    subscription_period: '',
     subscription_amount: '',
     subscription_day: '',
   });
+  const [isSubscribe, setIsSubscribe] = useState(false);
 
   const fetchSessions = useCallback(async () => {
     try {
@@ -142,9 +143,11 @@ export default function SessionsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const { data } = await api.post('/sessions', form);
+      const payload = isSubscribe ? form : { ...form, subscription_period: '', subscription_amount: '', subscription_day: '' };
+      const { data } = await api.post('/sessions', payload);
       setMessage({ text: data.message, type: 'success' });
-      setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: 'month', subscription_amount: '', subscription_day: '' });
+      setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: '', subscription_amount: '', subscription_day: '' });
+      setIsSubscribe(false);
       fetchSessions();
     } catch (err: any) {
       setMessage({ text: err.response?.data?.error || 'Error', type: 'error' });
@@ -156,6 +159,10 @@ export default function SessionsPage() {
     try {
       const { data } = await api.get<Session>(`/sessions/${id}`);
       setSelectedId(id);
+      const subPeriod = (data as any).subscription_period || '';
+      const subAmount = (data as any).subscription_amount || '';
+      const subDay = (data as any).subscription_day || '';
+      setIsSubscribe(!!(subPeriod && subAmount));
       setForm({
         fullname: data.fullname,
         session_type: data.sessionType,
@@ -163,9 +170,9 @@ export default function SessionsPage() {
         session_date: data.sessionDate ? data.sessionDate.substring(0, 16) : '',
         price: data.price?.toString() || '',
         notes: data.notes || '',
-        subscription_period: (data as any).subscription_period || 'month',
-        subscription_amount: (data as any).subscription_amount || '',
-        subscription_day: (data as any).subscription_day || '',
+        subscription_period: subPeriod,
+        subscription_amount: subAmount.toString(),
+        subscription_day: subDay,
       });
       setEditOpen(true);
     } catch { /* ignore */ }
@@ -175,7 +182,8 @@ export default function SessionsPage() {
     e.preventDefault();
     if (!selectedId) return;
     try {
-      const { data } = await api.put(`/sessions/${selectedId}`, form);
+      const payload = isSubscribe ? form : { ...form, subscription_period: '', subscription_amount: '', subscription_day: '' };
+      const { data } = await api.put(`/sessions/${selectedId}`, payload);
       setMessage({ text: data.message, type: 'success' });
       setEditOpen(false);
       fetchSessions();
@@ -265,24 +273,29 @@ export default function SessionsPage() {
                 slotProps={{ inputLabel: { shrink: true } }}
               />
 
-              <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} required={form.subscription_period !== 'subscribe'} />
+              <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} required={!isSubscribe} />
 
               <FormControl>
                 <FormLabel sx={{ mb: 0.5 }}>الاشتراكات</FormLabel>
-                <RadioGroup row value={form.subscription_period} onChange={e => setForm(f => ({ ...f, subscription_period: e.target.value }))}>
+                <RadioGroup row value={isSubscribe ? 'subscribe' : 'normal'} onChange={e => {
+                  const v = e.target.value;
+                  setIsSubscribe(v === 'subscribe');
+                  if (v !== 'subscribe') setForm(f => ({ ...f, subscription_period: '', subscription_amount: '', subscription_day: '' }));
+                }}>
                   <FormControlLabel value="subscribe" control={<Radio size="small" />} label="اشتراك" />
                   <FormControlLabel value="normal" control={<Radio size="small" />} label="جلسة عادية" />
                 </RadioGroup>
               </FormControl>
 
-              {form.subscription_period === 'subscribe' && (
+              {isSubscribe && (
                 <Stack direction="row" spacing={2}>
-                  <TextField select fullWidth label="مدة الاشتراك" value={form.subscription_amount} onChange={handleChange('subscription_amount')}>
+                  <TextField select fullWidth label="مدة الاشتراك" value={form.subscription_period} onChange={handleChange('subscription_period')}>
                     <MenuItem value="">اختر المدة</MenuItem>
                     <MenuItem value="شهر">شهر</MenuItem>
                     <MenuItem value="أسبوع">أسبوع</MenuItem>
                     <MenuItem value="يوم">يوم</MenuItem>
                   </TextField>
+                  <TextField fullWidth label="مبلغ الاشتراك" type="number" value={form.subscription_amount} onChange={handleChange('subscription_amount')} />
                   <TextField fullWidth label="اليوم" type="number" value={form.subscription_day} onChange={handleChange('subscription_day')} slotProps={{ htmlInput: { min: 1, max: 31 } }} />
                 </Stack>
               )}
@@ -290,7 +303,7 @@ export default function SessionsPage() {
               <TextField fullWidth label={t('patients.add.form.notes')} multiline rows={2} value={form.notes} onChange={handleChange('notes')} />
 
               <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2, flexWrap: 'wrap' }}>
-                <Button variant="outlined" color="warning" onClick={() => setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: 'normal', subscription_amount: '', subscription_day: '' })}>{t('patients.add.form.cancel')}</Button>
+                <Button variant="outlined" color="warning" onClick={() => { setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: '', subscription_amount: '', subscription_day: '' }); setIsSubscribe(false); }}>{t('patients.add.form.cancel')}</Button>
                 <Button variant="contained" color="success" type="submit">{t('patients.add.form.save')}</Button>
               </Box>
             </Box>
@@ -500,24 +513,29 @@ export default function SessionsPage() {
 
             <TextField fullWidth label={t('sessions.date')} type="datetime-local" value={form.session_date} onChange={handleChange('session_date')} sx={{ mb: 2 }} slotProps={{ inputLabel: { shrink: true } }} />
 
-            <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} sx={{ mb: 2 }} required={form.subscription_period !== 'subscribe'} />
+            <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} sx={{ mb: 2 }} required={!isSubscribe} />
 
             <FormControl sx={{ mb: 2 }}>
               <FormLabel sx={{ mb: 0.5 }}>الاشتراكات</FormLabel>
-              <RadioGroup row value={form.subscription_period} onChange={e => setForm(f => ({ ...f, subscription_period: e.target.value }))}>
+              <RadioGroup row value={isSubscribe ? 'subscribe' : 'normal'} onChange={e => {
+                const v = e.target.value;
+                setIsSubscribe(v === 'subscribe');
+                if (v !== 'subscribe') setForm(f => ({ ...f, subscription_period: '', subscription_amount: '', subscription_day: '' }));
+              }}>
                 <FormControlLabel value="subscribe" control={<Radio size="small" />} label="اشتراك" />
                 <FormControlLabel value="normal" control={<Radio size="small" />} label="جلسة عادية" />
               </RadioGroup>
             </FormControl>
 
-            {form.subscription_period === 'subscribe' && (
+            {isSubscribe && (
               <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-                <TextField select fullWidth label="مدة الاشتراك" value={form.subscription_amount} onChange={handleChange('subscription_amount')}>
+                <TextField select fullWidth label="مدة الاشتراك" value={form.subscription_period} onChange={handleChange('subscription_period')}>
                   <MenuItem value="">اختر المدة</MenuItem>
                   <MenuItem value="شهر">شهر</MenuItem>
                   <MenuItem value="أسبوع">أسبوع</MenuItem>
                   <MenuItem value="يوم">يوم</MenuItem>
                 </TextField>
+                <TextField fullWidth label="مبلغ الاشتراك" type="number" value={form.subscription_amount} onChange={handleChange('subscription_amount')} />
                 <TextField fullWidth label="اليوم" type="number" value={form.subscription_day} onChange={handleChange('subscription_day')} slotProps={{ htmlInput: { min: 1, max: 31 } }} />
               </Stack>
             )}
