@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, IconButton, Pagination, Dialog, DialogTitle, DialogContent, DialogActions, Button, Stack, Checkbox, Tooltip, Chip } from '@mui/material';
-import { Edit, Delete, Close, Download, CheckCircle } from '@mui/icons-material';
+import { Edit, Delete, Close, Download, Autorenew } from '@mui/icons-material';
 import api from '../../services/api';
 import { useLanguage } from '../../contexts/LanguageContext';
 
@@ -39,8 +39,10 @@ export default function SubscribersPage() {
 
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [renewOpen, setRenewOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ subscription_amount: '', subscription_day: '', attendance: [] as number[] });
+  const [renewForm, setRenewForm] = useState({ subscription_amount: '', subscription_day: '' });
 
   const fetch = useCallback(() => {
     api.get('/sessions').then(({ data }) => {
@@ -106,6 +108,26 @@ export default function SubscribersPage() {
       subscription_attendance: JSON.stringify(next),
       subscription_day: Math.max(0, (s.subscriptionDay ?? 0) - (next.length - current.length)),
     }).then(fetch).catch(() => {});
+  };
+
+  const openRenew = (s: Session) => {
+    setSelectedId(s.id);
+    setRenewForm({ subscription_amount: s.subscriptionAmount?.toString() || '', subscription_day: s.subscriptionDay?.toString() || '' });
+    setRenewOpen(true);
+  };
+
+  const handleRenewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedId) return;
+    try {
+      await api.put(`/sessions/${selectedId}`, {
+        subscription_amount: renewForm.subscription_amount ? Number(renewForm.subscription_amount) : null,
+        subscription_day: renewForm.subscription_day ? Number(renewForm.subscription_day) : null,
+        subscription_attendance: '[]',
+      });
+      setRenewOpen(false);
+      fetch();
+    } catch { /* ignore */ }
   };
 
   const handleDownload = (s: Session) => {
@@ -239,6 +261,9 @@ ${rows}
                     <IconButton size="small" onClick={() => handleDownload(s)} sx={{ bgcolor: '#17a2b815', color: '#17a2b8', '&:hover': { bgcolor: '#17a2b825' } }}>
                       <Download sx={{ fontSize: 18 }} />
                     </IconButton>
+                    <IconButton size="small" onClick={() => openRenew(s)} sx={{ bgcolor: '#6f42c115', color: '#6f42c1', '&:hover': { bgcolor: '#6f42c125' } }}>
+                      <Autorenew sx={{ fontSize: 18 }} />
+                    </IconButton>
                     <IconButton size="small" onClick={() => openDelete(s.id)} sx={{ bgcolor: '#dc354515', color: '#dc3545', '&:hover': { bgcolor: '#dc354525' } }}>
                       <Delete sx={{ fontSize: 18 }} />
                     </IconButton>
@@ -317,6 +342,22 @@ ${rows}
           <Button onClick={() => setDeleteOpen(false)} color="secondary">إلغاء</Button>
           <Button onClick={confirmDelete} variant="contained" color="error">حذف</Button>
         </DialogActions>
+      </Dialog>
+
+      <Dialog open={renewOpen} onClose={() => setRenewOpen(false)} maxWidth="xs" fullWidth>
+        <Box component="form" onSubmit={handleRenewSubmit}>
+          <DialogTitle sx={{ fontWeight: 700 }}>تجديد الاشتراك</DialogTitle>
+          <DialogContent>
+            <Stack spacing={2} sx={{ mt: 1 }}>
+              <TextField fullWidth label="مبلغ الاشتراك الجديد" type="number" value={renewForm.subscription_amount} onChange={e => setRenewForm(f => ({ ...f, subscription_amount: e.target.value }))} />
+              <TextField fullWidth label="عدد الأيام" type="number" value={renewForm.subscription_day} onChange={e => setRenewForm(f => ({ ...f, subscription_day: e.target.value }))} slotProps={{ htmlInput: { min: 1 } }} />
+            </Stack>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button onClick={() => setRenewOpen(false)} color="secondary">إلغاء</Button>
+            <Button type="submit" variant="contained" color="primary">تجديد</Button>
+          </DialogActions>
+        </Box>
       </Dialog>
     </Box>
   );
