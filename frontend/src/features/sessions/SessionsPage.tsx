@@ -280,7 +280,8 @@ export default function SessionsPage() {
                 <RadioGroup row value={isSubscribe ? 'subscribe' : 'normal'} onChange={e => {
                   const v = e.target.value;
                   setIsSubscribe(v === 'subscribe');
-                  if (v !== 'subscribe') setForm(f => ({ ...f, subscription_period: '', subscription_amount: '', subscription_day: '' }));
+                  if (v === 'subscribe') setForm(f => ({ ...f, subscription_period: 'شهر' }));
+                  else setForm(f => ({ ...f, subscription_period: '', subscription_amount: '', subscription_day: '' }));
                 }}>
                   <FormControlLabel value="subscribe" control={<Radio size="small" />} label="اشتراك" />
                   <FormControlLabel value="normal" control={<Radio size="small" />} label="جلسة عادية" />
@@ -289,12 +290,6 @@ export default function SessionsPage() {
 
               {isSubscribe && (
                 <Stack direction="row" spacing={2}>
-                  <TextField select fullWidth label="مدة الاشتراك" value={form.subscription_period} onChange={handleChange('subscription_period')}>
-                    <MenuItem value="">اختر المدة</MenuItem>
-                    <MenuItem value="شهر">شهر</MenuItem>
-                    <MenuItem value="أسبوع">أسبوع</MenuItem>
-                    <MenuItem value="يوم">يوم</MenuItem>
-                  </TextField>
                   <TextField fullWidth label="مبلغ الاشتراك" type="number" value={form.subscription_amount} onChange={handleChange('subscription_amount')} />
                   <TextField fullWidth label="اليوم" type="number" value={form.subscription_day} onChange={handleChange('subscription_day')} slotProps={{ htmlInput: { min: 1, max: 31 } }} />
                 </Stack>
@@ -520,7 +515,8 @@ export default function SessionsPage() {
               <RadioGroup row value={isSubscribe ? 'subscribe' : 'normal'} onChange={e => {
                 const v = e.target.value;
                 setIsSubscribe(v === 'subscribe');
-                if (v !== 'subscribe') setForm(f => ({ ...f, subscription_period: '', subscription_amount: '', subscription_day: '' }));
+                if (v === 'subscribe') setForm(f => ({ ...f, subscription_period: 'شهر' }));
+                else setForm(f => ({ ...f, subscription_period: '', subscription_amount: '', subscription_day: '' }));
               }}>
                 <FormControlLabel value="subscribe" control={<Radio size="small" />} label="اشتراك" />
                 <FormControlLabel value="normal" control={<Radio size="small" />} label="جلسة عادية" />
@@ -529,12 +525,6 @@ export default function SessionsPage() {
 
             {isSubscribe && (
               <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-                <TextField select fullWidth label="مدة الاشتراك" value={form.subscription_period} onChange={handleChange('subscription_period')}>
-                  <MenuItem value="">اختر المدة</MenuItem>
-                  <MenuItem value="شهر">شهر</MenuItem>
-                  <MenuItem value="أسبوع">أسبوع</MenuItem>
-                  <MenuItem value="يوم">يوم</MenuItem>
-                </TextField>
                 <TextField fullWidth label="مبلغ الاشتراك" type="number" value={form.subscription_amount} onChange={handleChange('subscription_amount')} />
                 <TextField fullWidth label="اليوم" type="number" value={form.subscription_day} onChange={handleChange('subscription_day')} slotProps={{ htmlInput: { min: 1, max: 31 } }} />
               </Stack>
