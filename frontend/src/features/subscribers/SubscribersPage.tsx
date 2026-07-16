@@ -114,20 +114,23 @@ export default function SubscribersPage() {
 
     const startDate = s.sessionDate ? new Date(s.sessionDate) : today;
     const totalDays = s.subscriptionPeriod === 'شهر' ? 30 : s.subscriptionPeriod === 'أسبوع' ? 7 : 1;
+    const perDay = Math.floor((s.subscriptionAmount ?? 0) / totalDays);
 
     let rows = '';
     for (let i = 0; i < totalDays; i++) {
       const d = new Date(startDate);
       d.setDate(d.getDate() + i);
-      const dateStr = `${d.getDate()} ${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+      const dateStr = `${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}`;
       const dayName = dayNames[d.getDay()];
-      const signed = attended.includes(i) ? '✓' : '';
+      const isSigned = attended.includes(i);
       rows += `<tr>
+        <td>${i + 1}</td>
         <td>${dateStr}</td>
         <td>${dayName}</td>
         <td>${typeLabels[s.sessionType] || s.sessionType}</td>
-        <td style="font-size:18px;font-weight:900;color:${attended.includes(i) ? '#1a5276' : '#ccc'}">${attended.includes(i) ? '✓' : ''}</td>
-        <td>&nbsp;</td>
+        <td class="${i === 4 ? 'free' : 'amount'}">${i === 4 ? 'مجانية' : perDay.toLocaleString()}</td>
+        <td>${isSigned ? '✓' : ''}</td>
+        <td></td>
       </tr>`;
     }
 
@@ -138,56 +141,52 @@ export default function SubscribersPage() {
 <meta charset="UTF-8">
 <title>كشف اشتراك - ${s.fullname}</title>
 <style>
-  @page{ size:A4 landscape; margin:4mm; }
-  body{ margin:0; font-family:"Cairo",sans-serif; direction:rtl; font-size:9px; }
-  .page{ width:297mm; min-height:210mm; margin:auto; background:white; padding:4mm 6mm; box-sizing:border-box; }
-  header{ display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #1a5276; padding-bottom:4px; margin-bottom:6px; }
-  header .left, header .right{ text-align:center; }
-  header .left h2, header .right h2{ margin:0; font-size:12px; color:#1a5276; font-weight:900; }
-  header .left p, header .right p{ margin:0; font-size:8px; color:#888; }
-  .title-bar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
-  .title-bar h1{ font-size:13px; color:#1a5276; margin:0; font-weight:900; }
-  .title-bar .patient-info{ font-size:10px; color:#333; }
-  .title-bar .patient-info strong{ color:#1a5276; }
-  table{ width:100%; border-collapse:collapse; font-size:9px; }
-  th{ background:#1a5276; color:white; padding:2px 3px; font-weight:700; font-size:9px; }
-  td{ border:1px solid #bbb; padding:2px 3px; text-align:center; }
-  tr:nth-child(even){ background:#f8fbff; }
-  .footer{ margin-top:6px; display:flex; justify-content:space-between; font-size:8px; color:#555; }
+*{ box-sizing:border-box; font-family:Tahoma, Arial, sans-serif; }
+body{ background:#eee; margin:20px; }
+.sheet{ width:210mm; margin:auto; background:#fff; padding:8mm; border:2px solid #000; }
+table{ width:100%; border-collapse:collapse; }
+th,td{ border:1px solid #000; padding:4px; text-align:center; vertical-align:middle; font-size:13px; height:34px; }
+thead th{ background:#f7f7f7; font-weight:bold; }
+.title{ font-size:20px; font-weight:bold; border:2px solid #000; padding:8px; }
+.patient{ text-align:right; padding-right:10px; font-weight:bold; }
+.amount{ color:#0b8d2b; font-weight:bold; }
+.free{ color:#d30000; font-weight:bold; }
+.signature{ width:120px; }
+.notes{ width:180px; }
+.no{ width:40px; }
+.date{ width:110px; }
+.day{ width:90px; }
+.service{ width:180px; }
+@media print{ body{ background:#fff; margin:0; } .sheet{ border:none; width:100%; padding:0; } }
 </style>
 </head>
 <body>
-<div class="page">
-  <header>
-    <div class="left">
-      <h2>SAMA CENTER</h2>
-      <p>FOR PHYSIOTHERAPY & REHABILITATION</p>
-    </div>
-    <div class="right">
-      <h2>مركز سما</h2>
-      <p>للعلاج الطبيعي وإعادة التأهيل</p>
-    </div>
-  </header>
-  <div class="title-bar">
-    <h1>كشف متابعة الاشتراك</h1>
-    <div class="patient-info">
-      <strong>المريض:</strong> ${s.fullname} &nbsp;|&nbsp; <strong>المعالج:</strong> ${s.speacial || '-'} &nbsp;|&nbsp; <strong>المبلغ:</strong> ${s.subscriptionAmount?.toLocaleString()} YER
-    </div>
-  </div>
-  <table>
-    <tr>
-      <th>التاريخ</th>
-      <th>اليوم</th>
-      <th>نوع الخدمة</th>
-      <th>التوقيع</th>
-      <th>ملاحظات</th>
-    </tr>
-    ${rows}
-  </table>
-  <div class="footer">
-    <span>مركز سما للعلاج الطبيعي وإعادة التأهيل</span>
-    <span>تمت الطباعة: ${today.toLocaleDateString('ar-EG')}</span>
-  </div>
+<div class="sheet" dir="rtl">
+<table>
+<tr><td colspan="7" class="title">كشف التوقيع اليومي للمرضى</td></tr>
+<tr>
+  <td colspan="5" class="patient">اسم الحالة : ${s.fullname}</td>
+  <td>المبلغ</td>
+  <td class="amount">${s.subscriptionAmount?.toLocaleString()}</td>
+</tr>
+</table>
+<br>
+<table>
+<thead>
+<tr>
+  <th class="no">م</th>
+  <th class="date">التاريخ</th>
+  <th class="day">اليوم</th>
+  <th class="service">نوع الخدمة</th>
+  <th>المبلغ</th>
+  <th class="signature">التوقيع</th>
+  <th class="notes">ملاحظات</th>
+</tr>
+</thead>
+<tbody>
+${rows}
+</tbody>
+</table>
 </div>
 </body>
 </html>`;
