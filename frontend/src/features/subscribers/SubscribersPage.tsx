@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, IconButton, Pagination, Dialog, DialogTitle, DialogContent, DialogActions, Button, Stack } from '@mui/material';
-import { Edit, Delete, Close } from '@mui/icons-material';
+import { Edit, Delete, Close, Download, CheckCircle } from '@mui/icons-material';
 import api from '../../services/api';
 import { useLanguage } from '../../contexts/LanguageContext';
 
@@ -118,6 +118,12 @@ export default function SubscribersPage() {
                   <Box sx={{ display: 'flex', gap: 0.5 }}>
                     <IconButton size="small" onClick={() => openEdit(s)} sx={{ bgcolor: '#007bff15', color: '#007bff', '&:hover': { bgcolor: '#007bff25' } }}>
                       <Edit sx={{ fontSize: 18 }} />
+                    </IconButton>
+                    <IconButton size="small" sx={{ bgcolor: '#28a74515', color: '#28a745', '&:hover': { bgcolor: '#28a74525' } }}>
+                      <CheckCircle sx={{ fontSize: 18 }} />
+                    </IconButton>
+                    <IconButton size="small" sx={{ bgcolor: '#17a2b815', color: '#17a2b8', '&:hover': { bgcolor: '#17a2b825' } }}>
+                      <Download sx={{ fontSize: 18 }} />
                     </IconButton>
                     <IconButton size="small" onClick={() => openDelete(s.id)} sx={{ bgcolor: '#dc354515', color: '#dc3545', '&:hover': { bgcolor: '#dc354525' } }}>
                       <Delete sx={{ fontSize: 18 }} />
