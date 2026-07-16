@@ -84,8 +84,6 @@ export default function SubscribersPage() {
     if (!selectedId) return;
     try {
       await api.put(`/sessions/${selectedId}`, {
-        subscription_amount: editForm.subscription_amount ? Number(editForm.subscription_amount) : null,
-        subscription_day: editForm.subscription_day ? Number(editForm.subscription_day) : null,
         subscription_attendance: JSON.stringify({ a: editForm.attendance, f: editForm.freeDays }),
       });
       setEditOpen(false);
@@ -312,8 +310,6 @@ ${rows}
           <DialogTitle sx={{ fontWeight: 700 }}>تعديل الاشتراك</DialogTitle>
           <DialogContent>
             <Stack spacing={2} sx={{ mt: 1 }}>
-              <TextField fullWidth label="مبلغ الاشتراك" type="number" value={editForm.subscription_amount} onChange={e => setEditForm(f => ({ ...f, subscription_amount: e.target.value }))} />
-              <TextField fullWidth label="اليوم" type="number" value={editForm.subscription_day} onChange={e => setEditForm(f => ({ ...f, subscription_day: e.target.value }))} slotProps={{ htmlInput: { min: 0, max: 31 } }} />
               <Typography sx={{ fontWeight: 700, fontSize: 14, color: 'text.secondary' }}>الأيام (انقر: حضور | انقر مرتين: مجاني)</Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {(() => {
