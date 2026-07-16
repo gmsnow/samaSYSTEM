@@ -95,6 +95,81 @@ export default function SubscribersPage() {
     } catch { /* ignore */ }
   };
 
+  const handleDownload = (s: Session) => {
+    const html = `
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>فاتورة اشتراك - ${s.fullname}</title>
+<style>
+  @page{ size:A4 portrait; margin:8mm; }
+  body{ margin:0; font-family:"Cairo",sans-serif; direction:rtl; }
+  .page{ width:210mm; min-height:297mm; margin:auto; background:white; padding:10mm; box-sizing:border-box; }
+  table{ width:100%; border-collapse:collapse; margin-top:10px; }
+  td,th{ border:1px solid #555; padding:6px; text-align:center; }
+  th{ background:#f0f0f0; }
+  header{ display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:20px; }
+  header .left, header .right{ text-align:center; }
+  header .left h2, header .right h2{ margin:0; font-size:18px; }
+  header .left p, header .right p{ margin:0; font-size:11px; color:#666; }
+  .info{ display:flex; justify-content:space-between; margin-bottom:20px; }
+  .info div{ flex:1; }
+  .info label{ font-weight:700; color:#555; font-size:13px; }
+  .info p{ margin:4px 0; font-size:15px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="left">
+      <h2>SAMA CENTER</h2>
+      <p>FOR PHYSIOTHERAPY & REHABILITATION</p>
+    </div>
+    <div class="right">
+      <h2>مركز سما</h2>
+      <p>للعلاج الطبيعي وإعادة التأهيل</p>
+    </div>
+  </header>
+
+  <div class="info">
+    <div>
+      <label>اسم المريض</label>
+      <p>${s.fullname}</p>
+    </div>
+    <div>
+      <label>نوع الجلسة</label>
+      <p>${typeLabels[s.sessionType] || s.sessionType}</p>
+    </div>
+    <div>
+      <label>المعالج</label>
+      <p>${s.speacial || '-'}</p>
+    </div>
+    <div>
+      <label>التاريخ</label>
+      <p>${s.sessionDate ? new Date(s.sessionDate).toLocaleDateString('ar-EG') : '-'}</p>
+    </div>
+  </div>
+
+  <table>
+    <tr>
+      <th>مبلغ الاشتراك</th>
+      <th>المتبقي</th>
+      <th>الحالة</th>
+    </tr>
+    <tr>
+      <td>${s.subscriptionAmount?.toLocaleString()} YER</td>
+      <td>${s.subscriptionDay ?? 0}</td>
+      <td>${(s.subscriptionDay ?? 0) > 0 ? 'جاري' : 'مكتمل'}</td>
+    </tr>
+  </table>
+</div>
+</body>
+</html>`;
+    const w = window.open('', '_blank');
+    if (w) { w.document.write(html); w.document.close(); w.print(); }
+  };
+
   return (
     <Box>
       <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>{t('subscribers.title')}</Typography>
@@ -131,7 +206,7 @@ export default function SubscribersPage() {
                     <IconButton size="small" onClick={() => handleAttend(s)} sx={{ bgcolor: '#28a74515', color: '#28a745', '&:hover': { bgcolor: '#28a74525' } }}>
                       <CheckCircle sx={{ fontSize: 18 }} />
                     </IconButton>
-                    <IconButton size="small" sx={{ bgcolor: '#17a2b815', color: '#17a2b8', '&:hover': { bgcolor: '#17a2b825' } }}>
+                    <IconButton size="small" onClick={() => handleDownload(s)} sx={{ bgcolor: '#17a2b815', color: '#17a2b8', '&:hover': { bgcolor: '#17a2b825' } }}>
                       <Download sx={{ fontSize: 18 }} />
                     </IconButton>
                     <IconButton size="small" onClick={() => openDelete(s.id)} sx={{ bgcolor: '#dc354515', color: '#dc3545', '&:hover': { bgcolor: '#dc354525' } }}>
