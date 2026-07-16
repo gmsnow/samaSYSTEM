@@ -10,6 +10,7 @@ export const createSessionSchema = z.object({
   subscription_period: z.string().optional(),
   subscription_amount: z.coerce.number().optional(),
   subscription_day: z.coerce.number().int().optional(),
+  subscription_attendance: z.string().optional(),
 });
 
 export const updateSessionSchema = z.object({
@@ -22,4 +23,5 @@ export const updateSessionSchema = z.object({
   subscription_period: z.string().optional(),
   subscription_amount: z.coerce.number().optional(),
   subscription_day: z.coerce.number().int().optional(),
+  subscription_attendance: z.string().optional(),
 });

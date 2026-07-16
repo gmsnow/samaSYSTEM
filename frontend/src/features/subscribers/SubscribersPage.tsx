@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, IconButton, Pagination, Dialog, DialogTitle, DialogContent, DialogActions, Button, Stack } from '@mui/material';
+import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, IconButton, Pagination, Dialog, DialogTitle, DialogContent, DialogActions, Button, Stack, Checkbox, Tooltip, Chip } from '@mui/material';
 import { Edit, Delete, Close, Download, CheckCircle } from '@mui/icons-material';
 import api from '../../services/api';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -14,6 +14,7 @@ interface Session {
   subscriptionPeriod: string | null;
   subscriptionAmount: number | null;
   subscriptionDay: number | null;
+  subscriptionAttendance: string | null;
 }
 
 const typeLabels: Record<string, string> = {
@@ -21,6 +22,13 @@ const typeLabels: Record<string, string> = {
   'physiotherapy (adults)': 'جلسات علاج طبيعي (كبار)',
   'physiotherapy (children)': 'جلسات علاج طبيعي (أطفال)',
 };
+
+const dayNames = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+const monthNames = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+
+function getAttendance(s: Session): number[] {
+  try { return s.subscriptionAttendance ? JSON.parse(s.subscriptionAttendance) : []; } catch { return []; }
+}
 
 export default function SubscribersPage() {
   const { t } = useLanguage();
@@ -32,7 +40,7 @@ export default function SubscribersPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ subscription_amount: '', subscription_day: '' });
+  const [editForm, setEditForm] = useState({ subscription_amount: '', subscription_day: '', attendance: [] as number[] });
 
   const fetch = useCallback(() => {
     api.get('/sessions').then(({ data }) => {
@@ -55,7 +63,11 @@ export default function SubscribersPage() {
 
   const openEdit = (s: Session) => {
     setSelectedId(s.id);
-    setEditForm({ subscription_amount: s.subscriptionAmount?.toString() || '', subscription_day: s.subscriptionDay?.toString() || '' });
+    setEditForm({
+      subscription_amount: s.subscriptionAmount?.toString() || '',
+      subscription_day: s.subscriptionDay?.toString() || '',
+      attendance: getAttendance(s),
+    });
     setEditOpen(true);
   };
 
@@ -66,6 +78,7 @@ export default function SubscribersPage() {
       await api.put(`/sessions/${selectedId}`, {
         subscription_amount: editForm.subscription_amount ? Number(editForm.subscription_amount) : null,
         subscription_day: editForm.subscription_day ? Number(editForm.subscription_day) : null,
+        subscription_attendance: JSON.stringify(editForm.attendance),
       });
       setEditOpen(false);
       fetch();
@@ -86,19 +99,18 @@ export default function SubscribersPage() {
     } catch { /* ignore */ }
   };
 
-  const handleAttend = async (s: Session) => {
-    try {
-      await api.put(`/sessions/${s.id}`, {
-        subscription_day: Math.max(0, (s.subscriptionDay ?? 1) - 1),
-      });
-      fetch();
-    } catch { /* ignore */ }
+  const toggleDayAttend = (s: Session, dayIndex: number) => {
+    const current = getAttendance(s);
+    const next = current.includes(dayIndex) ? current.filter(d => d !== dayIndex) : [...current, dayIndex];
+    api.put(`/sessions/${s.id}`, {
+      subscription_attendance: JSON.stringify(next),
+      subscription_day: Math.max(0, (s.subscriptionDay ?? 0) - (next.length - current.length)),
+    }).then(fetch).catch(() => {});
   };
 
   const handleDownload = (s: Session) => {
     const today = new Date();
-    const dayNames = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-    const monthNames = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+    const attended = getAttendance(s);
 
     const startDate = s.sessionDate ? new Date(s.sessionDate) : today;
     const totalDays = s.subscriptionPeriod === 'شهر' ? 30 : s.subscriptionPeriod === 'أسبوع' ? 7 : 1;
@@ -109,11 +121,12 @@ export default function SubscribersPage() {
       d.setDate(d.getDate() + i);
       const dateStr = `${d.getDate()} ${monthNames[d.getMonth()]} ${d.getFullYear()}`;
       const dayName = dayNames[d.getDay()];
+      const signed = attended.includes(i) ? '✓' : '';
       rows += `<tr>
         <td>${dateStr}</td>
         <td>${dayName}</td>
         <td>${typeLabels[s.sessionType] || s.sessionType}</td>
-        <td>(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</td>
+        <td style="font-size:18px;font-weight:900;color:${attended.includes(i) ? '#1a5276' : '#ccc'}">${attended.includes(i) ? '✓' : ''}</td>
         <td>&nbsp;</td>
       </tr>`;
     }
@@ -128,24 +141,20 @@ export default function SubscribersPage() {
   @page{ size:A4 landscape; margin:6mm; }
   body{ margin:0; font-family:"Cairo",sans-serif; direction:rtl; }
   .page{ width:297mm; min-height:210mm; margin:auto; background:white; padding:6mm 8mm; box-sizing:border-box; }
-
   header{ display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #1a5276; padding-bottom:8px; margin-bottom:15px; }
   header .left, header .right{ text-align:center; }
   header .left h2, header .right h2{ margin:0; font-size:16px; color:#1a5276; font-weight:900; }
   header .left p, header .right p{ margin:0; font-size:10px; color:#888; }
-
   .title-bar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
   .title-bar h1{ font-size:18px; color:#1a5276; margin:0; font-weight:900; }
   .title-bar .patient-info{ font-size:14px; color:#333; }
   .title-bar .patient-info strong{ color:#1a5276; }
-
   table{ width:100%; border-collapse:collapse; font-size:13px; }
   th{ background:#1a5276; color:white; padding:6px; font-weight:700; font-size:12px; }
   td{ border:1px solid #bbb; padding:5px; text-align:center; }
   tr:nth-child(even){ background:#f8fbff; }
-
-  .total-row td{ font-weight:700; background:#eef3f9; }
-
+  .signed{ color:#1a5276; font-weight:900; font-size:18px; }
+  .pending{ color:#ddd; }
   .footer{ margin-top:15px; display:flex; justify-content:space-between; font-size:12px; color:#555; }
 </style>
 </head>
@@ -161,14 +170,12 @@ export default function SubscribersPage() {
       <p>للعلاج الطبيعي وإعادة التأهيل</p>
     </div>
   </header>
-
   <div class="title-bar">
     <h1>كشف متابعة الاشتراك</h1>
     <div class="patient-info">
       <strong>المريض:</strong> ${s.fullname} &nbsp;|&nbsp; <strong>المعالج:</strong> ${s.speacial || '-'} &nbsp;|&nbsp; <strong>المبلغ:</strong> ${s.subscriptionAmount?.toLocaleString()} YER
     </div>
   </div>
-
   <table>
     <tr>
       <th>التاريخ</th>
@@ -179,7 +186,6 @@ export default function SubscribersPage() {
     </tr>
     ${rows}
   </table>
-
   <div class="footer">
     <span>مركز سما للعلاج الطبيعي وإعادة التأهيل</span>
     <span>تمت الطباعة: ${today.toLocaleDateString('ar-EG')}</span>
@@ -208,11 +214,14 @@ export default function SubscribersPage() {
               <TableCell>المعالج</TableCell>
               <TableCell>المبلغ</TableCell>
               <TableCell>اليوم</TableCell>
+              <TableCell>التوقيع</TableCell>
               <TableCell>الإجراءات</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginated.map(s => (
+            {paginated.map(s => {
+              const att = getAttendance(s);
+              return (
               <TableRow key={s.id} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
                 <TableCell sx={{ fontWeight: 600 }}>{s.fullname}</TableCell>
                 <TableCell>{typeLabels[s.sessionType] || s.sessionType}</TableCell>
@@ -220,12 +229,12 @@ export default function SubscribersPage() {
                 <TableCell sx={{ fontWeight: 700 }}>{s.subscriptionAmount?.toLocaleString()} YER</TableCell>
                 <TableCell>{s.subscriptionDay ?? '-'}</TableCell>
                 <TableCell>
+                  <Chip label={att.length > 0 ? `✓ (${att.length})` : '—'} size="small" color={att.length > 0 ? 'success' : 'default'} variant="outlined" />
+                </TableCell>
+                <TableCell>
                   <Box sx={{ display: 'flex', gap: 0.5 }}>
                     <IconButton size="small" onClick={() => openEdit(s)} sx={{ bgcolor: '#007bff15', color: '#007bff', '&:hover': { bgcolor: '#007bff25' } }}>
                       <Edit sx={{ fontSize: 18 }} />
-                    </IconButton>
-                    <IconButton size="small" onClick={() => handleAttend(s)} sx={{ bgcolor: '#28a74515', color: '#28a745', '&:hover': { bgcolor: '#28a74525' } }}>
-                      <CheckCircle sx={{ fontSize: 18 }} />
                     </IconButton>
                     <IconButton size="small" onClick={() => handleDownload(s)} sx={{ bgcolor: '#17a2b815', color: '#17a2b8', '&:hover': { bgcolor: '#17a2b825' } }}>
                       <Download sx={{ fontSize: 18 }} />
@@ -236,10 +245,11 @@ export default function SubscribersPage() {
                   </Box>
                 </TableCell>
               </TableRow>
-            ))}
+              );
+            })}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
+                <TableCell colSpan={7} sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
                   {searchQuery ? `لا توجد نتائج — "${searchQuery}"` : t('subscribers.empty')}
                 </TableCell>
               </TableRow>
@@ -254,13 +264,41 @@ export default function SubscribersPage() {
         </Box>
       )}
 
-      <Dialog open={editOpen} onClose={() => setEditOpen(false)} maxWidth="xs" fullWidth>
+      <Dialog open={editOpen} onClose={() => setEditOpen(false)} maxWidth="sm" fullWidth>
         <Box component="form" onSubmit={handleEditSubmit}>
           <DialogTitle sx={{ fontWeight: 700 }}>تعديل الاشتراك</DialogTitle>
           <DialogContent>
             <Stack spacing={2} sx={{ mt: 1 }}>
               <TextField fullWidth label="مبلغ الاشتراك" type="number" value={editForm.subscription_amount} onChange={e => setEditForm(f => ({ ...f, subscription_amount: e.target.value }))} />
-              <TextField fullWidth label="اليوم" type="number" value={editForm.subscription_day} onChange={e => setEditForm(f => ({ ...f, subscription_day: e.target.value }))} slotProps={{ htmlInput: { min: 1, max: 31 } }} />
+              <TextField fullWidth label="اليوم" type="number" value={editForm.subscription_day} onChange={e => setEditForm(f => ({ ...f, subscription_day: e.target.value }))} slotProps={{ htmlInput: { min: 0, max: 31 } }} />
+              <Typography sx={{ fontWeight: 700, fontSize: 14, color: 'text.secondary' }}>أيام الحضور (اختر الأيام التي حضرها المريض)</Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {(() => {
+                  const editing = subscribers.find(s => s.id === selectedId);
+                  if (!editing) return null;
+                  const startDate = editing.sessionDate ? new Date(editing.sessionDate) : new Date();
+                  const totalDays = editing.subscriptionPeriod === 'شهر' ? 30 : editing.subscriptionPeriod === 'أسبوع' ? 7 : 1;
+                  return Array.from({ length: totalDays }, (_, i) => {
+                    const d = new Date(startDate);
+                    d.setDate(d.getDate() + i);
+                    return (
+                      <Tooltip key={i} title={`${d.getDate()} ${monthNames[d.getMonth()]} - ${dayNames[d.getDay()]}`}>
+                        <Chip
+                          label={`يوم ${i + 1}`}
+                          size="small"
+                          color={editForm.attendance.includes(i) ? 'success' : 'default'}
+                          variant={editForm.attendance.includes(i) ? 'filled' : 'outlined'}
+                          onClick={() => setEditForm(f => ({
+                            ...f,
+                            attendance: f.attendance.includes(i) ? f.attendance.filter(d => d !== i) : [...f.attendance, i],
+                          }))}
+                          sx={{ cursor: 'pointer' }}
+                        />
+                      </Tooltip>
+                    );
+                  });
+                })()}
+              </Box>
             </Stack>
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2 }}>
