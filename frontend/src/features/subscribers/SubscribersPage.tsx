@@ -86,6 +86,15 @@ export default function SubscribersPage() {
     } catch { /* ignore */ }
   };
 
+  const handleAttend = async (s: Session) => {
+    try {
+      await api.put(`/sessions/${s.id}`, {
+        subscription_day: (s.subscriptionDay ?? 1) - 1,
+      });
+      fetch();
+    } catch { /* ignore */ }
+  };
+
   return (
     <Box>
       <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>{t('subscribers.title')}</Typography>
@@ -119,7 +128,7 @@ export default function SubscribersPage() {
                     <IconButton size="small" onClick={() => openEdit(s)} sx={{ bgcolor: '#007bff15', color: '#007bff', '&:hover': { bgcolor: '#007bff25' } }}>
                       <Edit sx={{ fontSize: 18 }} />
                     </IconButton>
-                    <IconButton size="small" sx={{ bgcolor: '#28a74515', color: '#28a745', '&:hover': { bgcolor: '#28a74525' } }}>
+                    <IconButton size="small" onClick={() => handleAttend(s)} sx={{ bgcolor: '#28a74515', color: '#28a745', '&:hover': { bgcolor: '#28a74525' } }}>
                       <CheckCircle sx={{ fontSize: 18 }} />
                     </IconButton>
                     <IconButton size="small" sx={{ bgcolor: '#17a2b815', color: '#17a2b8', '&:hover': { bgcolor: '#17a2b825' } }}>
