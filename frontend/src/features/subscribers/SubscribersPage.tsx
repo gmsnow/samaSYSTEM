@@ -117,18 +117,21 @@ export default function SubscribersPage() {
     const perDay = Math.floor((s.subscriptionAmount ?? 0) / totalDays);
 
     let rows = '';
+    let counter = 0;
     for (let i = 0; i < totalDays; i++) {
       const d = new Date(startDate);
       d.setDate(d.getDate() + i);
+      if (d.getDay() === 5) continue;
+      counter++;
       const dateStr = `${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}`;
       const dayName = dayNames[d.getDay()];
       const isSigned = attended.includes(i);
       rows += `<tr>
-        <td>${i + 1}</td>
+        <td>${counter}</td>
         <td>${dateStr}</td>
         <td>${dayName}</td>
         <td>${typeLabels[s.sessionType] || s.sessionType}</td>
-        <td class="${i === 4 ? 'free' : 'amount'}">${i === 4 ? 'مجانية' : perDay.toLocaleString()}</td>
+        <td class="${counter % 5 === 0 ? 'free' : 'amount'}">${counter % 5 === 0 ? 'مجانية' : perDay.toLocaleString()}</td>
         <td>${isSigned ? '✓' : ''}</td>
         <td></td>
       </tr>`;
