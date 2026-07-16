@@ -171,7 +171,6 @@ export default function SubscribersPage() {
         <td>${dateStr}</td>
         <td>${dayName}</td>
         <td>${typeLabels[s.sessionType] || s.sessionType}</td>
-        <td class="${isFree ? 'free' : 'amount'}">${isFree ? 'مجانية' : perDay.toLocaleString()}</td>
         <td>${isSigned ? '✓' : ''}</td>
         <td></td>
       </tr>`;
@@ -206,11 +205,10 @@ thead th{ background:#f7f7f7; font-weight:bold; }
 <body>
 <div class="sheet" dir="rtl">
 <table>
-<tr><td colspan="7" class="title">كشف التوقيع اليومي للمرضى</td></tr>
+<tr><td colspan="6" class="title">كشف التوقيع اليومي للمرضى</td></tr>
 <tr>
   <td colspan="5" class="patient">اسم الحالة : ${s.fullname}</td>
-  <td>المبلغ</td>
-  <td class="amount">${s.subscriptionAmount?.toLocaleString()}</td>
+  <td class="amount">${s.subscriptionAmount?.toLocaleString()} ريال</td>
 </tr>
 </table>
 <br>
@@ -221,7 +219,6 @@ thead th{ background:#f7f7f7; font-weight:bold; }
   <th class="date">التاريخ</th>
   <th class="day">اليوم</th>
   <th class="service">نوع الخدمة</th>
-  <th>المبلغ</th>
   <th class="signature">التوقيع</th>
   <th class="notes">ملاحظات</th>
 </tr>
