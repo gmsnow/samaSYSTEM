@@ -1,8 +1,5 @@
 import { useState, useEffect } from 'react';
-import {
-  Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, Chip, Stack,
-} from '@mui/material';
+import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import api from '../../services/api';
 import { useLanguage } from '../../contexts/LanguageContext';
 
@@ -40,7 +37,6 @@ export default function SubscribersPage() {
               <TableCell>نوع الجلسة</TableCell>
               <TableCell>المعالج</TableCell>
               <TableCell>المبلغ</TableCell>
-              <TableCell>مدة الاشتراك</TableCell>
               <TableCell>اليوم</TableCell>
             </TableRow>
           </TableHead>
@@ -51,12 +47,11 @@ export default function SubscribersPage() {
                 <TableCell>{s.sessionType}</TableCell>
                 <TableCell>{s.speacial || '-'}</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>{s.subscriptionAmount?.toLocaleString()} YER</TableCell>
-                <TableCell><Chip label={s.subscriptionPeriod || '-'} size="small" color="primary" variant="outlined" /></TableCell>
                 <TableCell>{s.subscriptionDay ?? '-'}</TableCell>
               </TableRow>
             ))}
             {subscribers.length === 0 && (
-              <TableRow><TableCell colSpan={6} align="center" sx={{ py: 4, color: 'text.secondary' }}>{t('subscribers.empty')}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} align="center" sx={{ py: 4, color: 'text.secondary' }}>{t('subscribers.empty')}</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
