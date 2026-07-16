@@ -16,6 +16,12 @@ interface Session {
   subscriptionDay: number | null;
 }
 
+const typeLabels: Record<string, string> = {
+  physiotherapy: 'علاج طبيعي',
+  'physiotherapy (adults)': 'جلسات علاج طبيعي (كبار)',
+  'physiotherapy (children)': 'جلسات علاج طبيعي (أطفال)',
+};
+
 export default function SubscribersPage() {
   const { t } = useLanguage();
   const [subscribers, setSubscribers] = useState<Session[]>([]);
@@ -104,7 +110,7 @@ export default function SubscribersPage() {
             {paginated.map(s => (
               <TableRow key={s.id} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
                 <TableCell sx={{ fontWeight: 600 }}>{s.fullname}</TableCell>
-                <TableCell>{s.sessionType}</TableCell>
+                <TableCell>{typeLabels[s.sessionType] || s.sessionType}</TableCell>
                 <TableCell>{s.speacial || '-'}</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>{s.subscriptionAmount?.toLocaleString()} YER</TableCell>
                 <TableCell>{s.subscriptionDay ?? '-'}</TableCell>

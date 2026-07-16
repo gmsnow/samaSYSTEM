@@ -8,6 +8,12 @@ import { KeyboardArrowUp, Close, Edit, Delete, Add, FilterList } from '@mui/icon
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../services/api';
 
+const typeLabels: Record<string, string> = {
+  physiotherapy: 'علاج طبيعي',
+  'physiotherapy (adults)': 'جلسات علاج طبيعي (كبار)',
+  'physiotherapy (children)': 'جلسات علاج طبيعي (أطفال)',
+};
+
 interface Session {
   id: string;
   fullname: string;
@@ -450,7 +456,7 @@ export default function SessionsPage() {
               {paginatedSessions.map(s => (
                 <TableRow key={s.id} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
                   <TableCell sx={{ fontWeight: 600 }}>{s.fullname}</TableCell>
-                  <TableCell>{s.sessionType}</TableCell>
+                  <TableCell>{typeLabels[s.sessionType] || s.sessionType}</TableCell>
                   <TableCell>{s.speacial || '-'}</TableCell>
                   <TableCell>
                     <Chip label={statusLabel(s.status, t)} color={statusColor(s.status) as any} size="small" />
