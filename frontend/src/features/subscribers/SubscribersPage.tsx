@@ -26,8 +26,12 @@ const typeLabels: Record<string, string> = {
 const dayNames = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 const monthNames = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
 
-function getAttendance(s: Session): number[] {
-  try { return s.subscriptionAttendance ? JSON.parse(s.subscriptionAttendance) : []; } catch { return []; }
+function getAttendance(s: Session): { attended: number[]; free: number[] } {
+  try {
+    const d = JSON.parse(s.subscriptionAttendance || '{}');
+    if (Array.isArray(d)) return { attended: d, free: [] };
+    return { attended: d.a || [], free: d.f || [] };
+  } catch { return { attended: [], free: [] }; }
 }
 
 export default function SubscribersPage() {
@@ -41,7 +45,7 @@ export default function SubscribersPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [renewOpen, setRenewOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ subscription_amount: '', subscription_day: '', attendance: [] as number[] });
+  const [editForm, setEditForm] = useState({ subscription_amount: '', subscription_day: '', attendance: [] as number[], freeDays: [] as number[] });
   const [renewForm, setRenewForm] = useState({ subscription_amount: '', subscription_day: '' });
 
   const fetch = useCallback(() => {
@@ -65,10 +69,12 @@ export default function SubscribersPage() {
 
   const openEdit = (s: Session) => {
     setSelectedId(s.id);
+    const data = getAttendance(s);
     setEditForm({
       subscription_amount: s.subscriptionAmount?.toString() || '',
       subscription_day: s.subscriptionDay?.toString() || '',
-      attendance: getAttendance(s),
+      attendance: data.attended,
+      freeDays: data.free,
     });
     setEditOpen(true);
   };
@@ -80,7 +86,7 @@ export default function SubscribersPage() {
       await api.put(`/sessions/${selectedId}`, {
         subscription_amount: editForm.subscription_amount ? Number(editForm.subscription_amount) : null,
         subscription_day: editForm.subscription_day ? Number(editForm.subscription_day) : null,
-        subscription_attendance: JSON.stringify(editForm.attendance),
+        subscription_attendance: JSON.stringify({ a: editForm.attendance, f: editForm.freeDays }),
       });
       setEditOpen(false);
       fetch();
@@ -101,15 +107,6 @@ export default function SubscribersPage() {
     } catch { /* ignore */ }
   };
 
-  const toggleDayAttend = (s: Session, dayIndex: number) => {
-    const current = getAttendance(s);
-    const next = current.includes(dayIndex) ? current.filter(d => d !== dayIndex) : [...current, dayIndex];
-    api.put(`/sessions/${s.id}`, {
-      subscription_attendance: JSON.stringify(next),
-      subscription_day: Math.max(0, (s.subscriptionDay ?? 0) - (next.length - current.length)),
-    }).then(fetch).catch(() => {});
-  };
-
   const openRenew = (s: Session) => {
     setSelectedId(s.id);
     setRenewForm({ subscription_amount: s.subscriptionAmount?.toString() || '', subscription_day: s.subscriptionDay?.toString() || '' });
@@ -123,7 +120,7 @@ export default function SubscribersPage() {
       await api.put(`/sessions/${selectedId}`, {
         subscription_amount: renewForm.subscription_amount ? Number(renewForm.subscription_amount) : null,
         subscription_day: renewForm.subscription_day ? Number(renewForm.subscription_day) : null,
-        subscription_attendance: '[]',
+        subscription_attendance: '{"a":[],"f":[]}',
       });
       setRenewOpen(false);
       fetch();
@@ -132,7 +129,7 @@ export default function SubscribersPage() {
 
   const handleDownload = (s: Session) => {
     const today = new Date();
-    const attended = getAttendance(s);
+    const { attended, free: freeDays } = getAttendance(s);
 
     const startDate = s.sessionDate ? new Date(s.sessionDate) : today;
     const totalDays = s.subscriptionPeriod === 'شهر' ? 30 : s.subscriptionPeriod === 'أسبوع' ? 7 : 1;
@@ -148,12 +145,13 @@ export default function SubscribersPage() {
       const dateStr = `${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}`;
       const dayName = dayNames[d.getDay()];
       const isSigned = attended.includes(i);
+      const isFree = freeDays.includes(i);
       rows += `<tr>
         <td>${counter}</td>
         <td>${dateStr}</td>
         <td>${dayName}</td>
         <td>${typeLabels[s.sessionType] || s.sessionType}</td>
-        <td class="${counter % 5 === 0 ? 'free' : 'amount'}">${counter % 5 === 0 ? 'مجانية' : perDay.toLocaleString()}</td>
+        <td class="${isFree ? 'free' : 'amount'}">${isFree ? 'مجانية' : perDay.toLocaleString()}</td>
         <td>${isSigned ? '✓' : ''}</td>
         <td></td>
       </tr>`;
@@ -242,7 +240,7 @@ ${rows}
           </TableHead>
           <TableBody>
             {paginated.map(s => {
-              const att = getAttendance(s);
+              const { attended: attList, free: freeList } = getAttendance(s);
               return (
               <TableRow key={s.id} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
                 <TableCell sx={{ fontWeight: 600 }}>{s.fullname}</TableCell>
@@ -251,7 +249,7 @@ ${rows}
                 <TableCell sx={{ fontWeight: 700 }}>{s.subscriptionAmount?.toLocaleString()} YER</TableCell>
                 <TableCell>{s.subscriptionDay ?? '-'}</TableCell>
                 <TableCell>
-                  <Chip label={att.length > 0 ? `✓ (${att.length})` : '—'} size="small" color={att.length > 0 ? 'success' : 'default'} variant="outlined" />
+                  <Chip label={attList.length > 0 ? `✓ (${attList.length})` : '—'} size="small" color={attList.length > 0 ? 'success' : 'default'} variant="outlined" />
                 </TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', gap: 0.5 }}>
@@ -296,7 +294,7 @@ ${rows}
             <Stack spacing={2} sx={{ mt: 1 }}>
               <TextField fullWidth label="مبلغ الاشتراك" type="number" value={editForm.subscription_amount} onChange={e => setEditForm(f => ({ ...f, subscription_amount: e.target.value }))} />
               <TextField fullWidth label="اليوم" type="number" value={editForm.subscription_day} onChange={e => setEditForm(f => ({ ...f, subscription_day: e.target.value }))} slotProps={{ htmlInput: { min: 0, max: 31 } }} />
-              <Typography sx={{ fontWeight: 700, fontSize: 14, color: 'text.secondary' }}>أيام الحضور (اختر الأيام التي حضرها المريض)</Typography>
+              <Typography sx={{ fontWeight: 700, fontSize: 14, color: 'text.secondary' }}>الأيام (انقر: حضور | انقر مرتين: مجاني)</Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {(() => {
                   const editing = subscribers.find(s => s.id === selectedId);
@@ -306,17 +304,25 @@ ${rows}
                   return Array.from({ length: totalDays }, (_, i) => {
                     const d = new Date(startDate);
                     d.setDate(d.getDate() + i);
+                    if (d.getDay() === 5) return null;
+                    const isAttended = editForm.attendance.includes(i);
+                    const isFree = editForm.freeDays.includes(i);
                     return (
-                      <Tooltip key={i} title={`${d.getDate()} ${monthNames[d.getMonth()]} - ${dayNames[d.getDay()]}`}>
+                      <Tooltip key={i} title={`${d.getDate()} ${monthNames[d.getMonth()]} - ${dayNames[d.getDay()]}${isFree ? ' (مجاني)' : ''}`}>
                         <Chip
                           label={`يوم ${i + 1}`}
                           size="small"
-                          color={editForm.attendance.includes(i) ? 'success' : 'default'}
-                          variant={editForm.attendance.includes(i) ? 'filled' : 'outlined'}
-                          onClick={() => setEditForm(f => ({
-                            ...f,
-                            attendance: f.attendance.includes(i) ? f.attendance.filter(d => d !== i) : [...f.attendance, i],
-                          }))}
+                          color={isFree ? 'warning' : isAttended ? 'success' : 'default'}
+                          variant={isAttended || isFree ? 'filled' : 'outlined'}
+                          onClick={() => {
+                            if (isFree) {
+                              setEditForm(f => ({ ...f, freeDays: f.freeDays.filter(d => d !== i) }));
+                            } else if (isAttended) {
+                              setEditForm(f => ({ ...f, attendance: f.attendance.filter(d => d !== i), freeDays: [...f.freeDays, i] }));
+                            } else {
+                              setEditForm(f => ({ ...f, attendance: [...f.attendance, i] }));
+                            }
+                          }}
                           sx={{ cursor: 'pointer' }}
                         />
                       </Tooltip>
