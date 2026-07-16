@@ -97,59 +97,56 @@ export default function SubscribersPage() {
 
   const handleDownload = (s: Session) => {
     const today = new Date();
-    const dateStr = today.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     const dayNames = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+    const monthNames = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+
+    const startDate = s.sessionDate ? new Date(s.sessionDate) : today;
+    const totalDays = s.subscriptionPeriod === 'شهر' ? 30 : s.subscriptionPeriod === 'أسبوع' ? 7 : 1;
+
+    let rows = '';
+    for (let i = 0; i < totalDays; i++) {
+      const d = new Date(startDate);
+      d.setDate(d.getDate() + i);
+      const dateStr = `${d.getDate()} ${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+      const dayName = dayNames[d.getDay()];
+      rows += `<tr>
+        <td>${dateStr}</td>
+        <td>${dayName}</td>
+        <td>${typeLabels[s.sessionType] || s.sessionType}</td>
+        <td>(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</td>
+        <td>&nbsp;</td>
+      </tr>`;
+    }
 
     const html = `
 <!DOCTYPE html>
 <html dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>فاتورة اشتراك - ${s.fullname}</title>
+<title>كشف اشتراك - ${s.fullname}</title>
 <style>
-  @page{ size:A4 portrait; margin:8mm; }
-  body{ margin:0; font-family:"Cairo",sans-serif; direction:rtl; background:#f5f5f5; }
-  .page{ width:210mm; min-height:297mm; margin:auto; background:white; padding:8mm 10mm; box-sizing:border-box; }
+  @page{ size:A4 landscape; margin:6mm; }
+  body{ margin:0; font-family:"Cairo",sans-serif; direction:rtl; }
+  .page{ width:297mm; min-height:210mm; margin:auto; background:white; padding:6mm 8mm; box-sizing:border-box; }
 
-  header{ display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #1a5276; padding-bottom:12px; margin-bottom:25px; background:linear-gradient(to bottom,#f8fbff,#fff); padding:15px; border-radius:8px 8px 0 0; }
+  header{ display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #1a5276; padding-bottom:8px; margin-bottom:15px; }
   header .left, header .right{ text-align:center; }
-  header .left h2, header .right h2{ margin:0; font-size:20px; color:#1a5276; font-weight:900; }
-  header .left p, header .right p{ margin:0; font-size:11px; color:#888; letter-spacing:0.5px; }
-  header .logo-placeholder{ width:60px; height:60px; border-radius:50%; background:linear-gradient(135deg,#1a5276,#2980b9); display:flex; align-items:center; justify-content:center; color:white; font-weight:900; font-size:12px; text-align:center; line-height:1.3; }
+  header .left h2, header .right h2{ margin:0; font-size:16px; color:#1a5276; font-weight:900; }
+  header .left p, header .right p{ margin:0; font-size:10px; color:#888; }
 
-  .title-bar{ text-align:center; margin-bottom:20px; }
-  .title-bar h1{ font-size:22px; color:#1a5276; margin:0; font-weight:900; }
-  .title-bar p{ color:#888; font-size:13px; margin:4px 0 0; }
+  .title-bar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .title-bar h1{ font-size:18px; color:#1a5276; margin:0; font-weight:900; }
+  .title-bar .patient-info{ font-size:14px; color:#333; }
+  .title-bar .patient-info strong{ color:#1a5276; }
 
-  .info-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:25px; }
-  .info-card{ background:#f8fbff; border:1px solid #e0e7ef; border-radius:8px; padding:10px 14px; }
-  .info-card label{ display:block; font-size:11px; color:#888; font-weight:700; margin-bottom:2px; }
-  .info-card p{ margin:0; font-size:15px; font-weight:600; color:#222; }
-
-  .amount-box{ background:linear-gradient(135deg,#1a5276,#2980b9); color:white; border-radius:12px; padding:18px; text-align:center; margin-bottom:25px; }
-  .amount-box .label{ font-size:12px; opacity:0.85; margin-bottom:4px; }
-  .amount-box .value{ font-size:32px; font-weight:900; letter-spacing:1px; }
-  .amount-box .sub{ font-size:13px; opacity:0.8; margin-top:4px; }
-
-  .details-grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:25px; }
-  .detail-item{ background:#f8fbff; border:1px solid #e0e7ef; border-radius:8px; padding:12px; text-align:center; }
-  .detail-item .num{ font-size:24px; font-weight:900; color:#1a5276; }
-  .detail-item .lbl{ font-size:11px; color:#888; margin-top:2px; }
-
-  table{ width:100%; border-collapse:collapse; margin-bottom:25px; }
-  th{ background:#1a5276; color:white; padding:8px 6px; font-size:13px; font-weight:700; }
-  td{ border:1px solid #dde3eb; padding:7px 6px; text-align:center; font-size:14px; }
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  th{ background:#1a5276; color:white; padding:6px; font-weight:700; font-size:12px; }
+  td{ border:1px solid #bbb; padding:5px; text-align:center; }
   tr:nth-child(even){ background:#f8fbff; }
 
-  .footer{ display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:10px; }
-  .sign-area{ border-top:1px solid #333; width:200px; text-align:center; padding-top:4px; font-size:13px; color:#555; margin-top:50px; }
-  .notes-box{ background:#fefefe; border:1px solid #e0e7ef; border-radius:8px; padding:12px; min-height:60px; }
-  .notes-box label{ display:block; font-size:11px; color:#888; font-weight:700; margin-bottom:4px; }
-  .notes-box p{ margin:0; font-size:14px; color:#333; }
+  .total-row td{ font-weight:700; background:#eef3f9; }
 
-  .badge{ display:inline-block; padding:3px 14px; border-radius:20px; font-size:13px; font-weight:700; }
-  .badge.active{ background:#e8f5e9; color:#2e7d32; }
-  .badge.done{ background:#fce4ec; color:#c62828; }
+  .footer{ margin-top:15px; display:flex; justify-content:space-between; font-size:12px; color:#555; }
 </style>
 </head>
 <body>
@@ -159,7 +156,6 @@ export default function SubscribersPage() {
       <h2>SAMA CENTER</h2>
       <p>FOR PHYSIOTHERAPY & REHABILITATION</p>
     </div>
-    <div class="logo-placeholder">SAMA</div>
     <div class="right">
       <h2>مركز سما</h2>
       <p>للعلاج الطبيعي وإعادة التأهيل</p>
@@ -167,74 +163,26 @@ export default function SubscribersPage() {
   </header>
 
   <div class="title-bar">
-    <h1>فاتورة اشتراك</h1>
-    <p>${dateStr}</p>
-  </div>
-
-  <div class="info-grid">
-    <div class="info-card">
-      <label>اسم المريض</label>
-      <p>${s.fullname}</p>
-    </div>
-    <div class="info-card">
-      <label>نوع الخدمة</label>
-      <p>${typeLabels[s.sessionType] || s.sessionType}</p>
-    </div>
-    <div class="info-card">
-      <label>المعالج</label>
-      <p>${s.speacial || '-'}</p>
-    </div>
-    <div class="info-card">
-      <label>تاريخ الاشتراك</label>
-      <p>${s.sessionDate ? new Date(s.sessionDate).toLocaleDateString('ar-EG') : '-'}</p>
-    </div>
-  </div>
-
-  <div class="amount-box">
-    <div class="label">إجمالي مبلغ الاشتراك</div>
-    <div class="value">${s.subscriptionAmount?.toLocaleString()} YER</div>
-    <div class="sub">${typeLabels[s.sessionType] || s.sessionType}</div>
-  </div>
-
-  <div class="details-grid">
-    <div class="detail-item">
-      <div class="num">${s.subscriptionDay ?? 0}</div>
-      <div class="lbl">الأيام المتبقية</div>
-    </div>
-    <div class="detail-item">
-      <div class="num">${s.subscriptionAmount ? Math.floor((s.subscriptionAmount ?? 0) / Math.max((s.subscriptionDay ?? 1), 1)).toLocaleString() : 0} YER</div>
-      <div class="lbl">سعر اليوم الواحد</div>
-    </div>
-    <div class="detail-item">
-      <div class="num">${dayNames[today.getDay()]}</div>
-      <div class="lbl">اليوم</div>
-    </div>
-    <div class="detail-item">
-      <div class="num"><span class="badge ${(s.subscriptionDay ?? 0) > 0 ? 'active' : 'done'}">${(s.subscriptionDay ?? 0) > 0 ? 'جاري' : 'مكتمل'}</span></div>
-      <div class="lbl">الحالة</div>
+    <h1>كشف متابعة الاشتراك</h1>
+    <div class="patient-info">
+      <strong>المريض:</strong> ${s.fullname} &nbsp;|&nbsp; <strong>المعالج:</strong> ${s.speacial || '-'} &nbsp;|&nbsp; <strong>المبلغ:</strong> ${s.subscriptionAmount?.toLocaleString()} YER
     </div>
   </div>
 
   <table>
-    <tr><th>الخدمة</th><th>المبلغ</th><th>الأيام المتبقية</th><th>الحالة</th></tr>
     <tr>
-      <td>${typeLabels[s.sessionType] || s.sessionType}</td>
-      <td>${s.subscriptionAmount?.toLocaleString()} YER</td>
-      <td>${s.subscriptionDay ?? 0}</td>
-      <td><span class="badge ${(s.subscriptionDay ?? 0) > 0 ? 'active' : 'done'}">${(s.subscriptionDay ?? 0) > 0 ? 'جاري' : 'مكتمل'}</span></td>
+      <th>التاريخ</th>
+      <th>اليوم</th>
+      <th>نوع الخدمة</th>
+      <th>التوقيع</th>
+      <th>ملاحظات</th>
     </tr>
+    ${rows}
   </table>
 
   <div class="footer">
-    <div>
-      <div class="sign-area">التوقيع</div>
-    </div>
-    <div>
-      <div class="notes-box">
-        <label>ملاحظات</label>
-        <p>................................................................................................................................................</p>
-      </div>
-    </div>
+    <span>مركز سما للعلاج الطبيعي وإعادة التأهيل</span>
+    <span>تمت الطباعة: ${today.toLocaleDateString('ar-EG')}</span>
   </div>
 </div>
 </body>
