@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/app.ts",
-    "build": "prisma generate && tsc",
+    "build": "prisma generate && tsc && node -e \"import('fs').then(f=>{f.cpSync('src/views','dist/src/views',{recursive:true});f.cpSync('src/public','dist/src/public',{recursive:true})})\"",
     "start": "node dist/src/app.js",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
