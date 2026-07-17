@@ -326,7 +326,7 @@ ${rows}
                     return (
                       <Tooltip key={i} title={`${d.getDate()} ${monthNames[d.getMonth()]} - ${dayNames[d.getDay()]}${isFree ? ' (مجاني)' : ''}`}>
                         <Chip
-                          label={`يوم ${i + 1}`}
+                          label={`${d.getDate()}/${d.getMonth() + 1}`}
                           size="small"
                           color={isFree ? 'warning' : isAttended ? 'success' : 'default'}
                           variant={isAttended || isFree ? 'filled' : 'outlined'}
