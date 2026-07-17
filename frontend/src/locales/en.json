@@ -195,6 +195,7 @@
   "patients.add.form.examType.physiotherapy": "Physiotherapy",
   "patients.add.form.examType.nutrition": "Nutrition",
   "patients.add.form.name": "Patient Name",
+  "patients.add.form.manualId": "Manual ID",
   "patients.add.form.age": "Age",
   "patients.add.form.gender": "Gender",
   "patients.add.form.gender.male": "Male",

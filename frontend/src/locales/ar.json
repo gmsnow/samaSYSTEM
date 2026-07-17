@@ -195,6 +195,7 @@
   "patients.add.form.examType.physiotherapy": "علاج طبيعي",
   "patients.add.form.examType.nutrition": "تغذية",
   "patients.add.form.name": "اسم المريض",
+  "patients.add.form.manualId": "رقم المريض",
   "patients.add.form.age": "العمر",
   "patients.add.form.gender": "الجنس",
   "patients.add.form.gender.male": "ذكر",

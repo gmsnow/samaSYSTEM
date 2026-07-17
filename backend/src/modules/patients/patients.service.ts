@@ -67,6 +67,7 @@ async function getNextSerialNumber() {
 export async function createPatient(data: {
   examType: string;
   fullName: string;
+  manualId?: string;
   age?: number;
   gender: string;
   phone?: string;
@@ -82,6 +83,7 @@ export async function createPatient(data: {
   return prisma.patient.create({
     data: {
       serialNumber,
+      manualId: data.manualId || null,
       firstName,
       lastName: lastName || null,
       phone: data.phone || null,
@@ -97,8 +99,9 @@ export async function createPatient(data: {
 export async function updatePatient(id: string, data: {
   examType?: string;
   fullName?: string;
+  manualId?: string;
   age?: number;
-  gender?: string;
+  gender: string;
   phone?: string;
   date?: string | null;
   price?: number;
@@ -117,6 +120,7 @@ export async function updatePatient(id: string, data: {
     }
   }
   if (data.phone !== undefined) updateData.phone = data.phone;
+  if (data.manualId !== undefined) updateData.manualId = data.manualId;
   if (data.examType !== undefined) updateData.examType = data.examType;
   if (data.gender !== undefined) updateData.gender = data.gender;
   if (data.price !== undefined) updateData.price = data.price;

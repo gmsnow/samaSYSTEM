@@ -11,6 +11,7 @@ import api from '../../services/api';
 interface Patient {
   id: string;
   serialNumber: number;
+  manualId: string | null;
   firstName: string | null;
   lastName: string | null;
   phone: string | null;
@@ -36,11 +37,11 @@ export default function PatientsPage() {
   const rowsPerPage = 10;
 
   const [form, setForm] = useState({
-    examType: '', fullName: '', age: '', gender: '', phone: '', date: '', price: '',
+    examType: '', fullName: '', manualId: '', age: '', gender: '', phone: '', date: '', price: '',
   });
 
   const [editForm, setEditForm] = useState({
-    examType: '', fullName: '', age: '', gender: '', phone: '', date: '', price: '',
+    examType: '', fullName: '', manualId: '', age: '', gender: '', phone: '', date: '', price: '',
   });
 
   const calcAge = (dob: string | null) => {
@@ -67,20 +68,13 @@ export default function PatientsPage() {
     const age = calcAge(p.dateOfBirth);
     const date = formatDate(p.registrationDate);
     const exam = t(p.examType === 'nutrition' ? 'patients.add.form.examType.nutrition' : 'patients.add.form.examType.physiotherapy').toLowerCase();
-    return name.includes(q) || exam.includes(q) || (p.phone && p.phone.includes(q)) || age.includes(q) || date.includes(q) || (p.price && p.price.toString().includes(q));
+    return name.includes(q) || exam.includes(q) || (p.phone && p.phone.includes(q)) || age.includes(q) || date.includes(q) || (p.price && p.price.toString().includes(q)) || (p.manualId && p.manualId.includes(q));
   });
   const totalPages = Math.ceil(filteredPatients.length / rowsPerPage);
   const paginatedPatients = filteredPatients.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setForm(prev => {
-      const next = { ...prev, [field]: value };
-      if (field === 'age') {
-        next.price = '1000';
-      }
-      return next;
-    });
+    setForm(prev => ({ ...prev, [field]: e.target.value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -90,7 +84,7 @@ export default function PatientsPage() {
     try {
       await api.post('/patients', form);
       setMessage({ text: t('patients.add.form.saved'), type: 'success' });
-      setForm({ examType: '', fullName: '', age: '', gender: '', phone: '', date: '', price: '' });
+      setForm({ examType: '', fullName: '', manualId: '', age: '', gender: '', phone: '', date: '', price: '' });
       fetchPatients();
     } catch (err: any) {
       setMessage({ text: err.response?.data?.error || 'Error saving patient', type: 'error' });
@@ -100,7 +94,7 @@ export default function PatientsPage() {
   };
 
   const handleReset = () => {
-    setForm({ examType: '', fullName: '', age: '', gender: '', phone: '', date: '', price: '' });
+    setForm({ examType: '', fullName: '', manualId: '', age: '', gender: '', phone: '', date: '', price: '' });
   };
 
   const openEdit = async (id: string) => {
@@ -111,25 +105,19 @@ export default function PatientsPage() {
       setEditForm({
         examType: p.examType || '',
         fullName: `${p.firstName ?? ''} ${p.lastName ?? ''}`.trim(),
+        manualId: p.manualId || '',
         age,
         gender: p.gender || '',
         phone: p.phone || '',
         date: formatDate(p.registrationDate),
-        price: '1000',
+        price: p.price?.toString() || '',
       });
       setEditOpen(true);
     } catch { /* ignore */ }
   };
 
   const handleEditChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const value = e.target.value;
-    setEditForm(prev => {
-      const next = { ...prev, [field]: value };
-      if (field === 'age') {
-        next.price = '1000';
-      }
-      return next;
-    });
+    setEditForm(prev => ({ ...prev, [field]: e.target.value }));
   };
 
   const handleEditSubmit = async (e: React.FormEvent) => {
@@ -190,6 +178,7 @@ export default function PatientsPage() {
                 <MenuItem value="nutrition">{t('patients.add.form.examType.nutrition')}</MenuItem>
               </TextField>
               <TextField fullWidth label={t('patients.add.form.name')} value={form.fullName} onChange={handleChange('fullName')} required />
+              <TextField fullWidth label={t('patients.add.form.manualId')} value={form.manualId} onChange={handleChange('manualId')} />
               <TextField fullWidth label={t('patients.add.form.age')} type="number" value={form.age} onChange={handleChange('age')} />
               <TextField select fullWidth label={t('patients.add.form.gender')} value={form.gender} onChange={handleChange('gender')} required>
                 <MenuItem value="" disabled>{t('patients.add.form.gender')}</MenuItem>
@@ -204,7 +193,7 @@ export default function PatientsPage() {
                 slotProps={{ inputLabel: { shrink: true }, input: { endAdornment: <InputAdornment position="end"><CalendarMonth /></InputAdornment> } }}
               />
               <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price}
-                slotProps={{ input: { readOnly: true } }}
+                onChange={handleChange('price')}
               />
               <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2, flexWrap: 'wrap' }}>
                 <Button variant="outlined" color="warning" onClick={handleReset}>{t('patients.add.form.cancel')}</Button>
@@ -249,6 +238,7 @@ export default function PatientsPage() {
                 <TableCell>{t('patients.col.serial')}</TableCell>
                 <TableCell>{t('patients.add.form.examType')}</TableCell>
                 <TableCell>{t('patients.add.form.name')}</TableCell>
+                <TableCell>{t('patients.add.form.manualId')}</TableCell>
                 <TableCell>{t('patients.add.form.age')}</TableCell>
                 <TableCell>{t('patients.add.form.phone')}</TableCell>
                 <TableCell>{t('patients.add.form.date')}</TableCell>
@@ -262,6 +252,7 @@ export default function PatientsPage() {
                   <TableCell sx={{ fontWeight: 700 }}>{p.serialNumber}</TableCell>
                   <TableCell>{t(p.examType === 'nutrition' ? 'patients.add.form.examType.nutrition' : 'patients.add.form.examType.physiotherapy')}</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{`${p.firstName ?? ''} ${p.lastName ?? ''}`.trim() || '—'}</TableCell>
+                  <TableCell>{p.manualId || '—'}</TableCell>
                   <TableCell>{calcAge(p.dateOfBirth)}</TableCell>
                   <TableCell dir="ltr">{p.phone}</TableCell>
                   <TableCell>{formatDate(p.registrationDate)}</TableCell>
@@ -311,6 +302,7 @@ export default function PatientsPage() {
               </Select>
             </FormControl>
             <TextField fullWidth label={t('patients.add.form.name')} value={editForm.fullName} onChange={handleEditChange('fullName')} sx={{ mb: 2 }} required />
+            <TextField fullWidth label={t('patients.add.form.manualId')} value={editForm.manualId} onChange={handleEditChange('manualId')} sx={{ mb: 2 }} />
             <TextField fullWidth label={t('patients.add.form.age')} type="number" value={editForm.age} onChange={handleEditChange('age')} sx={{ mb: 2 }} />
             <FormControl fullWidth sx={{ mb: 2 }}>
               <InputLabel>{t('patients.add.form.gender')}</InputLabel>
@@ -321,7 +313,7 @@ export default function PatientsPage() {
             </FormControl>
             <TextField fullWidth label={t('patients.add.form.phone')} value={editForm.phone} onChange={handleEditChange('phone')} sx={{ mb: 2 }} />
             <TextField fullWidth label={t('patients.add.form.date')} type="date" value={editForm.date} onChange={handleEditChange('date')} sx={{ mb: 2 }} slotProps={{ inputLabel: { shrink: true } }} />
-            <TextField fullWidth label={t('patients.add.form.price')} type="number" value={editForm.price} slotProps={{ input: { readOnly: true } }} />
+            <TextField fullWidth label={t('patients.add.form.price')} type="number" value={editForm.price} onChange={handleEditChange('price')} />
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2 }}>
             <Button onClick={() => setEditOpen(false)} color="secondary">{t('patients.add.form.cancel')}</Button>

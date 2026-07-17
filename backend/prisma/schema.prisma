@@ -84,6 +84,7 @@ model Message {
 model Patient {
   id               String    @id @default(uuid())
   serialNumber     Int       @default(0) @map("serial_number")
+  manualId         String?   @map("manual_id")
   firstName        String?   @map("first_name")
   lastName         String?   @map("last_name")
   phone            String?
