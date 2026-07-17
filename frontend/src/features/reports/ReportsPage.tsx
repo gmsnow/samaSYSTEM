@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Typography, Grid, Card, CardContent, Table, TableHead, TableBody, TableRow, TableCell, Chip, Avatar } from '@mui/material';
+import { Box, Typography, Grid, Card, CardContent, Table, TableHead, TableBody, TableRow, TableCell, Chip, Avatar, CircularProgress } from '@mui/material';
 import { People, Paid, Receipt } from '@mui/icons-material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -22,7 +22,7 @@ export default function ReportsPage({ period }: { period: string }) {
   }, [locale]);
 
   if (!data) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}><Typography color="text.secondary">{t('common.loading')}</Typography></Box>;
+    return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}><CircularProgress /></Box>;
   }
 
   const isCurrentPeriod = (dateStr: string | null) => {

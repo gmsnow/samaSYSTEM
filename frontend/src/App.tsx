@@ -2,6 +2,7 @@ import { type ReactNode } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { useLanguage } from './contexts/LanguageContext';
+import { CircularProgress, Box } from '@mui/material';
 import AuthLayout from './layouts/AuthLayout';
 import MainLayout from './layouts/MainLayout';
 import LoginPage from './features/auth/LoginPage';
@@ -26,7 +27,7 @@ import UnauthorizedPage from './features/auth/UnauthorizedPage';
 function ProtectedRoute({ roles }: { roles?: string[] }) {
   const { user, isLoading } = useAuth();
   const { t } = useLanguage();
-  if (isLoading) return <div>{t('app.loading')}</div>;
+  if (isLoading) return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}><CircularProgress /></Box>;
   if (!user) return <Navigate to="/login" replace />;
   if (roles && !roles.includes(user.role)) return <Navigate to="/dashboard" replace />;
   return <Outlet />;

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Grid, Card, CardContent, Typography, Box, Button, Avatar, List, ListItem, ListItemText,
-  ListItemAvatar, Chip, LinearProgress,
+  ListItemAvatar, Chip, CircularProgress,
 } from '@mui/material';
 import {
   People, CalendarMonth, MedicalServices, Paid, TrendingUp, TrendingDown, ArrowForward,
@@ -79,7 +79,7 @@ export default function DashboardPage() {
   if (!data) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
-        <Typography color="text.secondary">{t('common.loading')}</Typography>
+        <CircularProgress />
       </Box>
     );
   }
