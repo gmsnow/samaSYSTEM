@@ -152,7 +152,8 @@ export default function PatientsPage() {
 
   const downloadPatientFile = (p: Patient) => {
     const token = localStorage.getItem('accessToken');
-    window.open(`/api/patients/${p.id}/file?lang=en&token=${token}`, '_blank');
+    const base = import.meta.env.VITE_API_URL || '';
+    window.open(`${base ? `${base}/api` : '/api'}/patients/${p.id}/file?lang=en&token=${token}`, '_blank');
   };
 
   return (

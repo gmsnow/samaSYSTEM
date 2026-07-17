@@ -105,7 +105,8 @@ export default function AdvancesPage() {
   const openPrintReport = (empId: string, month?: string) => {
     const token = localStorage.getItem('accessToken');
     const lang = document.documentElement.lang || 'en';
-    let url = `/api/advances/report/${empId}?lang=${lang}&token=${token}`;
+    const base = import.meta.env.VITE_API_URL || '';
+    let url = `${base ? `${base}/api` : '/api'}/advances/report/${empId}?lang=${lang}&token=${token}`;
     if (month) url += `&month=${month}`;
     window.open(url, '_blank');
   };
