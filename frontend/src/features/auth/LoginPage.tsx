@@ -18,11 +18,11 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(username, password);
-      navigate('/dashboard');
+      window.location.href = '/dashboard';
     } catch (err: unknown) {
-      const axiosErr = err as { response?: { data?: Record<string, unknown> } };
+      const axiosErr = err as { response?: { data?: Record<string, unknown>; status?: number }; message?: string };
       const serverErr = axiosErr?.response?.data?.error;
-      setError(typeof serverErr === 'string' ? serverErr : t('auth.login.failed'));
+      setError(typeof serverErr === 'string' ? serverErr : axiosErr?.message || String(err));
     } finally { setLoading(false); }
   };
 
