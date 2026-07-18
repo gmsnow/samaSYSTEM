@@ -29,7 +29,7 @@ interface DashboardData {
     monthlyRevenue: { value: number; trend: string; up: boolean; trendLabel: string };
   };
   patientTileStats: { daily: number; weekly: number; monthly: number; males: number; females: number };
-  revenueOverview: { revenue: number; expenses: number; netProfit: number; sessions: number; invoices: number };
+  revenueOverview: { revenue: number; expenses: number; netProfit: number; sessions: number; invoices: number; subscriptionRevenue: number };
   monthlyRevenue: { month: string; revenue: number }[];
   monthlyPatients: { month: string; count: number }[];
   sessionTypes: { name: string; value: number; color: string }[];
@@ -72,6 +72,7 @@ export default function DashboardPage() {
     { label: t('dashboard.expenses'), value: `YER ${data.revenueOverview.expenses.toLocaleString()}`, color: '#e65100' },
     { label: t('dashboard.netProfit'), value: `YER ${data.revenueOverview.netProfit.toLocaleString()}`, color: '#3e5679' },
     { label: t('dashboard.sessions'), value: data.revenueOverview.sessions.toLocaleString(), color: '#7c4dff' },
+    { label: 'اشتراكات', value: `YER ${(data.revenueOverview.subscriptionRevenue || 0).toLocaleString()}`, color: '#f59e0b' },
   ] : [];
 
   const filteredRevenue = data ? (revenueTab === '1M' ? data.monthlyRevenue.slice(-1) : revenueTab === '6M' ? data.monthlyRevenue.slice(-6) : data.monthlyRevenue) : [];

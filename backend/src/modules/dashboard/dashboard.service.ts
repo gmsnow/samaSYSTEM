@@ -94,6 +94,8 @@ export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'mont
     totalExpensesPrevPeriod,
     totalSessions,
     invoicesThisPeriod,
+    subscriptionRevenueThisPeriod,
+    subscriptionRevenuePrevPeriod,
   ] = await Promise.all([
     prisma.patient.count({ where: { deletedAt: null } }),
     prisma.patient.count({ where: { deletedAt: null, createdAt: { gte: startOfPeriod } } }),
@@ -115,11 +117,11 @@ export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'mont
       : prisma.appointment.count({ where: { deletedAt: null, date: { gte: lastPeriodStr, lte: lastPeriodEndStr } } }),
     prisma.user.count({ where: { deletedAt: null, role: 'THERAPIST', isActive: true } }),
     prisma.session.aggregate({
-      where: { deletedAt: null, sessionDate: { gte: startOfPeriod } },
+      where: { deletedAt: null, subscriptionAmount: null, sessionDate: { gte: startOfPeriod } },
       _sum: { price: true },
     }),
     prisma.session.aggregate({
-      where: { deletedAt: null, sessionDate: { gte: startOfPrevPeriod, lt: startOfPeriod } },
+      where: { deletedAt: null, subscriptionAmount: null, sessionDate: { gte: startOfPrevPeriod, lt: startOfPeriod } },
       _sum: { price: true },
     }),
     prisma.patient.aggregate({
@@ -162,10 +164,20 @@ export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'mont
       : prisma.expense.aggregate({ where: { deletedAt: null, date: { gte: lastPeriodStr, lte: lastPeriodEndStr } }, _sum: { amount: true } }),
     prisma.session.count({ where: { deletedAt: null } }),
     prisma.session.count({ where: { deletedAt: null, sessionDate: { gte: startOfPeriod } } }),
+    prisma.session.aggregate({
+      where: { deletedAt: null, subscriptionAmount: { not: null }, sessionDate: { gte: startOfPeriod } },
+      _sum: { subscriptionAmount: true },
+    }),
+    prisma.session.aggregate({
+      where: { deletedAt: null, subscriptionAmount: { not: null }, sessionDate: { gte: startOfPrevPeriod, lt: startOfPeriod } },
+      _sum: { subscriptionAmount: true },
+    }),
   ]);
 
-  const revThis = (revenueThisPeriod._sum.price ?? 0) + (patientRevenueThisPeriod._sum.price ?? 0);
-  const revLast = (revenuePrevPeriod._sum.price ?? 0) + (patientRevenuePrevPeriod._sum.price ?? 0);
+  const subRevThis = subscriptionRevenueThisPeriod._sum.subscriptionAmount ?? 0;
+  const subRevLast = subscriptionRevenuePrevPeriod._sum.subscriptionAmount ?? 0;
+  const revThis = (revenueThisPeriod._sum.price ?? 0) + (patientRevenueThisPeriod._sum.price ?? 0) + subRevThis;
+  const revLast = (revenuePrevPeriod._sum.price ?? 0) + (patientRevenuePrevPeriod._sum.price ?? 0) + subRevLast;
   const revChange = revLast > 0 ? ((revThis - revLast) / revLast) * 100 : 0;
   const patientGrowth = patientsPrevPeriod > 0
     ? ((patientsThisPeriod - patientsPrevPeriod) / patientsPrevPeriod) * 100
@@ -247,6 +259,7 @@ export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'mont
       patients: patientsThisPeriod,
       patientRevenue: patientRevenueThisPeriod._sum.price ?? 0,
       sessionRevenue: revenueThisPeriod._sum.price ?? 0,
+      subscriptionRevenue: subRevThis,
       invoices: invoicesThisPeriod,
     },
     monthlyRevenue: monthlyRevArr.map((r, i) => ({ month: monthNames[i], revenue: r })),
@@ -284,13 +297,17 @@ export async function getDailyReportData() {
   const dayName = days[ksaDow];
   const dateDisplay = `${dayName} ${pad(ksaDay)}/${pad(ksaMonth + 1)}/${ksaYear}م`;
 
-  const [sessions, patients, expenses, advances] = await Promise.all([
+  const [sessions, patients, subscriptions, expenses, advances] = await Promise.all([
     prisma.session.findMany({
-      where: { deletedAt: null, sessionDate: { gte: startOfDay, lt: endOfDay } },
+      where: { deletedAt: null, subscriptionAmount: null, sessionDate: { gte: startOfDay, lt: endOfDay } },
       orderBy: { createdAt: 'asc' },
     }),
     prisma.patient.findMany({
       where: { deletedAt: null, createdAt: { gte: startOfDay, lt: endOfDay } },
+      orderBy: { createdAt: 'asc' },
+    }),
+    prisma.session.findMany({
+      where: { deletedAt: null, subscriptionAmount: { not: null }, sessionDate: { gte: startOfDay, lt: endOfDay } },
       orderBy: { createdAt: 'asc' },
     }),
     prisma.expense.findMany({
@@ -319,6 +336,12 @@ export async function getDailyReportData() {
     note: s.notes || '',
   }));
 
+  const mappedSubscriptions = subscriptions.map(s => ({
+    fullname: s.fullname,
+    subscription_amount: s.subscriptionAmount ?? 0,
+    subscription_period: s.subscriptionPeriod || '',
+  }));
+
   const mappedPatients = patients.map(p => ({
     fullname: `${p.firstName || ''} ${p.lastName || ''}`.trim() || '—',
     exam_type: p.examType || '—',
@@ -340,7 +363,7 @@ export async function getDailyReportData() {
     note: a.notes || '',
   }));
 
-  return { dateDisplay, sessions: mappedSessions, patients: mappedPatients, expenses: mappedExpenses, advances: mappedAdvances };
+  return { dateDisplay, sessions: mappedSessions, patients: mappedPatients, subscriptions: mappedSubscriptions, expenses: mappedExpenses, advances: mappedAdvances };
 }
 
 export async function getMonthlyReportData(month?: number, year?: number) {
@@ -370,14 +393,18 @@ export async function getMonthlyReportData(month?: number, year?: number) {
     const startStr = `${start} ${monthName}`;
     const endStr = `${actualEnd} ${monthName}`;
 
-    const [sessionRev, patientRev, expenseSum, advanceSum] = await Promise.all([
+    const [sessionRev, patientRev, subscriptionRev, expenseSum, advanceSum] = await Promise.all([
       prisma.session.aggregate({
-        where: { deletedAt: null, sessionDate: { gte: startDate, lt: endDate } },
+        where: { deletedAt: null, subscriptionAmount: null, sessionDate: { gte: startDate, lt: endDate } },
         _sum: { price: true },
       }),
       prisma.patient.aggregate({
         where: { deletedAt: null, createdAt: { gte: startDate, lt: endDate } },
         _sum: { price: true },
+      }),
+      prisma.session.aggregate({
+        where: { deletedAt: null, subscriptionAmount: { not: null }, sessionDate: { gte: startDate, lt: endDate } },
+        _sum: { subscriptionAmount: true },
       }),
       prisma.expense.aggregate({
         where: {
@@ -401,7 +428,7 @@ export async function getMonthlyReportData(month?: number, year?: number) {
       }),
     ]);
 
-    const totalIncome = (sessionRev._sum.price ?? 0) + (patientRev._sum.price ?? 0);
+    const totalIncome = (sessionRev._sum.price ?? 0) + (patientRev._sum.price ?? 0) + (subscriptionRev._sum.subscriptionAmount ?? 0);
     const totalExpense = (expenseSum._sum.amount ?? 0) + (advanceSum._sum.amount ?? 0);
     const net = totalIncome - totalExpense;
 
@@ -431,14 +458,18 @@ export async function getWeeklyReportData() {
     const dateStr = `${dayKsa.day} ${MONTHS_AR[dayKsa.month]} ${dayKsa.year}`;
     const dateStrExpense = `${dayKsa.year}-${pad(dayKsa.month + 1)}-${pad(dayKsa.day)}`;
 
-    const [sessionRev, patientRev, expenseSum, advanceSum] = await Promise.all([
+    const [sessionRev, patientRev, subscriptionRev, expenseSum, advanceSum] = await Promise.all([
       prisma.session.aggregate({
-        where: { deletedAt: null, sessionDate: { gte: dayStart, lt: dayEnd } },
+        where: { deletedAt: null, subscriptionAmount: null, sessionDate: { gte: dayStart, lt: dayEnd } },
         _sum: { price: true },
       }),
       prisma.patient.aggregate({
         where: { deletedAt: null, createdAt: { gte: dayStart, lt: dayEnd } },
         _sum: { price: true },
+      }),
+      prisma.session.aggregate({
+        where: { deletedAt: null, subscriptionAmount: { not: null }, sessionDate: { gte: dayStart, lt: dayEnd } },
+        _sum: { subscriptionAmount: true },
       }),
       prisma.expense.aggregate({
         where: { deletedAt: null, date: dateStrExpense },
@@ -450,7 +481,7 @@ export async function getWeeklyReportData() {
       }),
     ]);
 
-    const income = (sessionRev._sum.price ?? 0) + (patientRev._sum.price ?? 0);
+    const income = (sessionRev._sum.price ?? 0) + (patientRev._sum.price ?? 0) + (subscriptionRev._sum.subscriptionAmount ?? 0);
     const expense = (expenseSum._sum.amount ?? 0) + (advanceSum._sum.amount ?? 0);
 
     weekData.push({ day: arabicDay, date: dateStr, income, expense });
@@ -472,17 +503,21 @@ async function getMonthlyRevenue(year: number) {
   for (let m = 0; m < 12; m++) {
     const start = ksaMidnight(year, m, 1);
     const end = ksaMidnight(year, m + 1, 1);
-    const [sessionRev, patientRev] = await Promise.all([
+    const [sessionRev, patientRev, subscriptionRev] = await Promise.all([
       prisma.session.aggregate({
-        where: { deletedAt: null, sessionDate: { gte: start, lt: end } },
+        where: { deletedAt: null, subscriptionAmount: null, sessionDate: { gte: start, lt: end } },
         _sum: { price: true },
       }),
       prisma.patient.aggregate({
         where: { deletedAt: null, createdAt: { gte: start, lt: end } },
         _sum: { price: true },
       }),
+      prisma.session.aggregate({
+        where: { deletedAt: null, subscriptionAmount: { not: null }, sessionDate: { gte: start, lt: end } },
+        _sum: { subscriptionAmount: true },
+      }),
     ]);
-    results.push((sessionRev._sum.price ?? 0) + (patientRev._sum.price ?? 0));
+    results.push((sessionRev._sum.price ?? 0) + (patientRev._sum.price ?? 0) + (subscriptionRev._sum.subscriptionAmount ?? 0));
   }
   return results;
 }

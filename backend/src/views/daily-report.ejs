@@ -209,11 +209,13 @@
         sessions.forEach(s => { sumSessions += Number(s.price || 0); });
         let sumPatients = 0;
         patients.forEach(p => { sumPatients += Number(p.price || 0); });
+        let sumSubscriptions = 0;
+        if (typeof subscriptions !== 'undefined') subscriptions.forEach(sub => { sumSubscriptions += Number(sub.subscription_amount || 0); });
         let sumExpenses = 0;
         expenses.forEach(e => { sumExpenses += Number(e.amount || 0); });
         let sumAdvances = 0;
         advances.forEach(a => { sumAdvances += Number(a.amount || 0); });
-        let incomeTotal = sumSessions + sumPatients;
+        let incomeTotal = sumSessions + sumPatients + sumSubscriptions;
         let netTotal = incomeTotal - (sumExpenses + sumAdvances);
     %>
     <div class="summary-row">
@@ -288,11 +290,42 @@
         </tbody>
     </table>
 
+    <div class="section-spacing"></div>
+
+    <div class="section-header section-patients" style="background:#fef3c7">
+        <span class="b" style="background:#f59e0b"></span>
+        الاشتراكات
+        <span style="margin-right:auto;font-size:10px;opacity:0.8;font-weight:500;"><%= typeof subscriptions !== 'undefined' ? subscriptions.length : 0 %> اشتراكات</span>
+    </div>
+    <table>
+        <thead><tr>
+            <th style="width:28px">م</th><th>اسم المريض</th><th>المدة</th><th style="width:80px">المبلغ</th>
+        </tr></thead>
+        <tbody>
+            <% if (typeof subscriptions === 'undefined' || subscriptions.length === 0) { %>
+                <tr><td colspan="4"><div class="empty-state">لا توجد اشتراكات اليوم</div></td></tr>
+            <% } else { %>
+                <% subscriptions.forEach((sub, i) => { %>
+                    <tr>
+                        <td class="cell-num"><%= i + 1 %></td>
+                        <td class="cell-name"><%= sub.fullname %></td>
+                        <td class="cell-service"><%= sub.subscription_period %></td>
+                        <td class="cell-price"><%= Number(sub.subscription_amount || 0).toLocaleString('en-US') %></td>
+                    </tr>
+                <% }) %>
+                <tr class="total-row">
+                    <td colspan="2" class="tl">إجمالي الاشتراكات</td><td></td>
+                    <td class="tv"><%= sumSubscriptions.toLocaleString('en-US') %></td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+
     <table>
         <tbody>
             <tr class="grand-total">
                 <td></td>
-                <td colspan="2" class="tl">الإجمالي الكلي (جلسات + مرضى)</td>
+                <td colspan="2" class="tl">الإجمالي الكلي (جلسات + مرضى + اشتراكات)</td>
                 <td></td>
                 <td class="tv" colspan="3"><%= incomeTotal.toLocaleString('en-US') %></td>
             </tr>
