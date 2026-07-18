@@ -132,7 +132,6 @@ export default function SubscribersPage() {
     for (let i = 0; i < totalDays; i++) {
       const d = new Date(s.sessionDate || new Date());
       d.setDate(d.getDate() + i);
-      if (d.getDay() === 5) continue;
       if (!attended.includes(i) && !free.includes(i)) { nextIdx = i; break; }
     }
     if (nextIdx === -1) return;
@@ -157,7 +156,6 @@ export default function SubscribersPage() {
     for (let i = 0; i < totalDays; i++) {
       const d = new Date(startDate);
       d.setDate(d.getDate() + i);
-      if (d.getDay() === 5) continue;
       counter++;
       const dateStr = `${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}`;
       const dayName = dayNames[d.getDay()];
@@ -319,7 +317,6 @@ ${rows}
                   return Array.from({ length: totalDays }, (_, i) => {
                     const d = new Date(startDate);
                     d.setDate(d.getDate() + i);
-                    if (d.getDay() === 5) return null;
                     const isAttended = editForm.attendance.includes(i);
                     const isFree = editForm.freeDays.includes(i);
                     return (
