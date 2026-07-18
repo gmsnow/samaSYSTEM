@@ -139,7 +139,6 @@ export default function SubscribersPage() {
     try {
       await api.put(`/sessions/${s.id}`, {
         subscription_attendance: JSON.stringify({ a: [...attended, nextIdx], f: free }),
-        subscription_day: Math.max(0, (s.subscriptionDay ?? 0) - 1),
       });
       fetch();
     } catch { /* ignore */ }
@@ -262,7 +261,7 @@ ${rows}
                 <TableCell>{typeLabels[s.sessionType] || s.sessionType}</TableCell>
                 <TableCell>{s.speacial || '-'}</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>{s.subscriptionAmount?.toLocaleString()} YER</TableCell>
-                <TableCell>{s.subscriptionDay ?? '-'}</TableCell>
+                <TableCell>{Math.max(0, (s.subscriptionDay ?? 0) - attList.length)}</TableCell>
                 <TableCell>
                   <Chip label={attList.length > 0 ? `✓ (${attList.length})` : '—'} size="small" color={attList.length > 0 ? 'success' : 'default'} variant="outlined" />
                 </TableCell>

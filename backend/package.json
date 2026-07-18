@@ -11,6 +11,7 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:seed": "npx tsx prisma/seed.ts",
+"db:fix-subscription-day": "npx tsx prisma/fix-subscription-day.ts",
     "db:studio": "prisma studio",
     "db:pull": "prisma db pull",
     "test": "vitest",
