@@ -20,7 +20,7 @@ async function main() {
   for (const u of users) {
     await prisma.user.upsert({
       where: { username: u.username },
-      update: u.permissions ? { permissions: u.permissions } : {},
+      update: { ...(u.permissions ? { permissions: u.permissions } : {}), isActive: true },
       create: u,
     });
   }
