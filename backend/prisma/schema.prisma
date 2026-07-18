@@ -24,6 +24,7 @@ model User {
   phone     String?
   role      Role     @default(RECEPTIONIST)
   isActive  Boolean  @default(true)
+  department String?
   permissions String[] @default([])
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

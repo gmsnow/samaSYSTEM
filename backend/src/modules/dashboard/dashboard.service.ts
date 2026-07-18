@@ -115,7 +115,7 @@ export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'mont
     period === 'monthly'
       ? prisma.appointment.count({ where: { deletedAt: null, date: { startsWith: lastPeriodStr } } })
       : prisma.appointment.count({ where: { deletedAt: null, date: { gte: lastPeriodStr, lte: lastPeriodEndStr } } }),
-    prisma.user.count({ where: { deletedAt: null, role: 'THERAPIST', isActive: true } }),
+    prisma.user.count({ where: { deletedAt: null, role: 'THERAPIST', isActive: true, department: 'علاج طبيعي' } }),
     prisma.session.aggregate({
       where: { deletedAt: null, subscriptionAmount: null, sessionDate: { gte: startOfPeriod } },
       _sum: { price: true },

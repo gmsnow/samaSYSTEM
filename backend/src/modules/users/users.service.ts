@@ -9,7 +9,7 @@ export async function listUsers() {
     orderBy: { createdAt: 'desc' },
     select: {
       id: true, username: true, email: true, firstName: true, lastName: true,
-      phone: true, role: true, isActive: true, permissions: true, createdAt: true,
+      phone: true, role: true, department: true, isActive: true, permissions: true, createdAt: true,
     },
   });
 }
@@ -36,12 +36,13 @@ export async function createUser(input: CreateUserInput) {
       firstName: input.firstName,
       lastName: input.lastName,
       phone: input.phone,
+      department: input.department,
       role: input.role,
       permissions: input.permissions ?? [],
     },
     select: {
       id: true, username: true, email: true, firstName: true, lastName: true,
-      phone: true, role: true, isActive: true, permissions: true, createdAt: true,
+      phone: true, role: true, department: true, isActive: true, permissions: true, createdAt: true,
     },
   });
 }
@@ -64,7 +65,7 @@ export async function updateUser(id: string, data: UpdateUserInput) {
     data: updateData,
     select: {
       id: true, username: true, email: true, firstName: true, lastName: true,
-      phone: true, role: true, isActive: true, permissions: true, createdAt: true,
+      phone: true, role: true, department: true, isActive: true, permissions: true, createdAt: true,
     },
   });
 }
@@ -83,7 +84,7 @@ export async function toggleStatus(id: string, isActive: boolean) {
     data: { isActive },
     select: {
       id: true, username: true, email: true, firstName: true, lastName: true,
-      phone: true, role: true, isActive: true, permissions: true, createdAt: true,
+      phone: true, role: true, department: true, isActive: true, permissions: true, createdAt: true,
     },
   });
 }
@@ -96,7 +97,7 @@ export async function updatePermissions(id: string, permissions: string[]) {
     data: { permissions },
     select: {
       id: true, username: true, email: true, firstName: true, lastName: true,
-      phone: true, role: true, isActive: true, permissions: true, createdAt: true,
+      phone: true, role: true, department: true, isActive: true, permissions: true, createdAt: true,
     },
   });
 }

@@ -11,10 +11,10 @@ async function main() {
 
   const users = [
     { username: 'admin', email: 'admin@sama.com', firstName: 'Admin', lastName: 'User', role: 'ADMIN' as const, password, permissions: ['dashboard', 'patients', 'sessions', 'appointments', 'calendar', 'advances', 'expenses', 'services', 'subscribers', 'employees', 'chat', 'users'] },
-    { username: 'samacenter', email: 'samacenter@sama.com', firstName: 'أحمد', lastName: 'علي', role: 'THERAPIST' as const, password },
-    { username: 'therapist2', email: 'therapist2@sama.com', firstName: 'سارة', lastName: 'محمد', role: 'THERAPIST' as const, password },
+    { username: 'samacenter', email: 'samacenter@sama.com', firstName: 'أحمد', lastName: 'علي', role: 'THERAPIST' as const, password, department: 'علاج طبيعي' },
+    { username: 'therapist2', email: 'therapist2@sama.com', firstName: 'سارة', lastName: 'محمد', role: 'THERAPIST' as const, password, department: 'علاج طبيعي' },
     { username: 'receptionist', email: 'receptionist@sama.com', firstName: 'نورا', lastName: 'حسن', role: 'RECEPTIONIST' as const, password },
-    { username: 'therapist3', email: 'therapist3@sama.com', firstName: 'خالد', lastName: 'عمر', role: 'THERAPIST' as const, password },
+    { username: 'therapist3', email: 'therapist3@sama.com', firstName: 'خالد', lastName: 'عمر', role: 'THERAPIST' as const, password, department: 'علاج طبيعي' },
   ];
 
   for (const u of users) {
