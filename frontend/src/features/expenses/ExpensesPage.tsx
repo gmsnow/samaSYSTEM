@@ -162,16 +162,12 @@ export default function ExpensesPage() {
         <DialogTitle>{editing ? t('expenses.edit') : t('expenses.add')}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
-            <FormControl fullWidth>
-              <InputLabel>{t('expenses.form.category')}</InputLabel>
-              <Select
-                value={form.category}
-                label={t('expenses.form.category')}
-                onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-              >
-                {CATEGORIES.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
-              </Select>
-            </FormControl>
+            <TextField
+              label={t('expenses.form.category')}
+              value={form.category}
+              onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+              fullWidth
+            />
             <TextField
               label={t('expenses.form.amount')}
               type="number"
