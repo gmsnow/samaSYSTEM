@@ -306,7 +306,7 @@ ${rows}
 
       <Dialog open={editOpen} onClose={() => setEditOpen(false)} maxWidth="sm" fullWidth>
         <Box component="form" onSubmit={handleEditSubmit}>
-          <DialogTitle sx={{ fontWeight: 700 }}>تعديل الاشتراك</DialogTitle>
+          <DialogTitle sx={{ fontWeight: 700 }}></DialogTitle>
           <DialogContent>
             <Stack spacing={2} sx={{ mt: 1 }}>
               <Typography sx={{ fontWeight: 700, fontSize: 14, color: 'text.secondary' }}>الأيام (انقر: حضور | انقر مرتين: مجاني)</Typography>
