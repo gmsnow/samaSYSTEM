@@ -17,6 +17,15 @@ const WALLET_TYPES = [
   'سبأ كاش', 'محفظتي', 'أم فلوس',
 ];
 
+const WALLET_ICONS: Record<string, string> = {
+  'جوالي': '📱', 'WeCash': '💰', 'جيب': '👛', 'AHD Financial': '🏦',
+  'موبايل موني': '📱', 'كاك بنك': '🏦',
+  'فلوسك': '💰', 'بنك الكريمي للتمويل الأصغر الإسلامي': '🏦',
+  'ONE Cash': '💵', 'كاش': '💵', 'Tamkeen Financial': '🏦',
+  'شامل موني': '💳', 'بنك شامل': '🏦',
+  'سبأ كاش': '💰', 'محفظتي': '👛', 'أم فلوس': '💰',
+};
+
 const typeLabels: Record<string, string> = {
   physiotherapy: 'علاج طبيعي',
   'physiotherapy (adults)': 'جلسات علاج طبيعي (كبار)',
@@ -320,7 +329,7 @@ export default function SessionsPage() {
                   <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} required={!isSubscribe} disabled={isSubscribe} />
                   <TextField select fullWidth label="نوع المحفظة" value={form.wallet_type} onChange={handleChange('wallet_type')}>
                     <MenuItem value="">اختر</MenuItem>
-                    {WALLET_TYPES.map(w => <MenuItem key={w} value={w}>{w}</MenuItem>)}
+                    {WALLET_TYPES.map(w => <MenuItem key={w} value={w}><Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><Box component="span" sx={{ fontSize: 18, lineHeight: 1 }}>{WALLET_ICONS[w]}</Box>{w}</Box></MenuItem>)}
                   </TextField>
                   <TextField fullWidth label="رقم العملية" value={form.transaction_number} onChange={handleChange('transaction_number')} />
                 </>
@@ -583,7 +592,7 @@ export default function SessionsPage() {
                 <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} sx={{ mb: 2 }} required={!isSubscribe} disabled={isSubscribe} />
                 <TextField select fullWidth label="نوع المحفظة" value={form.wallet_type} onChange={handleChange('wallet_type')} sx={{ mb: 2 }}>
                   <MenuItem value="">اختر</MenuItem>
-                  {WALLET_TYPES.map(w => <MenuItem key={w} value={w}>{w}</MenuItem>)}
+                  {WALLET_TYPES.map(w => <MenuItem key={w} value={w}><Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><Box component="span" sx={{ fontSize: 18, lineHeight: 1 }}>{WALLET_ICONS[w]}</Box>{w}</Box></MenuItem>)}
                 </TextField>
                 <TextField fullWidth label="رقم العملية" value={form.transaction_number} onChange={handleChange('transaction_number')} sx={{ mb: 2 }} />
               </>
