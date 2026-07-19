@@ -73,6 +73,10 @@ export async function createPatient(data: {
   phone?: string;
   date?: string | null;
   price?: number;
+  payment_method?: string;
+  wallet_type?: string;
+  transaction_number?: string;
+  installments?: string;
 }) {
   const trimmed = data.fullName.trim();
   if (!trimmed) throw new Error('Patient name is required');
@@ -90,6 +94,10 @@ export async function createPatient(data: {
       examType: data.examType,
       gender: data.gender,
       price: data.price || null,
+      paymentMethod: data.payment_method || null,
+      walletType: data.wallet_type || null,
+      transactionNumber: data.transaction_number || null,
+      installments: data.installments || null,
       registrationDate: data.date ? new Date(data.date) : null,
       dateOfBirth: data.age ? new Date(new Date().getFullYear() - data.age, 0, 1) : null,
     },
@@ -105,6 +113,10 @@ export async function updatePatient(id: string, data: {
   phone?: string;
   date?: string | null;
   price?: number;
+  payment_method?: string;
+  wallet_type?: string;
+  transaction_number?: string;
+  installments?: string;
 }) {
   const existing = await prisma.patient.findUnique({ where: { id } });
   if (!existing || existing.deletedAt) throw new NotFoundError('Patient');
@@ -124,6 +136,10 @@ export async function updatePatient(id: string, data: {
   if (data.examType !== undefined) updateData.examType = data.examType;
   if (data.gender !== undefined) updateData.gender = data.gender;
   if (data.price !== undefined) updateData.price = data.price;
+  if (data.payment_method !== undefined) updateData.paymentMethod = data.payment_method;
+  if (data.wallet_type !== undefined) updateData.walletType = data.wallet_type;
+  if (data.transaction_number !== undefined) updateData.transactionNumber = data.transaction_number;
+  if (data.installments !== undefined) updateData.installments = data.installments;
   if (data.date !== undefined) {
     updateData.registrationDate = data.date ? new Date(data.date) : null;
   }

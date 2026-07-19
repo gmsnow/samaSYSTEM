@@ -93,6 +93,10 @@ model Patient {
   dateOfBirth      DateTime? @map("date_of_birth")
   examType         String?   @map("exam_type")
   price            Float?
+  paymentMethod    String?   @map("payment_method")
+  walletType       String?   @map("wallet_type")
+  transactionNumber String?  @map("transaction_number")
+  installments     String?
   registrationDate DateTime? @map("registration_date")
   notes            String?
   speacial         String?

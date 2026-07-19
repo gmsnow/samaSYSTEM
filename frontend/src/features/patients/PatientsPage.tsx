@@ -3,10 +3,20 @@ import {
   Box, Card, CardContent, Typography, TextField, Button, MenuItem, IconButton, Collapse,
   InputAdornment, CircularProgress, Table, TableHead, TableBody, TableRow, TableCell,
   Pagination, Dialog, DialogTitle, DialogContent, DialogActions, Select, FormControl, InputLabel,
+  FormControlLabel, FormLabel, Radio, RadioGroup, Chip, Stack,
 } from '@mui/material';
-import { KeyboardArrowUp, Close, CalendarMonth, Edit, Delete, DownloadForOffline } from '@mui/icons-material';
+import { KeyboardArrowUp, Close, CalendarMonth, Edit, Delete, DownloadForOffline, AccountBalanceWallet } from '@mui/icons-material';
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../services/api';
+
+const WALLET_TYPES = [
+  'جوالي', 'WeCash', 'جيب', 'AHD Financial',
+  'موبايل موني', 'كاك بنك',
+  'فلوسك', 'بنك الكريمي للتمويل الأصغر الإسلامي',
+  'ONE Cash', 'كاش', 'Tamkeen Financial',
+  'شامل موني', 'بنك شامل',
+  'سبأ كاش', 'محفظتي', 'أم فلوس',
+];
 
 interface Patient {
   id: string;
@@ -20,6 +30,31 @@ interface Patient {
   price: number | null;
   registrationDate: string | null;
   dateOfBirth: string | null;
+  paymentMethod: string | null;
+  walletType: string | null;
+  transactionNumber: string | null;
+  installments: string | null;
+}
+
+interface Payment {
+  amount: number;
+  date: string;
+}
+
+function getInstallmentPayments(s: Patient): Payment[] {
+  try {
+    const d = JSON.parse(s.installments || '{}');
+    if (Array.isArray(d)) return d;
+    return d.payments || [];
+  } catch { return []; }
+}
+
+function getInstallmentPaid(s: Patient): number {
+  return getInstallmentPayments(s).reduce((sum, p) => sum + p.amount, 0);
+}
+
+function getInstallmentRemaining(s: Patient): number {
+  return (s.price || 0) - getInstallmentPaid(s);
 }
 
 export default function PatientsPage() {
@@ -33,16 +68,21 @@ export default function PatientsPage() {
   const [page, setPage] = useState(0);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [installmentOpen, setInstallmentOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const rowsPerPage = 10;
 
   const [form, setForm] = useState({
     examType: '', fullName: '', manualId: '', age: '', gender: '', phone: '', date: '', price: '',
+    payment_method: 'نقد', wallet_type: '', transaction_number: '',
   });
 
   const [editForm, setEditForm] = useState({
     examType: '', fullName: '', manualId: '', age: '', gender: '', phone: '', date: '', price: '',
+    payment_method: 'نقد', wallet_type: '', transaction_number: '',
   });
+
+  const [installmentForm, setInstallmentForm] = useState({ amount: '', date: new Date().toISOString().split('T')[0] });
 
   const calcAge = (dob: string | null) => {
     if (!dob) return '';
@@ -84,7 +124,7 @@ export default function PatientsPage() {
     try {
       await api.post('/patients', form);
       setMessage({ text: t('patients.add.form.saved'), type: 'success' });
-      setForm({ examType: '', fullName: '', manualId: '', age: '', gender: '', phone: '', date: '', price: '' });
+      setForm({ examType: '', fullName: '', manualId: '', age: '', gender: '', phone: '', date: '', price: '', payment_method: 'نقد', wallet_type: '', transaction_number: '' });
       fetchPatients();
     } catch (err: any) {
       setMessage({ text: err.response?.data?.error || 'Error saving patient', type: 'error' });
@@ -94,7 +134,7 @@ export default function PatientsPage() {
   };
 
   const handleReset = () => {
-    setForm({ examType: '', fullName: '', manualId: '', age: '', gender: '', phone: '', date: '', price: '' });
+    setForm({ examType: '', fullName: '', manualId: '', age: '', gender: '', phone: '', date: '', price: '', payment_method: 'نقد', wallet_type: '', transaction_number: '' });
   };
 
   const openEdit = async (id: string) => {
@@ -111,6 +151,9 @@ export default function PatientsPage() {
         phone: p.phone || '',
         date: formatDate(p.registrationDate),
         price: p.price?.toString() || '',
+        payment_method: p.paymentMethod || 'نقد',
+        wallet_type: p.walletType || '',
+        transaction_number: p.transactionNumber || '',
       });
       setEditOpen(true);
     } catch { /* ignore */ }
@@ -150,11 +193,48 @@ export default function PatientsPage() {
     setTimeout(() => setMessage(null), 4000);
   };
 
+  const openInstallments = (p: Patient) => {
+    setSelectedId(p.id);
+    setInstallmentForm({ amount: '', date: new Date().toISOString().split('T')[0] });
+    setInstallmentOpen(true);
+  };
+
+  const handleAddInstallmentPayment = async () => {
+    if (!selectedId || !installmentForm.amount) return;
+    const p = patients.find(x => x.id === selectedId);
+    if (!p) return;
+    const payments = getInstallmentPayments(p);
+    payments.push({ amount: Number(installmentForm.amount), date: installmentForm.date });
+    try {
+      await api.put(`/patients/${selectedId}`, {
+        installments: JSON.stringify({ payments }),
+      });
+      setInstallmentForm({ amount: '', date: new Date().toISOString().split('T')[0] });
+      fetchPatients();
+    } catch { /* ignore */ }
+  };
+
+  const handleDeleteInstallmentPayment = async (idx: number) => {
+    if (!selectedId) return;
+    const p = patients.find(x => x.id === selectedId);
+    if (!p) return;
+    const payments = getInstallmentPayments(p);
+    payments.splice(idx, 1);
+    try {
+      await api.put(`/patients/${selectedId}`, {
+        installments: JSON.stringify({ payments }),
+      });
+      fetchPatients();
+    } catch { /* ignore */ }
+  };
+
   const downloadPatientFile = (p: Patient) => {
     const token = localStorage.getItem('accessToken');
     const base = import.meta.env.VITE_API_URL || '';
     window.open(`${base ? `${base}/api` : '/api'}/patients/${p.id}/file?lang=en&token=${token}`, '_blank');
   };
+
+  const selectedForInstallment = patients.find(p => p.id === selectedId);
 
   return (
     <Box>
@@ -193,9 +273,34 @@ export default function PatientsPage() {
               <TextField fullWidth label={t('patients.add.form.date')} type="date" value={form.date} onChange={handleChange('date')}
                 slotProps={{ inputLabel: { shrink: true }, input: { endAdornment: <InputAdornment position="end"><CalendarMonth /></InputAdornment> } }}
               />
-              <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price}
-                onChange={handleChange('price')}
-              />
+
+              <FormControl sx={{ mb: 2.5 }}>
+                <FormLabel sx={{ mb: 0.5 }}>طريقة الدفع</FormLabel>
+                <RadioGroup row value={form.payment_method || 'نقد'} onChange={e => {
+                  const v = e.target.value;
+                  if (v === 'محفظة') setForm(f => ({ ...f, payment_method: v }));
+                  else setForm(f => ({ ...f, payment_method: v, wallet_type: '', transaction_number: '' }));
+                }}>
+                  <FormControlLabel value="نقد" control={<Radio size="small" />} label="نقد" />
+                  <FormControlLabel value="محفظة" control={<Radio size="small" />} label="محفظة" />
+                </RadioGroup>
+              </FormControl>
+
+              {form.payment_method === 'محفظة' && (
+                <>
+                  <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} />
+                  <TextField select fullWidth label="نوع المحفظة" value={form.wallet_type} onChange={handleChange('wallet_type')}>
+                    <MenuItem value="">اختر</MenuItem>
+                    {WALLET_TYPES.map(w => <MenuItem key={w} value={w}>{w}</MenuItem>)}
+                  </TextField>
+                  <TextField fullWidth label="رقم العملية" value={form.transaction_number} onChange={handleChange('transaction_number')} />
+                </>
+              )}
+
+              {form.payment_method !== 'محفظة' && (
+                <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} />
+              )}
+
               <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2, flexWrap: 'wrap' }}>
                 <Button variant="outlined" color="warning" onClick={handleReset}>{t('patients.add.form.cancel')}</Button>
                 <Button variant="outlined" color="secondary" type="reset" onClick={handleReset}>{t('patients.add.form.reset')}</Button>
@@ -243,12 +348,18 @@ export default function PatientsPage() {
                 <TableCell>{t('patients.add.form.age')}</TableCell>
                 <TableCell>{t('patients.add.form.phone')}</TableCell>
                 <TableCell>{t('patients.add.form.date')}</TableCell>
+                <TableCell>طريقة الدفع</TableCell>
                 <TableCell>{t('patients.add.form.price')}</TableCell>
+                <TableCell>الأقساط</TableCell>
                 <TableCell>{t('patients.col.actions')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {paginatedPatients.map(p => (
+              {paginatedPatients.map(p => {
+                const paidAmt = getInstallmentPaid(p);
+                const remainingAmt = getInstallmentRemaining(p);
+                const hasInstallments = p.installments && p.installments !== '';
+                return (
                 <TableRow key={p.id} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
                   <TableCell sx={{ fontWeight: 700 }}>{p.serialNumber}</TableCell>
                   <TableCell>{t(p.examType === 'nutrition' ? 'patients.add.form.examType.nutrition' : 'patients.add.form.examType.physiotherapy')}</TableCell>
@@ -257,11 +368,27 @@ export default function PatientsPage() {
                   <TableCell>{calcAge(p.dateOfBirth)}</TableCell>
                   <TableCell dir="ltr">{p.phone}</TableCell>
                   <TableCell>{formatDate(p.registrationDate)}</TableCell>
+                  <TableCell>
+                    <Chip label={p.paymentMethod || 'نقد'} size="small" color={p.paymentMethod === 'محفظة' ? 'primary' : 'default'} variant="outlined" />
+                  </TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{p.price ?? ''}</TableCell>
+                  <TableCell>
+                    {hasInstallments ? (
+                      <Chip
+                        label={remainingAmt > 0 ? `${paidAmt.toLocaleString()} / ${(paidAmt + remainingAmt).toLocaleString()}` : `✔ ${paidAmt.toLocaleString()}`}
+                        size="small"
+                        color={remainingAmt > 0 ? 'warning' : 'success'}
+                        variant="outlined"
+                      />
+                    ) : '-'}
+                  </TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
                       <IconButton size="small" onClick={() => downloadPatientFile(p)} sx={{ bgcolor: '#28a74515', color: '#28a745', '&:hover': { bgcolor: '#28a74525' } }} title={t('patients.download.file')}>
                         <DownloadForOffline sx={{ fontSize: 18 }} />
+                      </IconButton>
+                      <IconButton size="small" onClick={() => openInstallments(p)} sx={{ bgcolor: '#28a74515', color: '#28a745', '&:hover': { bgcolor: '#28a74525' } }}>
+                        <AccountBalanceWallet sx={{ fontSize: 18 }} />
                       </IconButton>
                       <IconButton size="small" onClick={() => openEdit(p.id)} sx={{ bgcolor: '#007bff15', color: '#007bff', '&:hover': { bgcolor: '#007bff25' } }}>
                         <Edit sx={{ fontSize: 18 }} />
@@ -272,10 +399,10 @@ export default function PatientsPage() {
                     </Box>
                   </TableCell>
                 </TableRow>
-              ))}
+              );})}
               {filteredPatients.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
+                  <TableCell colSpan={11} sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
                     {searchQuery ? t('patients.searchEmpty') || 'No results match your search' : t('patients.empty')}
                   </TableCell>
                 </TableRow>
@@ -314,13 +441,81 @@ export default function PatientsPage() {
             </FormControl>
             <TextField fullWidth label={t('patients.add.form.phone')} value={editForm.phone} onChange={handleEditChange('phone')} sx={{ mb: 2 }} />
             <TextField fullWidth label={t('patients.add.form.date')} type="date" value={editForm.date} onChange={handleEditChange('date')} sx={{ mb: 2 }} slotProps={{ inputLabel: { shrink: true } }} />
-            <TextField fullWidth label={t('patients.add.form.price')} type="number" value={editForm.price} onChange={handleEditChange('price')} />
+
+            <FormControl sx={{ mb: 2 }}>
+              <FormLabel sx={{ mb: 0.5 }}>طريقة الدفع</FormLabel>
+              <RadioGroup row value={editForm.payment_method || 'نقد'} onChange={e => {
+                const v = e.target.value;
+                if (v === 'محفظة') setEditForm(f => ({ ...f, payment_method: v }));
+                else setEditForm(f => ({ ...f, payment_method: v, wallet_type: '', transaction_number: '' }));
+              }}>
+                <FormControlLabel value="نقد" control={<Radio size="small" />} label="نقد" />
+                <FormControlLabel value="محفظة" control={<Radio size="small" />} label="محفظة" />
+              </RadioGroup>
+            </FormControl>
+
+            {editForm.payment_method === 'محفظة' && (
+              <>
+                <TextField fullWidth label={t('patients.add.form.price')} type="number" value={editForm.price} onChange={handleEditChange('price')} sx={{ mb: 2 }} />
+                <TextField select fullWidth label="نوع المحفظة" value={editForm.wallet_type} onChange={handleEditChange('wallet_type')} sx={{ mb: 2 }}>
+                  <MenuItem value="">اختر</MenuItem>
+                  {WALLET_TYPES.map(w => <MenuItem key={w} value={w}>{w}</MenuItem>)}
+                </TextField>
+                <TextField fullWidth label="رقم العملية" value={editForm.transaction_number} onChange={handleEditChange('transaction_number')} sx={{ mb: 2 }} />
+              </>
+            )}
+
+            {editForm.payment_method !== 'محفظة' && (
+              <TextField fullWidth label={t('patients.add.form.price')} type="number" value={editForm.price} onChange={handleEditChange('price')} sx={{ mb: 2 }} />
+            )}
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2 }}>
             <Button onClick={() => setEditOpen(false)} color="secondary">{t('patients.add.form.cancel')}</Button>
             <Button type="submit" variant="contained" color="primary">{t('patients.edit.save')}</Button>
           </DialogActions>
         </Box>
+      </Dialog>
+
+      {/* Installment Dialog */}
+      <Dialog open={installmentOpen} onClose={() => setInstallmentOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>الأقساط</DialogTitle>
+        <DialogContent>
+          {selectedForInstallment && (
+            <Stack spacing={2} sx={{ mt: 1 }}>
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                <Chip label={`المبلغ: ${selectedForInstallment.price?.toLocaleString()} YER`} color="primary" variant="outlined" />
+                <Chip label={`المدفوع: ${getInstallmentPaid(selectedForInstallment).toLocaleString()} YER`} color="success" variant="filled" />
+                <Chip label={`المتبقي: ${getInstallmentRemaining(selectedForInstallment).toLocaleString()} YER`} color={getInstallmentRemaining(selectedForInstallment) > 0 ? 'error' : 'default'} variant="filled" />
+              </Box>
+
+              <Typography sx={{ fontWeight: 700, fontSize: 14, color: 'text.secondary', mt: 1 }}>سجل الدفعات</Typography>
+              {getInstallmentPayments(selectedForInstallment).length === 0 && (
+                <Typography variant="body2" color="text.disabled">لا توجد دفعات مسجلة</Typography>
+              )}
+              {getInstallmentPayments(selectedForInstallment).map((p, i) => (
+                <Box key={i} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#f5f5f5', borderRadius: 1, px: 2, py: 1 }}>
+                  <Box>
+                    <Typography sx={{ fontWeight: 600 }}>{p.amount.toLocaleString()} YER</Typography>
+                    <Typography variant="caption" color="text.secondary">{p.date}</Typography>
+                  </Box>
+                  <IconButton size="small" onClick={() => handleDeleteInstallmentPayment(i)} sx={{ color: '#dc3545' }}>
+                    <Delete sx={{ fontSize: 18 }} />
+                  </IconButton>
+                </Box>
+              ))}
+
+              <Typography sx={{ fontWeight: 700, fontSize: 14, color: 'text.secondary', mt: 1 }}>إضافة دفعة جديدة</Typography>
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+                <TextField size="small" label="المبلغ" type="number" value={installmentForm.amount} onChange={e => setInstallmentForm(f => ({ ...f, amount: e.target.value }))} sx={{ width: 150 }} />
+                <TextField size="small" label="التاريخ" type="date" value={installmentForm.date} onChange={e => setInstallmentForm(f => ({ ...f, date: e.target.value }))} slotProps={{ inputLabel: { shrink: true } }} sx={{ width: 160 }} />
+                <Button variant="contained" size="small" onClick={handleAddInstallmentPayment} sx={{ mt: 0.5, whiteSpace: 'nowrap', minWidth: 80, height: 40 }}>إضافة</Button>
+              </Box>
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setInstallmentOpen(false)} color="secondary">إغلاق</Button>
+        </DialogActions>
       </Dialog>
 
       {/* Delete Dialog */}

@@ -9,6 +9,10 @@ export const createPatientSchema = z.object({
   phone: z.string().optional(),
   date: z.string().optional().nullable(),
   price: z.coerce.number().positive().optional(),
+  payment_method: z.string().optional(),
+  wallet_type: z.string().optional(),
+  transaction_number: z.string().optional(),
+  installments: z.string().optional(),
 });
 
 export const updatePatientSchema = z.object({
@@ -20,4 +24,8 @@ export const updatePatientSchema = z.object({
   phone: z.string().optional(),
   date: z.string().optional().nullable(),
   price: z.coerce.number().positive().optional(),
+  payment_method: z.string().optional(),
+  wallet_type: z.string().optional(),
+  transaction_number: z.string().optional(),
+  installments: z.string().optional(),
 });
