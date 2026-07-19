@@ -117,6 +117,8 @@ export default function SessionsPage() {
     subscription_period: '',
     subscription_amount: '',
     subscription_day: '',
+    installments: '',
+    payment_method: '',
   });
   const [isSubscribe, setIsSubscribe] = useState(false);
 
@@ -153,7 +155,7 @@ export default function SessionsPage() {
       const payload = isSubscribe ? form : { ...form, subscription_period: '', subscription_amount: '', subscription_day: '' };
       const { data } = await api.post('/sessions', payload);
       setMessage({ text: data.message, type: 'success' });
-      setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: '', subscription_amount: '', subscription_day: '' });
+      setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: '', subscription_amount: '', subscription_day: '', installments: '', payment_method: '' });
       setIsSubscribe(false);
       fetchSessions();
     } catch (err: any) {
@@ -180,6 +182,8 @@ export default function SessionsPage() {
         subscription_period: subPeriod,
         subscription_amount: subAmount.toString(),
         subscription_day: subDay,
+        installments: (data as any).installments || '',
+        payment_method: (data as any).payment_method || '',
       });
       setEditOpen(true);
     } catch { /* ignore */ }
@@ -282,6 +286,20 @@ export default function SessionsPage() {
 
               <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} required={!isSubscribe} disabled={isSubscribe} />
 
+              <TextField select fullWidth label="عدد الأقساط" value={form.installments} onChange={handleChange('installments')}>
+                <MenuItem value="">اختر</MenuItem>
+                <MenuItem value="1">قسط واحد</MenuItem>
+                <MenuItem value="2">قسمين</MenuItem>
+                <MenuItem value="3">ثلاثة أقساط</MenuItem>
+                <MenuItem value="4">أربعة أقساط</MenuItem>
+              </TextField>
+
+              <TextField select fullWidth label="طريقة الدفع" value={form.payment_method} onChange={handleChange('payment_method')}>
+                <MenuItem value="">اختر</MenuItem>
+                <MenuItem value="محفظة">محفظة</MenuItem>
+                <MenuItem value="نقد">نقد</MenuItem>
+              </TextField>
+
               <FormControl>
                 <FormLabel sx={{ mb: 0.5 }}>الاشتراكات</FormLabel>
                 <RadioGroup row value={isSubscribe ? 'subscribe' : 'normal'} onChange={e => {
@@ -305,7 +323,7 @@ export default function SessionsPage() {
               <TextField fullWidth label={t('patients.add.form.notes')} multiline rows={2} value={form.notes} onChange={handleChange('notes')} />
 
               <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2, flexWrap: 'wrap' }}>
-                <Button variant="outlined" color="warning" onClick={() => { setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: '', subscription_amount: '', subscription_day: '' }); setIsSubscribe(false); }}>{t('patients.add.form.cancel')}</Button>
+                <Button variant="outlined" color="warning" onClick={() => { setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: '', subscription_amount: '', subscription_day: '', installments: '', payment_method: '' }); setIsSubscribe(false); }}>{t('patients.add.form.cancel')}</Button>
                 <Button variant="contained" color="success" type="submit">{t('patients.add.form.save')}</Button>
               </Box>
             </Box>
@@ -512,6 +530,20 @@ export default function SessionsPage() {
             <TextField fullWidth label={t('sessions.date')} type="datetime-local" value={form.session_date} onChange={handleChange('session_date')} sx={{ mb: 2 }} slotProps={{ inputLabel: { shrink: true } }} />
 
             <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} sx={{ mb: 2 }} required={!isSubscribe} disabled={isSubscribe} />
+
+            <TextField select fullWidth label="عدد الأقساط" value={form.installments} onChange={handleChange('installments')} sx={{ mb: 2 }}>
+              <MenuItem value="">اختر</MenuItem>
+              <MenuItem value="1">قسط واحد</MenuItem>
+              <MenuItem value="2">قسمين</MenuItem>
+              <MenuItem value="3">ثلاثة أقساط</MenuItem>
+              <MenuItem value="4">أربعة أقساط</MenuItem>
+            </TextField>
+
+            <TextField select fullWidth label="طريقة الدفع" value={form.payment_method} onChange={handleChange('payment_method')} sx={{ mb: 2 }}>
+              <MenuItem value="">اختر</MenuItem>
+              <MenuItem value="محفظة">محفظة</MenuItem>
+              <MenuItem value="نقد">نقد</MenuItem>
+            </TextField>
 
             <FormControl sx={{ mb: 2 }}>
               <FormLabel sx={{ mb: 0.5 }}>الاشتراكات</FormLabel>
