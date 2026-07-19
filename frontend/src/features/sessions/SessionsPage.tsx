@@ -345,7 +345,7 @@ export default function SessionsPage() {
                   <TextField select fullWidth label="عدد الأقساط" value={form.installments} onChange={handleChange('installments')}>
                     <MenuItem value="">اختر</MenuItem>
                     <MenuItem value="1">قسط واحد</MenuItem>
-                    <MenuItem value="2">قسمين</MenuItem>
+                    <MenuItem value="2">قصدين</MenuItem>
                     <MenuItem value="3">ثلاثة أقساط</MenuItem>
                     <MenuItem value="4">أربعة أقساط</MenuItem>
                   </TextField>
@@ -607,7 +607,7 @@ export default function SessionsPage() {
                 <TextField select fullWidth label="عدد الأقساط" value={form.installments} onChange={handleChange('installments')}>
                   <MenuItem value="">اختر</MenuItem>
                   <MenuItem value="1">قسط واحد</MenuItem>
-                  <MenuItem value="2">قسمين</MenuItem>
+                  <MenuItem value="2">قصدين</MenuItem>
                   <MenuItem value="3">ثلاثة أقساط</MenuItem>
                   <MenuItem value="4">أربعة أقساط</MenuItem>
                 </TextField>
