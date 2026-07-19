@@ -26,6 +26,8 @@ interface Session {
   subscriptionPeriod: string | null;
   subscriptionAmount: number | null;
   subscriptionDay: number | null;
+  installments: string | null;
+  paymentMethod: string | null;
 }
 
 interface Employee {
