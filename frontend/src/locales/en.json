@@ -310,6 +310,7 @@
   "calendar.fullDay": "Full day event",
   "nav.services": "Services",
   "nav.subscribers": "Subscribers",
+"nav.walletTransfers": "Wallet Transfers",
   "subscribers.title": "Subscribers Management",
   "subscribers.empty": "No subscribers found",
   "nav.advances": "Advances",

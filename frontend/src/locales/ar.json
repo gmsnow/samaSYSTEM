@@ -310,6 +310,7 @@
   "calendar.fullDay": "حدث ليوم كامل",
   "nav.services": "الخدمات",
   "nav.subscribers": "المشتركين",
+"nav.walletTransfers": "الحوالات المالية",
   "subscribers.title": "إدارة المشتركين",
   "subscribers.empty": "لا يوجد مشتركين",
   "nav.advances": "السلف",
