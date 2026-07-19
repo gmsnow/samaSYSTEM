@@ -129,7 +129,7 @@ export default function SessionsPage() {
     subscription_amount: '',
     subscription_day: '',
     installments: '',
-    payment_method: '',
+    payment_method: 'نقد',
     wallet_type: '',
     transaction_number: '',
   });
@@ -168,7 +168,7 @@ export default function SessionsPage() {
       const payload = isSubscribe ? form : { ...form, subscription_period: '', subscription_amount: '', subscription_day: '' };
       const { data } = await api.post('/sessions', payload);
       setMessage({ text: data.message, type: 'success' });
-      setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: '', subscription_amount: '', subscription_day: '', installments: '', payment_method: '', wallet_type: '', transaction_number: '' });
+      setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: '', subscription_amount: '', subscription_day: '', installments: '', payment_method: 'نقد', wallet_type: '', transaction_number: '' });
       setIsSubscribe(false);
       fetchSessions();
     } catch (err: any) {
@@ -355,7 +355,7 @@ export default function SessionsPage() {
               <TextField fullWidth label={t('patients.add.form.notes')} multiline rows={2} value={form.notes} onChange={handleChange('notes')} />
 
               <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2, flexWrap: 'wrap' }}>
-                <Button variant="outlined" color="warning" onClick={() => { setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: '', subscription_amount: '', subscription_day: '', installments: '', payment_method: '', wallet_type: '', transaction_number: '' }); setIsSubscribe(false); }}>{t('patients.add.form.cancel')}</Button>
+                <Button variant="outlined" color="warning" onClick={() => { setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: '', subscription_amount: '', subscription_day: '', installments: '', payment_method: 'نقد', wallet_type: '', transaction_number: '' }); setIsSubscribe(false); }}>{t('patients.add.form.cancel')}</Button>
                 <Button variant="contained" color="success" type="submit">{t('patients.add.form.save')}</Button>
               </Box>
             </Box>
