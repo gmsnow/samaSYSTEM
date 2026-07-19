@@ -4,7 +4,7 @@ import {
   Table, TableHead, TableBody, TableRow, TableCell, Dialog, DialogTitle, DialogContent,
   DialogActions,   FormControl, FormControlLabel, FormLabel, InputLabel, Select, Chip, Pagination, Stack, Radio, RadioGroup,
 } from '@mui/material';
-import { KeyboardArrowUp, Close, Edit, Delete, Add, FilterList } from '@mui/icons-material';
+import { KeyboardArrowUp, Close, Edit, Delete, Add, FilterList, AccountBalanceWallet } from '@mui/icons-material';
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../services/api';
 
@@ -16,6 +16,27 @@ const WALLET_TYPES = [
   'شامل موني', 'بنك شامل',
   'سبأ كاش', 'محفظتي', 'أم فلوس',
 ];
+
+interface Payment {
+  amount: number;
+  date: string;
+}
+
+function getInstallmentPayments(s: Session): Payment[] {
+  try {
+    const d = JSON.parse(s.installments || '{}');
+    if (Array.isArray(d)) return d;
+    return d.payments || [];
+  } catch { return []; }
+}
+
+function getInstallmentPaid(s: Session): number {
+  return getInstallmentPayments(s).reduce((sum, p) => sum + p.amount, 0);
+}
+
+function getInstallmentRemaining(s: Session): number {
+  return (s.price || 0) - getInstallmentPaid(s);
+}
 
 
 const typeLabels: Record<string, string> = {
@@ -81,7 +102,9 @@ export default function SessionsPage() {
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [installmentOpen, setInstallmentOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [installmentForm, setInstallmentForm] = useState({ amount: '', date: new Date().toISOString().split('T')[0] });
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
   const rowsPerPage = 10;
@@ -166,7 +189,13 @@ export default function SessionsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const payload = isSubscribe ? form : { ...form, subscription_period: '', subscription_amount: '', subscription_day: '' };
+      const payload: any = isSubscribe ? form : { ...form, subscription_period: '', subscription_amount: '', subscription_day: '' };
+      if (!isSubscribe && form.installments && form.installments !== '' && form.price) {
+        const count = parseInt(form.installments);
+        const perInstallment = Math.floor(Number(form.price) / count);
+        const payments = Array.from({ length: count }, () => ({ amount: perInstallment, date: new Date().toISOString().split('T')[0] }));
+        payload.installments = JSON.stringify({ payments });
+      }
       const { data } = await api.post('/sessions', payload);
       setMessage({ text: data.message, type: 'success' });
       setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: '', subscription_amount: '', subscription_day: '', installments: '', payment_method: 'نقد', wallet_type: '', transaction_number: '' });
@@ -209,7 +238,13 @@ export default function SessionsPage() {
     e.preventDefault();
     if (!selectedId) return;
     try {
-      const payload = isSubscribe ? form : { ...form, subscription_period: '', subscription_amount: '', subscription_day: '' };
+      const payload: any = isSubscribe ? form : { ...form, subscription_period: '', subscription_amount: '', subscription_day: '' };
+      if (!isSubscribe && form.installments && form.installments !== '' && form.price) {
+        const count = parseInt(form.installments);
+        const perInstallment = Math.floor(Number(form.price) / count);
+        const payments = Array.from({ length: count }, () => ({ amount: perInstallment, date: new Date().toISOString().split('T')[0] }));
+        payload.installments = JSON.stringify({ payments });
+      }
       const { data } = await api.put(`/sessions/${selectedId}`, payload);
       setMessage({ text: data.message, type: 'success' });
       setEditOpen(false);
@@ -238,6 +273,43 @@ export default function SessionsPage() {
     setSelectedId(null);
     setTimeout(() => setMessage(null), 4000);
   };
+
+  const openInstallments = (s: Session) => {
+    setSelectedId(s.id);
+    setInstallmentForm({ amount: '', date: new Date().toISOString().split('T')[0] });
+    setInstallmentOpen(true);
+  };
+
+  const handleAddInstallmentPayment = async () => {
+    if (!selectedId || !installmentForm.amount) return;
+    const s = sessions.find(x => x.id === selectedId);
+    if (!s) return;
+    const payments = getInstallmentPayments(s);
+    payments.push({ amount: Number(installmentForm.amount), date: installmentForm.date });
+    try {
+      await api.put(`/sessions/${selectedId}`, {
+        installments: JSON.stringify({ payments }),
+      });
+      setInstallmentForm({ amount: '', date: new Date().toISOString().split('T')[0] });
+      fetchSessions();
+    } catch { /* ignore */ }
+  };
+
+  const handleDeleteInstallmentPayment = async (idx: number) => {
+    if (!selectedId) return;
+    const s = sessions.find(x => x.id === selectedId);
+    if (!s) return;
+    const payments = getInstallmentPayments(s);
+    payments.splice(idx, 1);
+    try {
+      await api.put(`/sessions/${selectedId}`, {
+        installments: JSON.stringify({ payments }),
+      });
+      fetchSessions();
+    } catch { /* ignore */ }
+  };
+
+  const selectedForInstallment = sessions.find(s => s.id === selectedId);
 
   const uniquePatients = [...new Set(sessions.map(s => s.fullname))].sort();
   const statusSessionTypes = statusForm.patient
@@ -500,12 +572,17 @@ export default function SessionsPage() {
                 <TableCell>{t('sessions.status')}</TableCell>
                 <TableCell>{t('sessions.date')}</TableCell>
                 <TableCell>{t('patients.add.form.price')}</TableCell>
+                <TableCell>الأقساط</TableCell>
                 <TableCell>{t('patients.add.form.notes')}</TableCell>
                 <TableCell>{t('patients.col.actions')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {paginatedSessions.map(s => (
+              {paginatedSessions.map(s => {
+                const paidAmt = getInstallmentPaid(s);
+                const remainingAmt = getInstallmentRemaining(s);
+                const hasInstallments = s.installments && s.installments !== '';
+                return (
                 <TableRow key={s.id} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
                   <TableCell sx={{ fontWeight: 600 }}>{s.fullname}</TableCell>
                   <TableCell>{typeLabels[s.sessionType] || s.sessionType}</TableCell>
@@ -515,11 +592,24 @@ export default function SessionsPage() {
                   </TableCell>
                   <TableCell>{formatDate(s.sessionDate)}</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{s.price ?? ''}</TableCell>
+                  <TableCell>
+                    {hasInstallments ? (
+                      <Chip
+                        label={remainingAmt > 0 ? `${paidAmt.toLocaleString()} / ${(paidAmt + remainingAmt).toLocaleString()}` : `✔ ${paidAmt.toLocaleString()}`}
+                        size="small"
+                        color={remainingAmt > 0 ? 'warning' : 'success'}
+                        variant="outlined"
+                      />
+                    ) : '-'}
+                  </TableCell>
                   <TableCell sx={{ maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.notes || '-'}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
                       <IconButton size="small" onClick={() => openEdit(s.id)} sx={{ bgcolor: '#007bff15', color: '#007bff', '&:hover': { bgcolor: '#007bff25' } }}>
                         <Edit sx={{ fontSize: 18 }} />
+                      </IconButton>
+                      <IconButton size="small" onClick={() => openInstallments(s)} sx={{ bgcolor: '#28a74515', color: '#28a745', '&:hover': { bgcolor: '#28a74525' } }}>
+                        <AccountBalanceWallet sx={{ fontSize: 18 }} />
                       </IconButton>
                       <IconButton size="small" onClick={() => openDelete(s.id)} sx={{ bgcolor: '#dc354515', color: '#dc3545', '&:hover': { bgcolor: '#dc354525' } }}>
                         <Delete sx={{ fontSize: 18 }} />
@@ -527,10 +617,10 @@ export default function SessionsPage() {
                     </Box>
                   </TableCell>
                 </TableRow>
-              ))}
+              );})}
               {filteredSessions.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
+                  <TableCell colSpan={9} sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
                     {searchQuery ? `${t('sessions.empty')} — "${searchQuery}"` : t('sessions.empty')}
                   </TableCell>
                 </TableRow>
@@ -624,6 +714,48 @@ export default function SessionsPage() {
             <Button type="submit" variant="contained" color="primary">{t('sessions.save')}</Button>
           </DialogActions>
         </Box>
+      </Dialog>
+
+      {/* Installment Dialog */}
+      <Dialog open={installmentOpen} onClose={() => setInstallmentOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>الأقساط</DialogTitle>
+        <DialogContent>
+          {selectedForInstallment && (
+            <Stack spacing={2} sx={{ mt: 1 }}>
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                <Chip label={`المبلغ: ${selectedForInstallment.price?.toLocaleString()} YER`} color="primary" variant="outlined" />
+                <Chip label={`المدفوع: ${getInstallmentPaid(selectedForInstallment).toLocaleString()} YER`} color="success" variant="filled" />
+                <Chip label={`المتبقي: ${getInstallmentRemaining(selectedForInstallment).toLocaleString()} YER`} color={getInstallmentRemaining(selectedForInstallment) > 0 ? 'error' : 'default'} variant="filled" />
+              </Box>
+
+              <Typography sx={{ fontWeight: 700, fontSize: 14, color: 'text.secondary', mt: 1 }}>سجل الدفعات</Typography>
+              {getInstallmentPayments(selectedForInstallment).length === 0 && (
+                <Typography variant="body2" color="text.disabled">لا توجد دفعات مسجلة</Typography>
+              )}
+              {getInstallmentPayments(selectedForInstallment).map((p, i) => (
+                <Box key={i} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#f5f5f5', borderRadius: 1, px: 2, py: 1 }}>
+                  <Box>
+                    <Typography sx={{ fontWeight: 600 }}>{p.amount.toLocaleString()} YER</Typography>
+                    <Typography variant="caption" color="text.secondary">{p.date}</Typography>
+                  </Box>
+                  <IconButton size="small" onClick={() => handleDeleteInstallmentPayment(i)} sx={{ color: '#dc3545' }}>
+                    <Delete sx={{ fontSize: 18 }} />
+                  </IconButton>
+                </Box>
+              ))}
+
+              <Typography sx={{ fontWeight: 700, fontSize: 14, color: 'text.secondary', mt: 1 }}>إضافة دفعة جديدة</Typography>
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+                <TextField size="small" label="المبلغ" type="number" value={installmentForm.amount} onChange={e => setInstallmentForm(f => ({ ...f, amount: e.target.value }))} sx={{ width: 150 }} />
+                <TextField size="small" label="التاريخ" type="date" value={installmentForm.date} onChange={e => setInstallmentForm(f => ({ ...f, date: e.target.value }))} slotProps={{ inputLabel: { shrink: true } }} sx={{ width: 160 }} />
+                <Button variant="contained" size="small" onClick={handleAddInstallmentPayment} sx={{ mt: 0.5, whiteSpace: 'nowrap', minWidth: 80, height: 40 }}>إضافة</Button>
+              </Box>
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setInstallmentOpen(false)} color="secondary">إغلاق</Button>
+        </DialogActions>
       </Dialog>
 
       {/* Delete Modal */}
