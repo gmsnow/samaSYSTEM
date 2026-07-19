@@ -9,12 +9,12 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../services/api';
 
 const WALLET_TYPES = [
-  'جوالي (Jawali)', 'WeCash', 'جيب (Jaib)', 'AHD Financial',
-  'موبايل موني (Mobile Money)', 'كاك بنك (CAC Bank)',
-  'فلوسك (Floosak / mFloos)', 'بنك الكريمي للتمويل الأصغر الإسلامي',
-  'ONE Cash', 'كاش (Cash)', 'Tamkeen Financial',
-  'شامل موني (Shamel Money)', 'بنك شامل',
-  'سبأ كاش (Saba Cash)', 'محفظتي', 'أم فلوس (mFloos)',
+  'جوالي', 'WeCash', 'جيب', 'AHD Financial',
+  'موبايل موني', 'كاك بنك',
+  'فلوسك', 'بنك الكريمي للتمويل الأصغر الإسلامي',
+  'ONE Cash', 'كاش', 'Tamkeen Financial',
+  'شامل موني', 'بنك شامل',
+  'سبأ كاش', 'محفظتي', 'أم فلوس',
 ];
 
 const typeLabels: Record<string, string> = {
