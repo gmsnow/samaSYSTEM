@@ -288,14 +288,6 @@ export default function SessionsPage() {
 
               <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} required={!isSubscribe} disabled={isSubscribe} />
 
-              <TextField select fullWidth label="عدد الأقساط" value={form.installments} onChange={handleChange('installments')}>
-                <MenuItem value="">اختر</MenuItem>
-                <MenuItem value="1">قسط واحد</MenuItem>
-                <MenuItem value="2">قسمين</MenuItem>
-                <MenuItem value="3">ثلاثة أقساط</MenuItem>
-                <MenuItem value="4">أربعة أقساط</MenuItem>
-              </TextField>
-
               <TextField select fullWidth label="طريقة الدفع" value={form.payment_method} onChange={handleChange('payment_method')}>
                 <MenuItem value="">اختر</MenuItem>
                 <MenuItem value="محفظة">محفظة</MenuItem>
@@ -308,7 +300,7 @@ export default function SessionsPage() {
                   const v = e.target.value;
                   setIsSubscribe(v === 'subscribe');
                   if (v === 'subscribe') setForm(f => ({ ...f, subscription_period: 'شهر' }));
-                  else setForm(f => ({ ...f, subscription_period: '', subscription_amount: '', subscription_day: '' }));
+                  else setForm(f => ({ ...f, subscription_period: '', subscription_amount: '', subscription_day: '', installments: '' }));
                 }}>
                   <FormControlLabel value="subscribe" control={<Radio size="small" />} label="اشتراك" />
                   <FormControlLabel value="normal" control={<Radio size="small" />} label="جلسة عادية" />
@@ -319,6 +311,13 @@ export default function SessionsPage() {
                 <Stack direction="row" spacing={2}>
                   <TextField fullWidth label="مبلغ الاشتراك" type="number" value={form.subscription_amount} onChange={handleChange('subscription_amount')} />
                   <TextField fullWidth label="اليوم" type="number" value={form.subscription_day} onChange={handleChange('subscription_day')} slotProps={{ htmlInput: { min: 1, max: 31 } }} />
+                  <TextField select fullWidth label="عدد الأقساط" value={form.installments} onChange={handleChange('installments')}>
+                    <MenuItem value="">اختر</MenuItem>
+                    <MenuItem value="1">قسط واحد</MenuItem>
+                    <MenuItem value="2">قسمين</MenuItem>
+                    <MenuItem value="3">ثلاثة أقساط</MenuItem>
+                    <MenuItem value="4">أربعة أقساط</MenuItem>
+                  </TextField>
                 </Stack>
               )}
 
@@ -533,14 +532,6 @@ export default function SessionsPage() {
 
             <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} sx={{ mb: 2 }} required={!isSubscribe} disabled={isSubscribe} />
 
-            <TextField select fullWidth label="عدد الأقساط" value={form.installments} onChange={handleChange('installments')} sx={{ mb: 2 }}>
-              <MenuItem value="">اختر</MenuItem>
-              <MenuItem value="1">قسط واحد</MenuItem>
-              <MenuItem value="2">قسمين</MenuItem>
-              <MenuItem value="3">ثلاثة أقساط</MenuItem>
-              <MenuItem value="4">أربعة أقساط</MenuItem>
-            </TextField>
-
             <TextField select fullWidth label="طريقة الدفع" value={form.payment_method} onChange={handleChange('payment_method')} sx={{ mb: 2 }}>
               <MenuItem value="">اختر</MenuItem>
               <MenuItem value="محفظة">محفظة</MenuItem>
@@ -553,7 +544,7 @@ export default function SessionsPage() {
                 const v = e.target.value;
                 setIsSubscribe(v === 'subscribe');
                 if (v === 'subscribe') setForm(f => ({ ...f, subscription_period: 'شهر' }));
-                else setForm(f => ({ ...f, subscription_period: '', subscription_amount: '', subscription_day: '' }));
+                else setForm(f => ({ ...f, subscription_period: '', subscription_amount: '', subscription_day: '', installments: '' }));
               }}>
                 <FormControlLabel value="subscribe" control={<Radio size="small" />} label="اشتراك" />
                 <FormControlLabel value="normal" control={<Radio size="small" />} label="جلسة عادية" />
@@ -564,6 +555,13 @@ export default function SessionsPage() {
               <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
                 <TextField fullWidth label="مبلغ الاشتراك" type="number" value={form.subscription_amount} onChange={handleChange('subscription_amount')} />
                 <TextField fullWidth label="اليوم" type="number" value={form.subscription_day} onChange={handleChange('subscription_day')} slotProps={{ htmlInput: { min: 1, max: 31 } }} />
+                <TextField select fullWidth label="عدد الأقساط" value={form.installments} onChange={handleChange('installments')}>
+                  <MenuItem value="">اختر</MenuItem>
+                  <MenuItem value="1">قسط واحد</MenuItem>
+                  <MenuItem value="2">قسمين</MenuItem>
+                  <MenuItem value="3">ثلاثة أقساط</MenuItem>
+                  <MenuItem value="4">أربعة أقساط</MenuItem>
+                </TextField>
               </Stack>
             )}
 
