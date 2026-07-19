@@ -299,17 +299,21 @@ export default function SessionsPage() {
                 slotProps={{ inputLabel: { shrink: true } }}
               />
 
-              <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} required={!isSubscribe} disabled={isSubscribe} />
+              <FormControl>
+                <FormLabel sx={{ mb: 0.5 }}>طريقة الدفع</FormLabel>
+                <RadioGroup row value={form.payment_method || 'نقد'} onChange={e => {
+                  const v = e.target.value;
+                  if (v === 'محفظة') setForm(f => ({ ...f, payment_method: v }));
+                  else setForm(f => ({ ...f, payment_method: v, wallet_type: '', transaction_number: '' }));
+                }}>
+                  <FormControlLabel value="نقد" control={<Radio size="small" />} label="نقد" />
+                  <FormControlLabel value="محفظة" control={<Radio size="small" />} label="محفظة" />
+                </RadioGroup>
+              </FormControl>
 
-              <TextField select fullWidth label="طريقة الدفع" value={form.payment_method} onChange={e => {
-                const v = e.target.value;
-                if (v !== 'محفظة') setForm(f => ({ ...f, payment_method: v, wallet_type: '', transaction_number: '' }));
-                else setForm(f => ({ ...f, payment_method: v }));
-              }}>
-                <MenuItem value="">اختر</MenuItem>
-                <MenuItem value="محفظة">محفظة</MenuItem>
-                <MenuItem value="نقد">نقد</MenuItem>
-              </TextField>
+              {form.payment_method === 'نقد' && (
+                <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} required={!isSubscribe} disabled={isSubscribe} />
+              )}
 
               {form.payment_method === 'محفظة' && (
                 <>
@@ -557,17 +561,21 @@ export default function SessionsPage() {
 
             <TextField fullWidth label={t('sessions.date')} type="datetime-local" value={form.session_date} onChange={handleChange('session_date')} sx={{ mb: 2 }} slotProps={{ inputLabel: { shrink: true } }} />
 
-            <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} sx={{ mb: 2 }} required={!isSubscribe} disabled={isSubscribe} />
+            <FormControl sx={{ mb: 2 }}>
+              <FormLabel sx={{ mb: 0.5 }}>طريقة الدفع</FormLabel>
+              <RadioGroup row value={form.payment_method || 'نقد'} onChange={e => {
+                const v = e.target.value;
+                if (v === 'محفظة') setForm(f => ({ ...f, payment_method: v }));
+                else setForm(f => ({ ...f, payment_method: v, wallet_type: '', transaction_number: '' }));
+              }}>
+                <FormControlLabel value="نقد" control={<Radio size="small" />} label="نقد" />
+                <FormControlLabel value="محفظة" control={<Radio size="small" />} label="محفظة" />
+              </RadioGroup>
+            </FormControl>
 
-            <TextField select fullWidth label="طريقة الدفع" value={form.payment_method} onChange={e => {
-              const v = e.target.value;
-              if (v !== 'محفظة') setForm(f => ({ ...f, payment_method: v, wallet_type: '', transaction_number: '' }));
-              else setForm(f => ({ ...f, payment_method: v }));
-            }} sx={{ mb: 2 }}>
-              <MenuItem value="">اختر</MenuItem>
-              <MenuItem value="محفظة">محفظة</MenuItem>
-              <MenuItem value="نقد">نقد</MenuItem>
-            </TextField>
+            {form.payment_method === 'نقد' && (
+              <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} sx={{ mb: 2 }} required={!isSubscribe} disabled={isSubscribe} />
+            )}
 
             {form.payment_method === 'محفظة' && (
               <>
