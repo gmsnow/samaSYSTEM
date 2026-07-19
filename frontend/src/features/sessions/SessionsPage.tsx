@@ -280,7 +280,7 @@ export default function SessionsPage() {
                 slotProps={{ inputLabel: { shrink: true } }}
               />
 
-              <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} required={!isSubscribe} />
+              <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} required={!isSubscribe} disabled={isSubscribe} />
 
               <FormControl>
                 <FormLabel sx={{ mb: 0.5 }}>الاشتراكات</FormLabel>
@@ -511,7 +511,7 @@ export default function SessionsPage() {
 
             <TextField fullWidth label={t('sessions.date')} type="datetime-local" value={form.session_date} onChange={handleChange('session_date')} sx={{ mb: 2 }} slotProps={{ inputLabel: { shrink: true } }} />
 
-            <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} sx={{ mb: 2 }} required={!isSubscribe} />
+            <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} sx={{ mb: 2 }} required={!isSubscribe} disabled={isSubscribe} />
 
             <FormControl sx={{ mb: 2 }}>
               <FormLabel sx={{ mb: 0.5 }}>الاشتراكات</FormLabel>
