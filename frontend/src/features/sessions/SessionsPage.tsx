@@ -8,6 +8,15 @@ import { KeyboardArrowUp, Close, Edit, Delete, Add, FilterList } from '@mui/icon
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../services/api';
 
+const WALLET_TYPES = [
+  'جوالي (Jawali)', 'WeCash', 'جيب (Jaib)', 'AHD Financial',
+  'موبايل موني (Mobile Money)', 'كاك بنك (CAC Bank)',
+  'فلوسك (Floosak / mFloos)', 'بنك الكريمي للتمويل الأصغر الإسلامي',
+  'ONE Cash', 'كاش (Cash)', 'Tamkeen Financial',
+  'شامل موني (Shamel Money)', 'بنك شامل',
+  'سبأ كاش (Saba Cash)', 'محفظتي', 'أم فلوس (mFloos)',
+];
+
 const typeLabels: Record<string, string> = {
   physiotherapy: 'علاج طبيعي',
   'physiotherapy (adults)': 'جلسات علاج طبيعي (كبار)',
@@ -121,6 +130,8 @@ export default function SessionsPage() {
     subscription_day: '',
     installments: '',
     payment_method: '',
+    wallet_type: '',
+    transaction_number: '',
   });
   const [isSubscribe, setIsSubscribe] = useState(false);
 
@@ -157,7 +168,7 @@ export default function SessionsPage() {
       const payload = isSubscribe ? form : { ...form, subscription_period: '', subscription_amount: '', subscription_day: '' };
       const { data } = await api.post('/sessions', payload);
       setMessage({ text: data.message, type: 'success' });
-      setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: '', subscription_amount: '', subscription_day: '', installments: '', payment_method: '' });
+      setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: '', subscription_amount: '', subscription_day: '', installments: '', payment_method: '', wallet_type: '', transaction_number: '' });
       setIsSubscribe(false);
       fetchSessions();
     } catch (err: any) {
@@ -186,6 +197,8 @@ export default function SessionsPage() {
         subscription_day: subDay,
         installments: (data as any).installments || '',
         payment_method: (data as any).payment_method || '',
+        wallet_type: (data as any).wallet_type || '',
+        transaction_number: (data as any).transaction_number || '',
       });
       setEditOpen(true);
     } catch { /* ignore */ }
@@ -288,11 +301,25 @@ export default function SessionsPage() {
 
               <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} required={!isSubscribe} disabled={isSubscribe} />
 
-              <TextField select fullWidth label="طريقة الدفع" value={form.payment_method} onChange={handleChange('payment_method')}>
+              <TextField select fullWidth label="طريقة الدفع" value={form.payment_method} onChange={e => {
+                const v = e.target.value;
+                if (v !== 'محفظة') setForm(f => ({ ...f, payment_method: v, wallet_type: '', transaction_number: '' }));
+                else setForm(f => ({ ...f, payment_method: v }));
+              }}>
                 <MenuItem value="">اختر</MenuItem>
                 <MenuItem value="محفظة">محفظة</MenuItem>
                 <MenuItem value="نقد">نقد</MenuItem>
               </TextField>
+
+              {form.payment_method === 'محفظة' && (
+                <>
+                  <TextField select fullWidth label="نوع المحفظة" value={form.wallet_type} onChange={handleChange('wallet_type')}>
+                    <MenuItem value="">اختر</MenuItem>
+                    {WALLET_TYPES.map(w => <MenuItem key={w} value={w}>{w}</MenuItem>)}
+                  </TextField>
+                  <TextField fullWidth label="رقم العملية" value={form.transaction_number} onChange={handleChange('transaction_number')} />
+                </>
+              )}
 
               <FormControl>
                 <FormLabel sx={{ mb: 0.5 }}>الاشتراكات</FormLabel>
@@ -324,7 +351,7 @@ export default function SessionsPage() {
               <TextField fullWidth label={t('patients.add.form.notes')} multiline rows={2} value={form.notes} onChange={handleChange('notes')} />
 
               <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2, flexWrap: 'wrap' }}>
-                <Button variant="outlined" color="warning" onClick={() => { setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: '', subscription_amount: '', subscription_day: '', installments: '', payment_method: '' }); setIsSubscribe(false); }}>{t('patients.add.form.cancel')}</Button>
+                <Button variant="outlined" color="warning" onClick={() => { setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: '', subscription_amount: '', subscription_day: '', installments: '', payment_method: '', wallet_type: '', transaction_number: '' }); setIsSubscribe(false); }}>{t('patients.add.form.cancel')}</Button>
                 <Button variant="contained" color="success" type="submit">{t('patients.add.form.save')}</Button>
               </Box>
             </Box>
@@ -532,11 +559,25 @@ export default function SessionsPage() {
 
             <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} sx={{ mb: 2 }} required={!isSubscribe} disabled={isSubscribe} />
 
-            <TextField select fullWidth label="طريقة الدفع" value={form.payment_method} onChange={handleChange('payment_method')} sx={{ mb: 2 }}>
+            <TextField select fullWidth label="طريقة الدفع" value={form.payment_method} onChange={e => {
+              const v = e.target.value;
+              if (v !== 'محفظة') setForm(f => ({ ...f, payment_method: v, wallet_type: '', transaction_number: '' }));
+              else setForm(f => ({ ...f, payment_method: v }));
+            }} sx={{ mb: 2 }}>
               <MenuItem value="">اختر</MenuItem>
               <MenuItem value="محفظة">محفظة</MenuItem>
               <MenuItem value="نقد">نقد</MenuItem>
             </TextField>
+
+            {form.payment_method === 'محفظة' && (
+              <>
+                <TextField select fullWidth label="نوع المحفظة" value={form.wallet_type} onChange={handleChange('wallet_type')} sx={{ mb: 2 }}>
+                  <MenuItem value="">اختر</MenuItem>
+                  {WALLET_TYPES.map(w => <MenuItem key={w} value={w}>{w}</MenuItem>)}
+                </TextField>
+                <TextField fullWidth label="رقم العملية" value={form.transaction_number} onChange={handleChange('transaction_number')} sx={{ mb: 2 }} />
+              </>
+            )}
 
             <FormControl sx={{ mb: 2 }}>
               <FormLabel sx={{ mb: 0.5 }}>الاشتراكات</FormLabel>
