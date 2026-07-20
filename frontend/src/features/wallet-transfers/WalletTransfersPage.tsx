@@ -17,15 +17,16 @@ const WALLET_TYPES = [
   'سبأ كاش', 'محفظتي', 'أم فلوس',
 ];
 
-interface Session {
+interface WalletItem {
   id: string;
   fullname: string;
   price: number | null;
-  sessionDate: string | null;
+  date: string | null;
   walletType: string | null;
   transactionNumber: string | null;
   paymentMethod: string | null;
   installments: string | null;
+  source: 'session' | 'patient';
 }
 
 interface Payment {
@@ -33,7 +34,7 @@ interface Payment {
   date: string;
 }
 
-function getInstallmentPayments(s: Session): Payment[] {
+function getInstallmentPayments(s: WalletItem): Payment[] {
   try {
     const d = JSON.parse(s.installments || '{}');
     if (Array.isArray(d)) return d;
@@ -41,35 +42,63 @@ function getInstallmentPayments(s: Session): Payment[] {
   } catch { return []; }
 }
 
-function getInstallmentPaid(s: Session): number {
+function getInstallmentPaid(s: WalletItem): number {
   return getInstallmentPayments(s).reduce((sum, p) => sum + p.amount, 0);
 }
 
-function getInstallmentRemaining(s: Session): number {
+function getInstallmentRemaining(s: WalletItem): number {
   return (s.price || 0) - getInstallmentPaid(s);
 }
 
 export default function WalletTransfersPage() {
   const { t } = useLanguage();
-  const [sessions, setSessions] = useState<Session[]>([]);
+  const [items, setItems] = useState<WalletItem[]>([]);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [installmentOpen, setInstallmentOpen] = useState(false);
-  const [selected, setSelected] = useState<Session | null>(null);
+  const [selected, setSelected] = useState<WalletItem | null>(null);
   const [editForm, setEditForm] = useState({ price: '', wallet_type: '', transaction_number: '' });
   const [installmentForm, setInstallmentForm] = useState({ amount: '', date: new Date().toISOString().split('T')[0] });
 
-  const fetchSessions = () => {
-    api.get('/sessions').then(({ data }) => setSessions(data)).catch(() => {});
+  const fetchAll = async () => {
+    try {
+      const [sessRes, patRes] = await Promise.all([
+        api.get('/sessions'),
+        api.get('/patients'),
+      ]);
+      const sessions: WalletItem[] = (sessRes.data as any[]).map(s => ({
+        id: s.id,
+        fullname: s.fullname,
+        price: s.price,
+        date: s.sessionDate,
+        walletType: s.walletType,
+        transactionNumber: s.transactionNumber,
+        paymentMethod: s.paymentMethod,
+        installments: s.installments,
+        source: 'session' as const,
+      }));
+      const patients: WalletItem[] = (patRes.data as any[]).filter((p: any) => p.paymentMethod === 'محفظة').map(p => ({
+        id: p.id,
+        fullname: `${p.firstName ?? ''} ${p.lastName ?? ''}`.trim(),
+        price: p.price,
+        date: p.registrationDate,
+        walletType: p.walletType,
+        transactionNumber: p.transactionNumber,
+        paymentMethod: p.paymentMethod,
+        installments: p.installments,
+        source: 'patient' as const,
+      }));
+      setItems([...sessions, ...patients]);
+    } catch { /* ignore */ }
   };
 
-  useEffect(() => { fetchSessions(); }, []);
+  useEffect(() => { fetchAll(); }, []);
 
   const filtered = useMemo(() => {
-    let list = sessions.filter(s => s.paymentMethod === 'محفظة');
+    let list = items.filter(s => s.paymentMethod === 'محفظة');
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(s =>
@@ -78,12 +107,14 @@ export default function WalletTransfersPage() {
         (s.transactionNumber || '').toLowerCase().includes(q)
       );
     }
-    return list.sort((a, b) => new Date(b.sessionDate || '').getTime() - new Date(a.sessionDate || '').getTime());
-  }, [sessions, search]);
+    return list.sort((a, b) => new Date(b.date || '').getTime() - new Date(a.date || '').getTime());
+  }, [items, search]);
 
   const paginated = filtered.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 
-  const openEdit = (s: Session) => {
+  const apiPath = (item: WalletItem) => item.source === 'session' ? '/sessions' : '/patients';
+
+  const openEdit = (s: WalletItem) => {
     setSelected(s);
     setEditForm({
       price: s.price?.toString() || '',
@@ -96,17 +127,17 @@ export default function WalletTransfersPage() {
   const handleEditSubmit = async () => {
     if (!selected) return;
     try {
-      await api.put(`/sessions/${selected.id}`, {
+      await api.put(`${apiPath(selected)}/${selected.id}`, {
         price: editForm.price ? parseFloat(editForm.price) : null,
         wallet_type: editForm.wallet_type,
         transaction_number: editForm.transaction_number,
       });
       setEditOpen(false);
-      fetchSessions();
+      fetchAll();
     } catch { /* ignore */ }
   };
 
-  const openDelete = (s: Session) => {
+  const openDelete = (s: WalletItem) => {
     setSelected(s);
     setDeleteOpen(true);
   };
@@ -114,13 +145,13 @@ export default function WalletTransfersPage() {
   const confirmDelete = async () => {
     if (!selected) return;
     try {
-      await api.delete(`/sessions/${selected.id}`);
+      await api.delete(`${apiPath(selected)}/${selected.id}`);
       setDeleteOpen(false);
-      fetchSessions();
+      fetchAll();
     } catch { /* ignore */ }
   };
 
-  const openInstallments = (s: Session) => {
+  const openInstallments = (s: WalletItem) => {
     setSelected(s);
     setInstallmentForm({ amount: '', date: new Date().toISOString().split('T')[0] });
     setInstallmentOpen(true);
@@ -131,11 +162,11 @@ export default function WalletTransfersPage() {
     const payments = getInstallmentPayments(selected);
     payments.push({ amount: Number(installmentForm.amount), date: installmentForm.date });
     try {
-      await api.put(`/sessions/${selected.id}`, {
+      await api.put(`${apiPath(selected)}/${selected.id}`, {
         installments: JSON.stringify({ payments }),
       });
       setInstallmentForm({ amount: '', date: new Date().toISOString().split('T')[0] });
-      fetchSessions();
+      fetchAll();
     } catch { /* ignore */ }
   };
 
@@ -144,10 +175,10 @@ export default function WalletTransfersPage() {
     const payments = getInstallmentPayments(selected);
     payments.splice(idx, 1);
     try {
-      await api.put(`/sessions/${selected.id}`, {
+      await api.put(`${apiPath(selected)}/${selected.id}`, {
         installments: JSON.stringify({ payments }),
       });
-      fetchSessions();
+      fetchAll();
     } catch { /* ignore */ }
   };
 
@@ -186,7 +217,7 @@ export default function WalletTransfersPage() {
                   const remainingAmt = getInstallmentRemaining(s);
                   const hasInstallments = s.installments && s.installments !== '';
                   return (
-                  <TableRow key={s.id} hover>
+                  <TableRow key={`${s.source}-${s.id}`} hover>
                     <TableCell sx={{ fontWeight: 600 }}>{s.fullname}</TableCell>
                     <TableCell>
                       <Chip icon={<AccountBalanceWallet />} label={s.walletType || '-'} size="small" color="primary" variant="outlined" />
@@ -203,7 +234,7 @@ export default function WalletTransfersPage() {
                         />
                       ) : '-'}
                     </TableCell>
-                    <TableCell>{s.sessionDate ? new Date(s.sessionDate).toLocaleDateString('ar-SA') : '-'}</TableCell>
+                    <TableCell>{s.date ? new Date(s.date).toLocaleDateString('ar-SA') : '-'}</TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', gap: 0.5 }}>
                         <IconButton size="small" onClick={() => openInstallments(s)} sx={{ bgcolor: '#28a74515', color: '#28a745', '&:hover': { bgcolor: '#28a74525' } }}>
