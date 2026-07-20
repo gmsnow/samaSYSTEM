@@ -19,6 +19,7 @@ import expenseRoutes from './modules/expenses/expenses.routes.js';
 import chatRoutes from './modules/chat/chat.routes.js';
 import userRoutes from './modules/users/users.routes.js';
 import notificationRoutes from './modules/notifications/notifications.routes.js';
+import coverageRoutes from './modules/coverages/coverages.routes.js';
 import logger from './shared/logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -61,6 +62,7 @@ app.use('/api/expenses', expenseRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/coverages', coverageRoutes);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
