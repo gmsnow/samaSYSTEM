@@ -96,15 +96,17 @@ export default function CoveragesPage() {
 
   const handleSave = async () => {
     try {
-      const payload = {
+      const payload: Record<string, unknown> = {
         name: form.name,
         sessionType: form.sessionType,
         date: form.date,
         price: Number(form.price),
-        therapistShare: Number(form.therapistShare),
         from: form.from || null,
         to: form.to || null,
       };
+      if (form.sessionType === 'hijama') {
+        payload.therapistShare = Number(form.therapistShare);
+      }
       if (editing) {
         await api.put(`/coverages/${editing.id}`, payload);
       } else {
@@ -166,7 +168,7 @@ export default function CoveragesPage() {
                 </TableCell>
                 <TableCell>{c.date}</TableCell>
                 <TableCell>{c.price.toLocaleString()} YER</TableCell>
-                <TableCell>{c.therapistShare != null ? `${c.therapistShare.toLocaleString()} YER` : '-'}</TableCell>
+                <TableCell>{c.sessionType === 'hijama' && c.therapistShare != null ? `${c.therapistShare.toLocaleString()} YER` : '-'}</TableCell>
                 <TableCell>{c.from || '-'}</TableCell>
                 <TableCell>{c.to || '-'}</TableCell>
                 <TableCell>

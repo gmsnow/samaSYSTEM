@@ -20,18 +20,18 @@ export async function createCoverage(data: { name: string; sessionType?: string;
         notes: `تغطية حجامة - ${data.name}`,
       },
     });
+  }
 
-    if (data.price > 0) {
-      await prisma.salaryAdvance.create({
-        data: {
-          employee: data.name,
-          specialty: 'حجامة',
-          amount: data.price,
-          date: data.date,
-          notes: 'تغطية حجامة - كاملة',
-        },
-      });
-    }
+  if (data.price > 0) {
+    await prisma.salaryAdvance.create({
+      data: {
+        employee: data.name,
+        specialty: data.sessionType === 'hijama' ? 'حجامة' : 'تغطية',
+        amount: data.price,
+        date: data.date,
+        notes: data.sessionType === 'hijama' ? 'تغطية حجامة - كاملة' : 'تغطية عادية - كاملة',
+      },
+    });
   }
 
   return coverage;
