@@ -229,17 +229,18 @@ model CalendarEvent {
 }
 
 model Coverage {
-  id        String    @id @default(uuid())
-  name      String    @map("name")
-  special   Boolean   @default(false)
-  date      String    @map("date")
-  price     Float     @map("price")
-  time      String?   @map("time")
-  from      String?   @map("from")
-  to        String?   @map("to")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  id          String    @id @default(uuid())
+  name        String    @map("name")
+  special     Boolean   @default(false)
+  sessionType String    @default("normal") @map("session_type")
+  date        String    @map("date")
+  price       Float     @map("price")
+  time        String?   @map("time")
+  from        String?   @map("from")
+  to          String?   @map("to")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
 
   @@map("coverages")
 }

@@ -468,7 +468,8 @@
   "coverages.empty": "لا توجد تغطيات",
   "coverages.yes": "نعم",
   "coverages.no": "لا",
-  "coverages.col.name": "الاسم",
+  "coverages.col.name": "الموظف",
+  "coverages.col.sessionType": "نوع الجلسة",
   "coverages.col.special": "مميز",
   "coverages.col.date": "التاريخ",
   "coverages.col.price": "السعر",
@@ -476,7 +477,8 @@
   "coverages.col.from": "من",
   "coverages.col.to": "إلى",
   "coverages.col.actions": "الإجراءات",
-  "coverages.form.name": "الاسم",
+  "coverages.form.name": "الموظف",
+  "coverages.form.sessionType": "نوع الجلسة",
   "coverages.form.special": "مميز",
   "coverages.form.date": "التاريخ",
   "coverages.form.price": "السعر",
@@ -485,5 +487,7 @@
   "coverages.form.to": "إلى",
   "coverages.delete.title": "تأكيد الحذف",
   "coverages.delete.confirm": "هل أنت متأكد أنك تريد حذف هذه التغطية؟",
-  "coverages.delete.confirmBtn": "تأكيد الحذف"
+  "coverages.delete.confirmBtn": "تأكيد الحذف",
+  "coverages.sessionType.normal": "عادية",
+  "coverages.sessionType.hijama": "حجامة"
 }

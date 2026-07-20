@@ -3,6 +3,7 @@ import {
   Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, Dialog, DialogTitle, DialogContent, DialogActions, TextField,
   IconButton, TablePagination, Chip, Stack, Tooltip, FormControlLabel, Checkbox,
+  FormControl, FormLabel, Radio, RadioGroup, Select, MenuItem, InputLabel,
 } from '@mui/material';
 import { Add, Delete, Edit } from '@mui/icons-material';
 import api from '../../services/api';
@@ -12,6 +13,7 @@ interface Coverage {
   id: string;
   name: string;
   special: boolean;
+  sessionType: string;
   date: string;
   price: number;
   time: string | null;
@@ -19,11 +21,17 @@ interface Coverage {
   to: string | null;
 }
 
-const emptyForm = { name: '', special: false, date: '', price: '', time: '', from: '', to: '' };
+interface Employee {
+  id: string;
+  name: string;
+}
+
+const emptyForm = { name: '', special: false, sessionType: 'normal', date: '', price: '', time: '', from: '', to: '' };
 
 export default function CoveragesPage() {
   const { t } = useLanguage();
   const [coverages, setCoverages] = useState<Coverage[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -39,7 +47,14 @@ export default function CoveragesPage() {
     } catch { /* ignore */ }
   };
 
-  useEffect(() => { fetchCoverages(); }, []);
+  const fetchEmployees = async () => {
+    try {
+      const { data } = await api.get('/employees');
+      setEmployees(data);
+    } catch { /* ignore */ }
+  };
+
+  useEffect(() => { fetchCoverages(); fetchEmployees(); }, []);
 
   const paginated = coverages.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
@@ -54,6 +69,7 @@ export default function CoveragesPage() {
     setForm({
       name: c.name,
       special: c.special,
+      sessionType: c.sessionType || 'normal',
       date: c.date,
       price: c.price.toString(),
       time: c.time ?? '',
@@ -106,6 +122,7 @@ export default function CoveragesPage() {
           <TableHead>
             <TableRow>
               <TableCell>{t('coverages.col.name')}</TableCell>
+              <TableCell>{t('coverages.col.sessionType')}</TableCell>
               <TableCell>{t('coverages.col.special')}</TableCell>
               <TableCell>{t('coverages.col.date')}</TableCell>
               <TableCell>{t('coverages.col.price')}</TableCell>
@@ -119,6 +136,14 @@ export default function CoveragesPage() {
             {paginated.map(c => (
               <TableRow key={c.id}>
                 <TableCell sx={{ fontWeight: 600 }}>{c.name}</TableCell>
+                <TableCell>
+                  <Chip
+                    label={c.sessionType === 'hijama' ? t('coverages.sessionType.hijama') : t('coverages.sessionType.normal')}
+                    size="small"
+                    color={c.sessionType === 'hijama' ? 'warning' : 'default'}
+                    variant="outlined"
+                  />
+                </TableCell>
                 <TableCell>
                   <Chip label={c.special ? t('coverages.yes') : t('coverages.no')} size="small" color={c.special ? 'primary' : 'default'} variant="outlined" />
                 </TableCell>
@@ -138,7 +163,7 @@ export default function CoveragesPage() {
               </TableRow>
             ))}
             {paginated.length === 0 && (
-              <TableRow><TableCell colSpan={8} align="center">{t('coverages.empty')}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={9} align="center">{t('coverages.empty')}</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
@@ -157,7 +182,31 @@ export default function CoveragesPage() {
         <DialogTitle>{editing ? t('coverages.edit') : t('coverages.add')}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField label={t('coverages.form.name')} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} fullWidth required />
+            <FormControl fullWidth required>
+              <InputLabel>{t('coverages.form.name')}</InputLabel>
+              <Select
+                value={form.name}
+                label={t('coverages.form.name')}
+                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              >
+                {employees.map(emp => (
+                  <MenuItem key={emp.id} value={emp.name}>{emp.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl>
+              <FormLabel>{t('coverages.form.sessionType')}</FormLabel>
+              <RadioGroup
+                row
+                value={form.sessionType}
+                onChange={e => setForm(f => ({ ...f, sessionType: e.target.value }))}
+              >
+                <FormControlLabel value="normal" control={<Radio />} label={t('coverages.sessionType.normal')} />
+                <FormControlLabel value="hijama" control={<Radio />} label={t('coverages.sessionType.hijama')} />
+              </RadioGroup>
+            </FormControl>
+
             <FormControlLabel
               control={<Checkbox checked={form.special} onChange={e => setForm(f => ({ ...f, special: e.target.checked }))} />}
               label={t('coverages.form.special')}

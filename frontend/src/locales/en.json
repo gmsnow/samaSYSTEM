@@ -468,7 +468,8 @@
   "coverages.empty": "No coverages found",
   "coverages.yes": "Yes",
   "coverages.no": "No",
-  "coverages.col.name": "Name",
+  "coverages.col.name": "Employee",
+  "coverages.col.sessionType": "Session Type",
   "coverages.col.special": "Special",
   "coverages.col.date": "Date",
   "coverages.col.price": "Price",
@@ -476,7 +477,8 @@
   "coverages.col.from": "From",
   "coverages.col.to": "To",
   "coverages.col.actions": "Actions",
-  "coverages.form.name": "Name",
+  "coverages.form.name": "Employee",
+  "coverages.form.sessionType": "Session Type",
   "coverages.form.special": "Special",
   "coverages.form.date": "Date",
   "coverages.form.price": "Price",
@@ -485,5 +487,7 @@
   "coverages.form.to": "To",
   "coverages.delete.title": "Confirm Delete",
   "coverages.delete.confirm": "Are you sure you want to delete this coverage?",
-  "coverages.delete.confirmBtn": "Confirm Delete"
+  "coverages.delete.confirmBtn": "Confirm Delete",
+  "coverages.sessionType.normal": "Normal",
+  "coverages.sessionType.hijama": "Hijama"
 }
