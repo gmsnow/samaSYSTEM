@@ -277,9 +277,8 @@ export default function CoveragesPage() {
                   label={t('coverages.form.therapistShare')}
                   type="number"
                   value={form.therapistShare}
-                  onChange={e => setForm(f => ({ ...f, therapistShare: e.target.value }))}
                   fullWidth
-                  required
+                  disabled
                 />
               </>
             )}
