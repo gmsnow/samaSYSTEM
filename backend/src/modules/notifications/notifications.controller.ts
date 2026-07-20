@@ -3,6 +3,7 @@ import * as service from './notifications.service.js';
 
 export async function list(req: Request, res: Response, next: NextFunction) {
   try {
+    await service.deleteOld();
     const notifications = await service.list();
     const unread = await service.unreadCount();
     res.json({ notifications, unread });

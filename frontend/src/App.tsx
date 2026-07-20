@@ -14,6 +14,7 @@ import CalendarPage from './features/calendar/CalendarPage';
 import AdvancesPage from './features/advances/AdvancesPage';
 import ExpensesPage from './features/expenses/ExpensesPage';
 import ServicesPage from './features/services/ServicesPage';
+import CoveragesPage from './features/coverages/CoveragesPage';
 import SubscribersPage from './features/subscribers/SubscribersPage';
 import WalletTransfersPage from './features/wallet-transfers/WalletTransfersPage';
 import EmployeesPage from './features/employees/EmployeesPage';
@@ -22,6 +23,7 @@ import DailyReportPage from './features/reports/DailyReportPage';
 import WeeklyReportPage from './features/reports/WeeklyReportPage';
 import MonthlyReportPage from './features/reports/MonthlyReportPage';
 import ProfilePage from './features/profile/ProfilePage';
+import NotificationsPage from './features/notifications/NotificationsPage';
 import NotFoundPage from './features/NotFoundPage';
 import UnauthorizedPage from './features/auth/UnauthorizedPage';
 
@@ -58,6 +60,7 @@ export default function App() {
           <Route path="/advances" element={<PermissionGuard permission="advances"><AdvancesPage /></PermissionGuard>} />
           <Route path="/expenses" element={<PermissionGuard permission="expenses"><ExpensesPage /></PermissionGuard>} />
           <Route path="/services" element={<PermissionGuard permission="services"><ServicesPage /></PermissionGuard>} />
+          <Route path="/coverages" element={<PermissionGuard permission="coverages"><CoveragesPage /></PermissionGuard>} />
           <Route path="/subscribers" element={<SubscribersPage />} />
           <Route path="/wallet-transfers" element={<WalletTransfersPage />} />
           <Route path="/employees" element={<PermissionGuard permission="employees"><EmployeesPage /></PermissionGuard>} />
@@ -65,6 +68,7 @@ export default function App() {
           <Route path="/reports/daily" element={<DailyReportPage />} />
           <Route path="/reports/weekly" element={<WeeklyReportPage />} />
           <Route path="/reports/monthly" element={<MonthlyReportPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Route>

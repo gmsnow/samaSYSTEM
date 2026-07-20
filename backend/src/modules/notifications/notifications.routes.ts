@@ -7,7 +7,7 @@ const router = Router();
 router.use(authenticate);
 
 router.get('/', controller.list);
-router.put('/:id/read', controller.markRead);
 router.put('/read-all', controller.markAllRead);
+router.put('/:id/read', controller.markRead);
 
 export default router;

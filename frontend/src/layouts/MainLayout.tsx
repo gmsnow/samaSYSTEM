@@ -12,6 +12,7 @@ import {
   NotificationsNone, Mail, Warning, Fullscreen, FullscreenExit,
   ExpandMore, ExpandLess, FiberManualRecord, Search as SearchIcon,
   Person, EventNote, CalendarMonth, HelpOutlined, Lock, Message, Payments, Receipt, People, Assessment, MedicalServices, AccountBalanceWallet,
+  Notifications,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useThemeMode } from '../contexts/ThemeContext';
@@ -176,6 +177,7 @@ export default function MainLayout() {
       { text: t('nav.appointments'), icon: <EventNote />, path: '/appointments', permission: 'appointments' },
       { text: t('nav.calendar'), icon: <CalendarMonth />, path: '/calendar', permission: 'calendar' },
       { text: t('nav.services'), icon: <MedicalServices />, path: '/services', permission: 'services' },
+      { text: t('nav.coverages'), icon: <MedicalServices />, path: '/coverages', permission: 'coverages' },
       { text: t('nav.subscribers'), icon: <Person />, path: '/subscribers' },
       { text: t('nav.walletTransfers'), icon: <AccountBalanceWallet />, path: '/wallet-transfers' },
       { text: t('nav.advances'), icon: <Payments />, path: '/advances', permission: 'advances' },
@@ -183,6 +185,7 @@ export default function MainLayout() {
       { text: t('nav.employees'), icon: <People />, path: '/employees', permission: 'employees' },
       { text: t('nav.users'), icon: <Person />, path: '/users', permission: 'users' },
       { text: t('nav.patients'), icon: <Person />, path: '/patients', permission: 'patients' },
+      { text: t('nav.notifications'), icon: <Notifications />, path: '/notifications' },
       {
         text: t('nav.reports'), icon: <Assessment />,
         children: [
@@ -433,8 +436,8 @@ export default function MainLayout() {
           ))
         )}
         <Divider />
-        <MenuItem sx={{ justifyContent: 'center', py: 1 }} onClick={() => setNotifAnchorEl(null)}>
-          <Typography variant="body2" color="primary" sx={{ fontWeight: 600 }}>View All Notifications</Typography>
+        <MenuItem sx={{ justifyContent: 'center', py: 1 }} onClick={() => { setNotifAnchorEl(null); navigate('/notifications'); }}>
+          <Typography variant="body2" color="primary" sx={{ fontWeight: 600 }}>{t('notification.viewAll')}</Typography>
         </MenuItem>
       </Menu>
 
