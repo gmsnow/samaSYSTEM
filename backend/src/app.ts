@@ -29,8 +29,16 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-const staticPath = path.join(__dirname, 'public', 'assets');
-app.use('/assets', express.static(staticPath));
+// Try multiple possible paths for static assets (dev vs prod)
+const possibleAssetPaths = [
+  path.join(__dirname, 'public', 'assets'),            // dist/src/public/assets
+  path.join(__dirname, '..', '..', 'src', 'public', 'assets'), // backend/src/public/assets
+  path.join(process.cwd(), 'public', 'assets'),         // cwd + public/assets
+  path.join(process.cwd(), 'src', 'public', 'assets'),  // cwd + src/public/assets
+];
+for (const p of possibleAssetPaths) {
+  app.use('/assets', express.static(p));
+}
 if (!process.env.VERCEL) {
   app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 }
