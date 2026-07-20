@@ -15,6 +15,7 @@ interface Coverage {
   sessionType: string;
   date: string;
   price: number;
+  therapistShare: number | null;
   from: string | null;
   to: string | null;
 }
@@ -24,7 +25,7 @@ interface Employee {
   name: string;
 }
 
-const emptyForm = { name: '', sessionType: 'normal', date: '', price: '', from: '', to: '' };
+const emptyForm = { name: '', sessionType: 'normal', date: '', price: '', therapistShare: '500', from: '', to: '' };
 
 function calcPrice(from: string, to: string): number {
   if (!from || !to) return 0;
@@ -86,6 +87,7 @@ export default function CoveragesPage() {
       sessionType: c.sessionType || 'normal',
       date: c.date,
       price: c.price.toString(),
+      therapistShare: (c.therapistShare ?? 500).toString(),
       from: c.from ?? '',
       to: c.to ?? '',
     });
@@ -99,6 +101,7 @@ export default function CoveragesPage() {
         sessionType: form.sessionType,
         date: form.date,
         price: Number(form.price),
+        therapistShare: Number(form.therapistShare),
         from: form.from || null,
         to: form.to || null,
       };
@@ -143,6 +146,7 @@ export default function CoveragesPage() {
               <TableCell>{t('coverages.col.sessionType')}</TableCell>
               <TableCell>{t('coverages.col.date')}</TableCell>
               <TableCell>{t('coverages.col.price')}</TableCell>
+              <TableCell>{t('coverages.col.therapistShare')}</TableCell>
               <TableCell>{t('coverages.col.from')}</TableCell>
               <TableCell>{t('coverages.col.to')}</TableCell>
               <TableCell>{t('coverages.col.actions')}</TableCell>
@@ -162,6 +166,7 @@ export default function CoveragesPage() {
                 </TableCell>
                 <TableCell>{c.date}</TableCell>
                 <TableCell>{c.price.toLocaleString()} YER</TableCell>
+                <TableCell>{c.therapistShare != null ? `${c.therapistShare.toLocaleString()} YER` : '-'}</TableCell>
                 <TableCell>{c.from || '-'}</TableCell>
                 <TableCell>{c.to || '-'}</TableCell>
                 <TableCell>
@@ -175,7 +180,7 @@ export default function CoveragesPage() {
               </TableRow>
             ))}
             {paginated.length === 0 && (
-              <TableRow><TableCell colSpan={7} align="center">{t('coverages.empty')}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} align="center">{t('coverages.empty')}</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
@@ -259,14 +264,24 @@ export default function CoveragesPage() {
                 />
               </>
             ) : (
-              <TextField
-                label={t('coverages.form.price')}
-                type="number"
-                value={form.price}
-                onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
-                fullWidth
-                required
-              />
+              <>
+                <TextField
+                  label={t('coverages.form.price')}
+                  type="number"
+                  value={form.price}
+                  onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
+                  fullWidth
+                  required
+                />
+                <TextField
+                  label={t('coverages.form.therapistShare')}
+                  type="number"
+                  value={form.therapistShare}
+                  onChange={e => setForm(f => ({ ...f, therapistShare: e.target.value }))}
+                  fullWidth
+                  required
+                />
+              </>
             )}
           </Stack>
         </DialogContent>
