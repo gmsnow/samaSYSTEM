@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, Dialog, DialogTitle, DialogContent, DialogActions, TextField,
@@ -48,9 +48,11 @@ export default function CoveragesPage() {
   const [form, setForm] = useState(emptyForm);
   const [editing, setEditing] = useState<Coverage | null>(null);
 
-  const autoPrice = useMemo(() => {
-    if (form.sessionType !== 'normal') return null;
-    return calcPrice(form.from, form.to);
+  useEffect(() => {
+    if (form.sessionType === 'normal' && (form.from || form.to)) {
+      const p = calcPrice(form.from, form.to);
+      setForm(f => ({ ...f, price: p.toString() }));
+    }
   }, [form.sessionType, form.from, form.to]);
 
   const fetchCoverages = async () => {
@@ -96,7 +98,7 @@ export default function CoveragesPage() {
         name: form.name,
         sessionType: form.sessionType,
         date: form.date,
-        price: form.sessionType === 'normal' ? (autoPrice ?? 0) : Number(form.price),
+        price: Number(form.price),
         from: form.from || null,
         to: form.to || null,
       };
@@ -249,9 +251,11 @@ export default function CoveragesPage() {
                 />
                 <TextField
                   label={t('coverages.form.price')}
-                  value={autoPrice !== null ? `${autoPrice.toLocaleString()} YER` : ''}
+                  type="number"
+                  value={form.price}
+                  onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
                   fullWidth
-                  slotProps={{ input: { readOnly: true } }}
+                  required
                 />
               </>
             ) : (
