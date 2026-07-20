@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, Dialog, DialogTitle, DialogContent, DialogActions, TextField,
-  IconButton, TablePagination, Chip, Stack, Tooltip, FormControlLabel, Checkbox,
-  FormControl, FormLabel, Radio, RadioGroup, Select, MenuItem, InputLabel,
+  IconButton, TablePagination, Chip, Stack, Tooltip,
+  FormControl, FormLabel, FormControlLabel, Radio, RadioGroup, Select, MenuItem, InputLabel,
 } from '@mui/material';
 import { Add, Delete, Edit } from '@mui/icons-material';
 import api from '../../services/api';
@@ -12,11 +12,9 @@ import { useLanguage } from '../../contexts/LanguageContext';
 interface Coverage {
   id: string;
   name: string;
-  special: boolean;
   sessionType: string;
   date: string;
   price: number;
-  time: string | null;
   from: string | null;
   to: string | null;
 }
@@ -26,7 +24,17 @@ interface Employee {
   name: string;
 }
 
-const emptyForm = { name: '', special: false, sessionType: 'normal', date: '', price: '', time: '', from: '', to: '' };
+const emptyForm = { name: '', sessionType: 'normal', date: '', price: '', from: '', to: '' };
+
+function calcPrice(from: string, to: string): number {
+  if (!from || !to) return 0;
+  const [fH, fM] = from.split(':').map(Number);
+  const [tH, tM] = to.split(':').map(Number);
+  const diff = (tH * 60 + tM) - (fH * 60 + fM);
+  if (diff <= 0) return 0;
+  const hours = diff / 60;
+  return Math.ceil(hours) * 500;
+}
 
 export default function CoveragesPage() {
   const { t } = useLanguage();
@@ -39,6 +47,11 @@ export default function CoveragesPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [editing, setEditing] = useState<Coverage | null>(null);
+
+  const autoPrice = useMemo(() => {
+    if (form.sessionType !== 'normal') return null;
+    return calcPrice(form.from, form.to);
+  }, [form.sessionType, form.from, form.to]);
 
   const fetchCoverages = async () => {
     try {
@@ -68,11 +81,9 @@ export default function CoveragesPage() {
     setEditing(c);
     setForm({
       name: c.name,
-      special: c.special,
       sessionType: c.sessionType || 'normal',
       date: c.date,
       price: c.price.toString(),
-      time: c.time ?? '',
       from: c.from ?? '',
       to: c.to ?? '',
     });
@@ -82,9 +93,12 @@ export default function CoveragesPage() {
   const handleSave = async () => {
     try {
       const payload = {
-        ...form,
-        special: form.special,
-        price: Number(form.price),
+        name: form.name,
+        sessionType: form.sessionType,
+        date: form.date,
+        price: form.sessionType === 'normal' ? (autoPrice ?? 0) : Number(form.price),
+        from: form.from || null,
+        to: form.to || null,
       };
       if (editing) {
         await api.put(`/coverages/${editing.id}`, payload);
@@ -108,6 +122,8 @@ export default function CoveragesPage() {
     setSelectedId(null);
   };
 
+  const isNormal = form.sessionType === 'normal';
+
   return (
     <Box>
       <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -123,10 +139,8 @@ export default function CoveragesPage() {
             <TableRow>
               <TableCell>{t('coverages.col.name')}</TableCell>
               <TableCell>{t('coverages.col.sessionType')}</TableCell>
-              <TableCell>{t('coverages.col.special')}</TableCell>
               <TableCell>{t('coverages.col.date')}</TableCell>
               <TableCell>{t('coverages.col.price')}</TableCell>
-              <TableCell>{t('coverages.col.time')}</TableCell>
               <TableCell>{t('coverages.col.from')}</TableCell>
               <TableCell>{t('coverages.col.to')}</TableCell>
               <TableCell>{t('coverages.col.actions')}</TableCell>
@@ -144,12 +158,8 @@ export default function CoveragesPage() {
                     variant="outlined"
                   />
                 </TableCell>
-                <TableCell>
-                  <Chip label={c.special ? t('coverages.yes') : t('coverages.no')} size="small" color={c.special ? 'primary' : 'default'} variant="outlined" />
-                </TableCell>
                 <TableCell>{c.date}</TableCell>
                 <TableCell>{c.price.toLocaleString()} YER</TableCell>
-                <TableCell>{c.time || '-'}</TableCell>
                 <TableCell>{c.from || '-'}</TableCell>
                 <TableCell>{c.to || '-'}</TableCell>
                 <TableCell>
@@ -163,7 +173,7 @@ export default function CoveragesPage() {
               </TableRow>
             ))}
             {paginated.length === 0 && (
-              <TableRow><TableCell colSpan={9} align="center">{t('coverages.empty')}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} align="center">{t('coverages.empty')}</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
@@ -207,15 +217,53 @@ export default function CoveragesPage() {
               </RadioGroup>
             </FormControl>
 
-            <FormControlLabel
-              control={<Checkbox checked={form.special} onChange={e => setForm(f => ({ ...f, special: e.target.checked }))} />}
-              label={t('coverages.form.special')}
+            <TextField
+              label={t('coverages.form.date')}
+              type="datetime-local"
+              value={form.date}
+              onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
+              fullWidth
+              required
+              slotProps={{ inputLabel: { shrink: true } }}
             />
-            <TextField label={t('coverages.form.date')} type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} fullWidth required slotProps={{ inputLabel: { shrink: true } }} />
-            <TextField label={t('coverages.form.price')} type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} fullWidth required />
-            <TextField label={t('coverages.form.time')} type="time" value={form.time} onChange={e => setForm(f => ({ ...f, time: e.target.value }))} fullWidth slotProps={{ inputLabel: { shrink: true } }} />
-            <TextField label={t('coverages.form.from')} value={form.from} onChange={e => setForm(f => ({ ...f, from: e.target.value }))} fullWidth />
-            <TextField label={t('coverages.form.to')} value={form.to} onChange={e => setForm(f => ({ ...f, to: e.target.value }))} fullWidth />
+
+            {isNormal ? (
+              <>
+                <TextField
+                  label={t('coverages.form.from')}
+                  type="time"
+                  value={form.from}
+                  onChange={e => setForm(f => ({ ...f, from: e.target.value }))}
+                  fullWidth
+                  required
+                  slotProps={{ inputLabel: { shrink: true } }}
+                />
+                <TextField
+                  label={t('coverages.form.to')}
+                  type="time"
+                  value={form.to}
+                  onChange={e => setForm(f => ({ ...f, to: e.target.value }))}
+                  fullWidth
+                  required
+                  slotProps={{ inputLabel: { shrink: true } }}
+                />
+                <TextField
+                  label={t('coverages.form.price')}
+                  value={autoPrice !== null ? `${autoPrice.toLocaleString()} YER` : ''}
+                  fullWidth
+                  slotProps={{ input: { readOnly: true } }}
+                />
+              </>
+            ) : (
+              <TextField
+                label={t('coverages.form.price')}
+                type="number"
+                value={form.price}
+                onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
+                fullWidth
+                required
+              />
+            )}
           </Stack>
         </DialogContent>
         <DialogActions>

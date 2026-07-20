@@ -8,11 +8,11 @@ export async function listCoverages() {
   });
 }
 
-export async function createCoverage(data: { name: string; special?: boolean; date: string; price: number; time?: string; from?: string; to?: string }) {
+export async function createCoverage(data: { name: string; sessionType?: string; date: string; price: number; from?: string; to?: string }) {
   return prisma.coverage.create({ data });
 }
 
-export async function updateCoverage(id: string, data: { name?: string; special?: boolean; date?: string; price?: number; time?: string; from?: string; to?: string }) {
+export async function updateCoverage(id: string, data: { name?: string; sessionType?: string; date?: string; price?: number; from?: string; to?: string }) {
   const existing = await prisma.coverage.findUnique({ where: { id } });
   if (!existing || existing.deletedAt) throw new NotFoundError('Coverage');
   return prisma.coverage.update({ where: { id }, data });
