@@ -28,7 +28,9 @@ const app = express();
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-app.use('/assets', express.static(path.join(__dirname, 'public', 'assets')));
+
+const staticPath = path.join(__dirname, 'public', 'assets');
+app.use('/assets', express.static(staticPath));
 if (!process.env.VERCEL) {
   app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 }
