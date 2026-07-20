@@ -21,14 +21,14 @@ export async function createCoverage(data: { name: string; sessionType?: string;
       },
     });
 
-    if (data.therapistShare && data.therapistShare > 0) {
+    if (data.price > 0) {
       await prisma.salaryAdvance.create({
         data: {
           employee: data.name,
           specialty: 'حجامة',
-          amount: data.therapistShare,
+          amount: data.price,
           date: data.date,
-          notes: 'نسبة من تغطية حجامة',
+          notes: 'تغطية حجامة - كاملة',
         },
       });
     }
