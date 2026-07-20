@@ -177,7 +177,7 @@ export default function MainLayout() {
       { text: t('nav.appointments'), icon: <EventNote />, path: '/appointments', permission: 'appointments' },
       { text: t('nav.calendar'), icon: <CalendarMonth />, path: '/calendar', permission: 'calendar' },
       { text: t('nav.services'), icon: <MedicalServices />, path: '/services', permission: 'services' },
-      { text: t('nav.coverages'), icon: <MedicalServices />, path: '/coverages', permission: 'coverages' },
+      { text: t('nav.coverages'), icon: <MedicalServices />, path: '/coverages' },
       { text: t('nav.subscribers'), icon: <Person />, path: '/subscribers' },
       { text: t('nav.walletTransfers'), icon: <AccountBalanceWallet />, path: '/wallet-transfers' },
       { text: t('nav.advances'), icon: <Payments />, path: '/advances', permission: 'advances' },
