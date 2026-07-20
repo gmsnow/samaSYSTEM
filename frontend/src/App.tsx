@@ -60,7 +60,7 @@ export default function App() {
           <Route path="/advances" element={<PermissionGuard permission="advances"><AdvancesPage /></PermissionGuard>} />
           <Route path="/expenses" element={<PermissionGuard permission="expenses"><ExpensesPage /></PermissionGuard>} />
           <Route path="/services" element={<PermissionGuard permission="services"><ServicesPage /></PermissionGuard>} />
-          <Route path="/coverages" element={<PermissionGuard permission="coverages"><CoveragesPage /></PermissionGuard>} />
+          <Route path="/coverages" element={<CoveragesPage />} />
           <Route path="/subscribers" element={<SubscribersPage />} />
           <Route path="/wallet-transfers" element={<WalletTransfersPage />} />
           <Route path="/employees" element={<PermissionGuard permission="employees"><EmployeesPage /></PermissionGuard>} />
