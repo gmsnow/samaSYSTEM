@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, Dialog, DialogTitle, DialogContent, DialogActions, TextField,
   IconButton, TablePagination, Chip, Stack, Tooltip,
   FormControl, FormLabel, FormControlLabel, Radio, RadioGroup, Select, MenuItem, InputLabel,
 } from '@mui/material';
-import { Add, Delete, Edit } from '@mui/icons-material';
+import { Add, Delete, Edit, Search } from '@mui/icons-material';
 import api from '../../services/api';
 import { useLanguage } from '../../contexts/LanguageContext';
 
@@ -23,6 +23,7 @@ interface Coverage {
 interface Employee {
   id: string;
   name: string;
+  department: string | null;
 }
 
 const emptyForm = { name: '', sessionType: 'normal', date: '', price: '', therapistShare: '500', from: '', to: '' };
@@ -48,6 +49,30 @@ export default function CoveragesPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [editing, setEditing] = useState<Coverage | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const physioEmployees = useMemo(() =>
+    employees.filter(e => e.department === 'العلاج الطبيعي'),
+    [employees],
+  );
+
+  const summary = useMemo(() => {
+    const map = new Map<string, { totalPrice: number; totalShare: number; count: number }>();
+    for (const c of coverages) {
+      const prev = map.get(c.name) ?? { totalPrice: 0, totalShare: 0, count: 0 };
+      prev.totalPrice += c.price;
+      prev.totalShare += c.therapistShare ?? 0;
+      prev.count += 1;
+      map.set(c.name, prev);
+    }
+    return Array.from(map.entries()).sort((a, b) => b[1].totalPrice - a[1].totalPrice);
+  }, [coverages]);
+
+  const filtered = useMemo(() => {
+    if (!searchQuery) return coverages;
+    const q = searchQuery.toLowerCase();
+    return coverages.filter(c => c.name.toLowerCase().includes(q));
+  }, [coverages, searchQuery]);
 
   useEffect(() => {
     if (form.sessionType === 'normal' && (form.from || form.to)) {
@@ -72,7 +97,7 @@ export default function CoveragesPage() {
 
   useEffect(() => { fetchCoverages(); fetchEmployees(); }, []);
 
-  const paginated = coverages.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const handleOpenAdd = () => {
     setEditing(null);
@@ -140,6 +165,40 @@ export default function CoveragesPage() {
         </Button>
       </Stack>
 
+      {summary.length > 0 && (
+        <Paper sx={{ mb: 2 }}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>{t('coverages.col.name')}</TableCell>
+                <TableCell>عدد التغطيات</TableCell>
+                <TableCell>إجمالي المبلغ</TableCell>
+                <TableCell>إجمالي النسب</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {summary.map(([name, s]) => (
+                <TableRow key={name}>
+                  <TableCell sx={{ fontWeight: 600 }}>{name}</TableCell>
+                  <TableCell>{s.count}</TableCell>
+                  <TableCell>{s.totalPrice.toLocaleString()} YER</TableCell>
+                  <TableCell>{s.totalShare.toLocaleString()} YER</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Paper>
+      )}
+
+      <TextField
+        placeholder={t('coverages.search')}
+        value={searchQuery}
+        onChange={e => setSearchQuery(e.target.value)}
+        size="small"
+        slotProps={{ input: { startAdornment: <Search sx={{ mr: 1, color: 'text.secondary', fontSize: 20 }} /> } }}
+        sx={{ mb: 2, width: 300 }}
+      />
+
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -188,7 +247,7 @@ export default function CoveragesPage() {
         </Table>
         <TablePagination
           component="div"
-          count={coverages.length}
+          count={filtered.length}
           page={page}
           onPageChange={(_, p) => setPage(p)}
           rowsPerPage={rowsPerPage}
@@ -208,7 +267,7 @@ export default function CoveragesPage() {
                 label={t('coverages.form.name')}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
               >
-                {employees.map(emp => (
+                {physioEmployees.map(emp => (
                   <MenuItem key={emp.id} value={emp.name}>{emp.name}</MenuItem>
                 ))}
               </Select>
