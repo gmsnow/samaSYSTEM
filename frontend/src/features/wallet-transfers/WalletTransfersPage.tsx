@@ -27,6 +27,7 @@ interface WalletItem {
   paymentMethod: string | null;
   installments: string | null;
   source: 'session' | 'patient';
+  examType?: string;
 }
 
 interface Payment {
@@ -69,7 +70,7 @@ export default function WalletTransfersPage() {
         api.get('/sessions'),
         api.get('/patients'),
       ]);
-      const sessions: WalletItem[] = (sessRes.data as any[]).map(s => ({
+      const sessions: WalletItem[] = (sessRes.data as any[]).filter((s: any) => s.paymentMethod === 'محفظة').map(s => ({
         id: s.id,
         fullname: s.fullname,
         price: s.price,
@@ -90,9 +91,12 @@ export default function WalletTransfersPage() {
         paymentMethod: p.paymentMethod,
         installments: p.installments,
         source: 'patient' as const,
+        examType: p.examType || '',
       }));
       setItems([...sessions, ...patients]);
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.error('Failed to fetch wallet transfers:', err);
+    }
   };
 
   useEffect(() => { fetchAll(); }, []);
@@ -127,14 +131,21 @@ export default function WalletTransfersPage() {
   const handleEditSubmit = async () => {
     if (!selected) return;
     try {
-      await api.put(`${apiPath(selected)}/${selected.id}`, {
+      const payload: any = {
         price: editForm.price ? parseFloat(editForm.price) : null,
         wallet_type: editForm.wallet_type,
         transaction_number: editForm.transaction_number,
-      });
+      };
+      if (selected.source === 'patient') {
+        payload.fullName = selected.fullname;
+        payload.examType = selected.examType || 'physiotherapy';
+      }
+      await api.put(`${apiPath(selected)}/${selected.id}`, payload);
       setEditOpen(false);
       fetchAll();
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.error('Failed to update wallet transfer:', err);
+    }
   };
 
   const openDelete = (s: WalletItem) => {

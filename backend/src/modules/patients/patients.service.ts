@@ -93,7 +93,7 @@ export async function createPatient(data: {
       phone: data.phone || null,
       examType: data.examType,
       gender: data.gender,
-      price: data.price || null,
+      price: data.price ?? null,
       paymentMethod: data.payment_method || null,
       walletType: data.wallet_type || null,
       transactionNumber: data.transaction_number || null,
