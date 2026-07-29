@@ -27,7 +27,7 @@ interface Employee {
   department: string | null;
 }
 
-const emptyForm = { name: '', sessionType: 'normal', date: '', price: '', therapistShare: '500', from: '', to: '' };
+const emptyForm = { name: '', sessionType: 'normal', date: '', price: '', therapistShare: '0', from: '', to: '' };
 
 function calcPrice(from: string, to: string): number {
   if (!from || !to) return 0;
@@ -67,6 +67,7 @@ export default function CoveragesPage() {
   }, []);
 
   useEffect(() => {
+    setForm(f => ({ ...f, therapistShare: form.sessionType === 'hijama' ? '500' : '0' }));
     if (form.sessionType === 'normal' && (form.from || form.to)) {
       const p = calcPrice(form.from, form.to);
       setForm(f => ({ ...f, price: p.toString() }));
@@ -82,12 +83,13 @@ export default function CoveragesPage() {
 
   const handleOpenEdit = (c: Coverage) => {
     setEditing(c);
+    const defaultShare = c.sessionType === 'hijama' ? 500 : 0;
     setForm({
       name: c.name,
       sessionType: c.sessionType || 'normal',
       date: c.date,
       price: c.price.toString(),
-      therapistShare: (c.therapistShare ?? 500).toString(),
+      therapistShare: (c.therapistShare ?? defaultShare).toString(),
       from: c.from ?? '',
       to: c.to ?? '',
     });
@@ -205,7 +207,7 @@ export default function CoveragesPage() {
                           />
                         </TableCell>
                         <TableCell>{c.price.toLocaleString()} YER</TableCell>
-                        <TableCell>{c.therapistShare != null ? `${c.therapistShare.toLocaleString()} YER` : '-'}</TableCell>
+                        <TableCell>{c.sessionType === 'hijama' ? `${c.therapistShare?.toLocaleString() ?? '500'} YER` : '-'}</TableCell>
                         <TableCell>{formatDate(c.date)}</TableCell>
                       </TableRow>
                     ))}
@@ -246,7 +248,7 @@ export default function CoveragesPage() {
                 </TableCell>
                 <TableCell>{formatDate(c.date)}</TableCell>
                 <TableCell>{c.price.toLocaleString()} YER</TableCell>
-                <TableCell>{c.therapistShare != null ? `${c.therapistShare.toLocaleString()} YER` : '-'}</TableCell>
+                <TableCell>{c.sessionType === 'hijama' ? `${c.therapistShare?.toLocaleString() ?? '500'} YER` : '-'}</TableCell>
                 <TableCell>{c.from || '-'}</TableCell>
                 <TableCell>{c.to || '-'}</TableCell>
                 <TableCell>
