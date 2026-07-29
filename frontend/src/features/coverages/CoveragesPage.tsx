@@ -1,13 +1,14 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
   Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, Dialog, DialogTitle, DialogContent, DialogActions, TextField,
-  IconButton, TablePagination, Chip, Stack, Tooltip,
-  FormControl, FormLabel, FormControlLabel, Radio, RadioGroup, Select, MenuItem, InputLabel,
+  Paper, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem,
+  FormControl, FormLabel, FormControlLabel, Radio, RadioGroup, InputLabel, Select,
+  IconButton, TablePagination, Chip, Stack, Tooltip, Card,
 } from '@mui/material';
-import { Add, Delete, Edit, Search } from '@mui/icons-material';
+import { Add, Delete, Edit } from '@mui/icons-material';
 import api from '../../services/api';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { formatDate } from '../../shared/formatDate';
 
 interface Coverage {
   id: string;
@@ -44,35 +45,26 @@ export default function CoveragesPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [searchQuery, setSearchQuery] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [editing, setEditing] = useState<Coverage | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedEmpId, setSelectedEmpId] = useState('');
 
-  const physioEmployees = useMemo(() =>
-    employees.filter(e => e.department === 'العلاج الطبيعي'),
-    [employees],
-  );
+  const selectedEmployee = employees.find(e => e.id === selectedEmpId);
+  const employeeCoverages = useMemo(() => {
+    if (!selectedEmployee) return [];
+    return coverages.filter(c => c.name === selectedEmployee.name);
+  }, [coverages, selectedEmployee]);
+  const empTotalPrice = useMemo(() => employeeCoverages.reduce((s, c) => s + c.price, 0), [employeeCoverages]);
+  const empTotalShare = useMemo(() => employeeCoverages.reduce((s, c) => s + (c.therapistShare ?? 0), 0), [employeeCoverages]);
 
-  const summary = useMemo(() => {
-    const map = new Map<string, { totalPrice: number; totalShare: number; count: number }>();
-    for (const c of coverages) {
-      const prev = map.get(c.name) ?? { totalPrice: 0, totalShare: 0, count: 0 };
-      prev.totalPrice += c.price;
-      prev.totalShare += c.therapistShare ?? 0;
-      prev.count += 1;
-      map.set(c.name, prev);
-    }
-    return Array.from(map.entries()).sort((a, b) => b[1].totalPrice - a[1].totalPrice);
-  }, [coverages]);
-
-  const filtered = useMemo(() => {
-    if (!searchQuery) return coverages;
-    const q = searchQuery.toLowerCase();
-    return coverages.filter(c => c.name.toLowerCase().includes(q));
-  }, [coverages, searchQuery]);
+  useEffect(() => {
+    api.get('/coverages').then(({ data }) => setCoverages(data));
+    api.get('/employees').then(({ data }) => setEmployees(data));
+  }, []);
 
   useEffect(() => {
     if (form.sessionType === 'normal' && (form.from || form.to)) {
@@ -81,27 +73,10 @@ export default function CoveragesPage() {
     }
   }, [form.sessionType, form.from, form.to]);
 
-  const fetchCoverages = async () => {
-    try {
-      const { data } = await api.get('/coverages');
-      setCoverages(data);
-    } catch { /* ignore */ }
-  };
-
-  const fetchEmployees = async () => {
-    try {
-      const { data } = await api.get('/employees');
-      setEmployees(data);
-    } catch { /* ignore */ }
-  };
-
-  useEffect(() => { fetchCoverages(); fetchEmployees(); }, []);
-
-  const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-
   const handleOpenAdd = () => {
+    const now = new Date().toISOString().slice(0, 16);
     setEditing(null);
-    setForm(emptyForm);
+    setForm({ ...emptyForm, date: now });
     setDialogOpen(true);
   };
 
@@ -126,18 +101,17 @@ export default function CoveragesPage() {
         sessionType: form.sessionType,
         date: form.date,
         price: Number(form.price),
+        therapistShare: Number(form.therapistShare),
         from: form.from || null,
         to: form.to || null,
       };
-      if (form.sessionType === 'hijama') {
-        payload.therapistShare = Number(form.therapistShare);
-      }
       if (editing) {
         await api.put(`/coverages/${editing.id}`, payload);
       } else {
         await api.post('/coverages', payload);
       }
-      await fetchCoverages();
+      const { data } = await api.get('/coverages');
+      setCoverages(data);
       setDialogOpen(false);
     } catch { /* ignore */ }
   };
@@ -148,59 +122,104 @@ export default function CoveragesPage() {
     if (!selectedId) return;
     try {
       await api.delete(`/coverages/${selectedId}`);
-      await fetchCoverages();
+      const { data } = await api.get('/coverages');
+      setCoverages(data);
     } catch { /* ignore */ }
     setDeleteOpen(false);
     setSelectedId(null);
   };
+
+  const filtered = useMemo(() => {
+    if (!searchQuery) return coverages;
+    const q = searchQuery.toLowerCase();
+    return coverages.filter(c => c.name.toLowerCase().includes(q));
+  }, [coverages, searchQuery]);
+
+  const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  const totalAmount = useMemo(() => coverages.reduce((s, c) => s + c.price, 0), [coverages]);
 
   const isNormal = form.sessionType === 'normal';
 
   return (
     <Box>
       <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>{t('coverages.title')}</Typography>
+        <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+          <Typography variant="h5" sx={{ fontWeight: 700 }}>{t('coverages.title')}</Typography>
+          <Chip label={`${t('coverages.total')}: ${totalAmount.toLocaleString()} YER`} color="warning" />
+        </Stack>
         <Button variant="contained" startIcon={<Add />} onClick={handleOpenAdd}>
           {t('coverages.add')}
         </Button>
       </Stack>
 
-      {summary.length > 0 && (
-        <Paper sx={{ mb: 2 }}>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>{t('coverages.col.name')}</TableCell>
-                <TableCell>عدد التغطيات</TableCell>
-                <TableCell>إجمالي المبلغ</TableCell>
-                <TableCell>إجمالي النسب</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {summary.map(([name, s]) => (
-                <TableRow key={name}>
-                  <TableCell sx={{ fontWeight: 600 }}>{name}</TableCell>
-                  <TableCell>{s.count}</TableCell>
-                  <TableCell>{s.totalPrice.toLocaleString()} YER</TableCell>
-                  <TableCell>{s.totalShare.toLocaleString()} YER</TableCell>
-                </TableRow>
+      {/* Employee Report Section */}
+      <Card sx={{ mb: 3, p: 2.5 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>{t('coverages.report.title')}</Typography>
+        <Stack direction="row" spacing={2} sx={{ mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+          <FormControl sx={{ minWidth: 280 }}>
+            <InputLabel>{t('coverages.report.selectEmployee')}</InputLabel>
+            <Select
+              value={selectedEmpId}
+              label={t('coverages.report.selectEmployee')}
+              onChange={e => setSelectedEmpId(e.target.value)}
+            >
+              <MenuItem value="">{t('coverages.report.selectEmployee')}</MenuItem>
+              {employees.map(emp => (
+                <MenuItem key={emp.id} value={emp.id}>{emp.name}</MenuItem>
               ))}
-            </TableBody>
-          </Table>
-        </Paper>
-      )}
+            </Select>
+          </FormControl>
+        </Stack>
 
-      <TextField
-        placeholder={t('coverages.search')}
-        value={searchQuery}
-        onChange={e => setSearchQuery(e.target.value)}
-        size="small"
-        slotProps={{ input: { startAdornment: <Search sx={{ mr: 1, color: 'text.secondary', fontSize: 20 }} /> } }}
-        sx={{ mb: 2, width: 300 }}
-      />
+        {selectedEmployee && (
+          <>
+            <Stack direction="row" spacing={2} sx={{ mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+              <Chip label={`${t('coverages.report.totalCoverages')}: ${employeeCoverages.length}`} color="primary" variant="outlined" sx={{ fontWeight: 600, fontSize: '0.95rem', py: 2 }} />
+              <Chip label={`${t('coverages.report.totalPrice')}: ${empTotalPrice.toLocaleString()} YER`} color="warning" variant="outlined" sx={{ fontWeight: 600, fontSize: '0.95rem', py: 2 }} />
+              <Chip label={`${t('coverages.report.totalShare')}: ${empTotalShare.toLocaleString()} YER`} color="success" variant="outlined" sx={{ fontWeight: 600, fontSize: '0.95rem', py: 2 }} />
+            </Stack>
 
+            {employeeCoverages.length === 0 ? (
+              <Typography variant="body2" color="text.secondary">{t('coverages.report.noCoverages')}</Typography>
+            ) : (
+              <TableContainer component={Paper} variant="outlined">
+                <Table dir="rtl" size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 700 }}>{t('coverages.col.sessionType')}</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>{t('coverages.col.price')}</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>{t('coverages.col.therapistShare')}</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>{t('coverages.col.date')}</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {employeeCoverages.map(c => (
+                      <TableRow key={c.id}>
+                        <TableCell>
+                          <Chip
+                            label={c.sessionType === 'hijama' ? t('coverages.sessionType.hijama') : t('coverages.sessionType.normal')}
+                            size="small"
+                            color={c.sessionType === 'hijama' ? 'warning' : 'default'}
+                            variant="outlined"
+                          />
+                        </TableCell>
+                        <TableCell>{c.price.toLocaleString()} YER</TableCell>
+                        <TableCell>{c.therapistShare != null ? `${c.therapistShare.toLocaleString()} YER` : '-'}</TableCell>
+                        <TableCell>{formatDate(c.date)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+          </>
+        )}
+      </Card>
+
+      <TextField size="small" placeholder={t('coverages.search')} value={searchQuery} onChange={e => { setSearchQuery(e.target.value); setPage(0); }} sx={{ mb: 1.5, maxWidth: 320 }} />
       <TableContainer component={Paper}>
-        <Table>
+        <Table dir="rtl">
           <TableHead>
             <TableRow>
               <TableCell>{t('coverages.col.name')}</TableCell>
@@ -225,9 +244,9 @@ export default function CoveragesPage() {
                     variant="outlined"
                   />
                 </TableCell>
-                <TableCell>{c.date}</TableCell>
+                <TableCell>{formatDate(c.date)}</TableCell>
                 <TableCell>{c.price.toLocaleString()} YER</TableCell>
-                <TableCell>{c.sessionType === 'hijama' && c.therapistShare != null ? `${c.therapistShare.toLocaleString()} YER` : '-'}</TableCell>
+                <TableCell>{c.therapistShare != null ? `${c.therapistShare.toLocaleString()} YER` : '-'}</TableCell>
                 <TableCell>{c.from || '-'}</TableCell>
                 <TableCell>{c.to || '-'}</TableCell>
                 <TableCell>
@@ -267,7 +286,7 @@ export default function CoveragesPage() {
                 label={t('coverages.form.name')}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
               >
-                {physioEmployees.map(emp => (
+                {employees.map(emp => (
                   <MenuItem key={emp.id} value={emp.name}>{emp.name}</MenuItem>
                 ))}
               </Select>
