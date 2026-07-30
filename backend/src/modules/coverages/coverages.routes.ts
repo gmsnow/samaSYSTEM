@@ -9,6 +9,7 @@ const router = Router();
 router.use(authenticate);
 
 router.get('/', controller.list);
+router.get('/report/:id', controller.getReport);
 router.post('/', validate(createCoverageSchema), controller.create);
 router.put('/:id', validate(updateCoverageSchema), controller.update);
 router.delete('/:id', controller.remove);

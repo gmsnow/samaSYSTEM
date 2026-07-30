@@ -8,6 +8,18 @@ export async function listCoverages() {
   });
 }
 
+export async function listCoveragesByEmployee(employeeId: string, month?: string) {
+  const employee = await prisma.employee.findUnique({ where: { id: employeeId } });
+  if (!employee || employee.deletedAt) throw new NotFoundError('Employee');
+  const where: any = { deletedAt: null, name: employee.name };
+  if (month) where.date = { startsWith: month };
+  const coverages = await prisma.coverage.findMany({
+    where,
+    orderBy: { date: 'desc' },
+  });
+  return { employee, coverages };
+}
+
 export async function createCoverage(data: { name: string; sessionType?: string; date: string; price: number; therapistShare?: number; from?: string; to?: string }) {
   const coverage = await prisma.coverage.create({ data });
 

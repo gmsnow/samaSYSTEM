@@ -5,7 +5,7 @@ import {
   FormControl, FormLabel, FormControlLabel, Radio, RadioGroup, InputLabel, Select,
   IconButton, TablePagination, Chip, Stack, Tooltip, Card,
 } from '@mui/material';
-import { Add, Delete, Edit } from '@mui/icons-material';
+import { Add, Delete, Edit, Print } from '@mui/icons-material';
 import api from '../../services/api';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { formatDate } from '../../shared/formatDate';
@@ -52,12 +52,15 @@ export default function CoveragesPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedEmpId, setSelectedEmpId] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState('');
 
   const selectedEmployee = employees.find(e => e.id === selectedEmpId);
   const employeeCoverages = useMemo(() => {
     if (!selectedEmployee) return [];
-    return coverages.filter(c => c.name === selectedEmployee.name);
-  }, [coverages, selectedEmployee]);
+    let list = coverages.filter(c => c.name === selectedEmployee.name);
+    if (selectedMonth) list = list.filter(c => c.date.startsWith(selectedMonth));
+    return list;
+  }, [coverages, selectedEmployee, selectedMonth]);
   const empTotalPrice = useMemo(() => employeeCoverages.reduce((s, c) => s + c.price, 0), [employeeCoverages]);
   const empTotalShare = useMemo(() => employeeCoverages.reduce((s, c) => s + (c.therapistShare ?? 0), 0), [employeeCoverages]);
 
@@ -131,6 +134,15 @@ export default function CoveragesPage() {
     setSelectedId(null);
   };
 
+  const openPrintReport = (empId: string, month?: string) => {
+    const token = localStorage.getItem('accessToken');
+    const lang = document.documentElement.lang || 'en';
+    const base = import.meta.env.VITE_API_URL || '';
+    let url = `${base ? `${base}/api` : '/api'}/coverages/report/${empId}?lang=${lang}&token=${token}`;
+    if (month) url += `&month=${month}`;
+    window.open(url, '_blank');
+  };
+
   const filtered = useMemo(() => {
     if (!searchQuery) return coverages;
     const q = searchQuery.toLowerCase();
@@ -172,6 +184,18 @@ export default function CoveragesPage() {
               ))}
             </Select>
           </FormControl>
+          <TextField
+            type="month" size="small" label={t('advances.report.selectMonth')}
+            value={selectedMonth}
+            onChange={e => setSelectedMonth(e.target.value)}
+            sx={{ minWidth: 200 }}
+            slotProps={{ inputLabel: { shrink: true } }}
+          />
+          {selectedMonth && (
+            <Button size="small" variant="text" color="secondary" onClick={() => setSelectedMonth('')}>
+              {t('common.clear')}
+            </Button>
+          )}
         </Stack>
 
         {selectedEmployee && (
@@ -180,6 +204,9 @@ export default function CoveragesPage() {
               <Chip label={`${t('coverages.report.totalCoverages')}: ${employeeCoverages.length}`} color="primary" variant="outlined" sx={{ fontWeight: 600, fontSize: '0.95rem', py: 2 }} />
               <Chip label={`${t('coverages.report.totalPrice')}: ${empTotalPrice.toLocaleString()} YER`} color="warning" variant="outlined" sx={{ fontWeight: 600, fontSize: '0.95rem', py: 2 }} />
               <Chip label={`${t('coverages.report.totalShare')}: ${empTotalShare.toLocaleString()} YER`} color="success" variant="outlined" sx={{ fontWeight: 600, fontSize: '0.95rem', py: 2 }} />
+              <Button variant="contained" size="small" startIcon={<Print />} onClick={() => openPrintReport(selectedEmpId, selectedMonth)} sx={{ mr: 'auto' }}>
+                {t('advances.report.print')}
+              </Button>
             </Stack>
 
             {employeeCoverages.length === 0 ? (
