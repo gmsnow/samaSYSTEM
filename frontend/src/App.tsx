@@ -11,6 +11,7 @@ import PatientsPage from './features/patients/PatientsPage';
 import SessionsPage from './features/sessions/SessionsPage';
 import AppointmentsPage from './features/appointments/AppointmentsPage';
 import CalendarPage from './features/calendar/CalendarPage';
+import InvoicesPage from './features/invoices/InvoicesPage';
 import AdvancesPage from './features/advances/AdvancesPage';
 import ExpensesPage from './features/expenses/ExpensesPage';
 import ServicesPage from './features/services/ServicesPage';
@@ -61,6 +62,7 @@ export default function App() {
           <Route path="/expenses" element={<PermissionGuard permission="expenses"><ExpensesPage /></PermissionGuard>} />
           <Route path="/services" element={<PermissionGuard permission="services"><ServicesPage /></PermissionGuard>} />
           <Route path="/coverages" element={<CoveragesPage />} />
+          <Route path="/invoices" element={<InvoicesPage />} />
           <Route path="/subscribers" element={<SubscribersPage />} />
           <Route path="/wallet-transfers" element={<WalletTransfersPage />} />
           <Route path="/employees" element={<PermissionGuard permission="employees"><EmployeesPage /></PermissionGuard>} />
