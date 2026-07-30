@@ -111,12 +111,12 @@ export default function CoveragesPage() {
         to: form.to || null,
       };
       if (editing) {
-        await api.put(`/coverages/${editing.id}`, payload);
+        const { data } = await api.put(`/coverages/${editing.id}`, payload);
+        setCoverages(prev => prev.map(c => c.id === editing.id ? data.coverage : c));
       } else {
-        await api.post('/coverages', payload);
+        const { data } = await api.post('/coverages', payload);
+        setCoverages(prev => [data.coverage, ...prev]);
       }
-      const { data } = await api.get('/coverages');
-      setCoverages(data);
       setDialogOpen(false);
     } catch { /* ignore */ }
   };
@@ -127,8 +127,7 @@ export default function CoveragesPage() {
     if (!selectedId) return;
     try {
       await api.delete(`/coverages/${selectedId}`);
-      const { data } = await api.get('/coverages');
-      setCoverages(data);
+      setCoverages(prev => prev.filter(c => c.id !== selectedId));
     } catch { /* ignore */ }
     setDeleteOpen(false);
     setSelectedId(null);
