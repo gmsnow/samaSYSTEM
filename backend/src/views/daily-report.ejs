@@ -229,17 +229,18 @@
     </div>
     <table>
         <thead><tr>
-            <th style="width:28px">م</th><th>اسم المريض</th><th>نوع الخدمة</th><th style="width:70px">السعر</th><th style="width:60px">رقم السند</th><th>ملاحظات</th>
+            <th style="width:28px">م</th><th>اسم المريض</th><th>نوع الخدمة</th><th>نوع الدفع</th><th style="width:70px">السعر</th><th style="width:60px">رقم السند</th><th>ملاحظات</th>
         </tr></thead>
         <tbody>
             <% if (sessions.length === 0 && (typeof subscriptions === 'undefined' || subscriptions.length === 0)) { %>
-                <tr><td colspan="6"><div class="empty-state">لا توجد جلسات أو اشتراكات اليوم</div></td></tr>
+                <tr><td colspan="7"><div class="empty-state">لا توجد جلسات أو اشتراكات اليوم</div></td></tr>
             <% } else { %>
                 <% sessions.forEach((s, i) => { %>
                     <tr>
                         <td class="cell-num"><%= i + 1 %></td>
                         <td class="cell-name"><%= s.fullname %></td>
                         <td class="cell-service"><%= s.session_type %></td>
+                        <td class="cell-pay"><%= s.payment_method || '—' %></td>
                         <td class="cell-price"><%= Number(s.price || 0).toLocaleString('en-US') %></td>
                         <td class="cell-id"><%= s.id || '' %></td>
                         <td class="cell-notes"><%= s.note || '—' %></td>
@@ -250,6 +251,7 @@
                         <td class="cell-num"><%= sessions.length + i + 1 %></td>
                         <td class="cell-name"><%= sub.fullname %></td>
                         <td class="cell-service"><%= sub.session_type %></td>
+                        <td class="cell-pay"><%= sub.payment_method || '—' %></td>
                         <td class="cell-price"><%= Number(sub.subscription_amount || 0).toLocaleString('en-US') %></td>
                         <td class="cell-id">—</td>
                         <td class="cell-notes">—</td>
@@ -257,7 +259,7 @@
                 <% }) %>
                 <tr class="total-row">
                     <td colspan="2" class="tl">إجمالي الجلسات والاشتراكات</td>
-                    <td></td><td class="tv" colspan="3"><%= (sumSessions + sumSubscriptions).toLocaleString('en-US') %></td>
+                    <td></td><td></td><td class="tv" colspan="3"><%= (sumSessions + sumSubscriptions).toLocaleString('en-US') %></td>
                 </tr>
             <% } %>
         </tbody>
