@@ -437,7 +437,7 @@ export async function getDailyReportData() {
     session_type: s.sessionType,
     subscription_amount: s.prepaid ? (s.price ?? 0) : paidInstallments(s.installments),
     subscription_period: s.prepaid ? 'مدفوع مسبقاً' : (s.subscriptionPeriod || ''),
-    payment_method: s.prepaid ? 'دفع مسبق' : (s.subscriptionDay ? `اشتراك-${s.subscriptionDay}` : 'اشتراك'),
+    payment_method: s.prepaid ? 'دفع مسبق' : (s.subscriptionPeriod && s.subscriptionPeriod !== 'غير محدد') ? `اشتراك-${s.subscriptionPeriod}` : `اشتراك-${s.subscriptionDay ?? ''}`,
   }));
 
   const mappedPatients = patients.map(p => ({
