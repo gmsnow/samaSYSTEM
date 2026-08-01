@@ -11,6 +11,7 @@ function getKsaDate(now: Date = new Date()) {
     month: ksa.getUTCMonth(),
     day: ksa.getUTCDate(),
     dayOfWeek: ksa.getUTCDay(),
+    hour: ksa.getUTCHours(),
   };
 }
 
@@ -177,7 +178,7 @@ export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'mont
       _count: true,
     }),
     prisma.appointment.findMany({
-      where: { deletedAt: null },
+      where: { deletedAt: null, ...(period === 'monthly' ? { date: { startsWith: thisPeriodStr } } : { date: { gte: thisPeriodStr, lte: thisPeriodEndStr } }) },
       orderBy: { createdAt: 'desc' },
       take: 5,
     }),
@@ -187,7 +188,7 @@ export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'mont
       _count: true,
     }),
     prisma.patient.findMany({
-      where: { deletedAt: null },
+      where: { deletedAt: null, createdAt: { gte: startOfPeriod } },
       orderBy: { createdAt: 'desc' },
       take: 5,
     }),
@@ -288,6 +289,10 @@ export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'mont
   const monthlyRevArr = await getMonthlyRevenue(ksaYear);
   const monthlyPatArr = await getMonthlyPatients(ksaYear);
 
+  const periodChart = period === 'monthly'
+    ? monthlyRevArr.map((r, i) => ({ label: monthNames[i], revenue: r }))
+    : await getPeriodChart(period, locale, ksaYear, ksaMonth, ksaDay, ksaDow);
+
   const recent = recentAppointments.map(a => ({
     id: a.id,
     patient: a.patient,
@@ -353,6 +358,7 @@ export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'mont
     },
     monthlyRevenue: monthlyRevArr.map((r, i) => ({ month: monthNames[i], revenue: r })),
     monthlyPatients: monthlyPatArr.map((c, i) => ({ month: monthNames[i], count: c })),
+    periodChart,
     sessionTypes: sessionTypeChart,
     appointmentStatuses: apptStatusDistribution,
     recentAppointments: recent,
@@ -585,6 +591,50 @@ export async function getWeeklyReportData() {
   const weekLabel = `من تاريخ ${weekStartStr} - إلى ${weekEndStr}`;
 
   return { weekData, weekLabel };
+}
+
+async function getPeriodChart(period: 'daily' | 'weekly', locale: string, ksaYear: number, ksaMonth: number, ksaDay: number, ksaDow: number) {
+  const start = period === 'daily'
+    ? ksaMidnight(ksaYear, ksaMonth, ksaDay)
+    : ksaMidnight(ksaYear, ksaMonth, ksaDay - daysToSaturday(ksaDow));
+  const end = period === 'daily'
+    ? ksaMidnight(ksaYear, ksaMonth, ksaDay + 1)
+    : ksaMidnight(ksaYear, ksaMonth, ksaDay - daysToSaturday(ksaDow) + 7);
+
+  const [sessions, patients, subs] = await Promise.all([
+    prisma.session.findMany({
+      where: { deletedAt: null, status: 'complete', OR: [{ subscriptionAmount: null }, { subscriptionAmount: 0 }], sessionDate: { gte: start, lt: end } },
+      select: { sessionDate: true, price: true },
+    }),
+    prisma.patient.findMany({
+      where: { deletedAt: null, createdAt: { gte: start, lt: end } },
+      select: { createdAt: true, price: true },
+    }),
+    prisma.session.findMany({
+      where: { deletedAt: null, subscriptionAmount: { gt: 0 }, sessionDate: { gte: start, lt: end } },
+      select: { sessionDate: true, installments: true },
+    }),
+  ]);
+
+  const buckets: Record<number, number> = {};
+  for (const s of sessions) { if (s.sessionDate) buckets[getKsaDate(s.sessionDate).hour] = (buckets[getKsaDate(s.sessionDate).hour] || 0) + (s.price ?? 0); }
+  for (const p of patients) { if (p.createdAt) buckets[getKsaDate(p.createdAt).hour] = (buckets[getKsaDate(p.createdAt).hour] || 0) + (p.price ?? 0); }
+  for (const s of subs) { if (s.sessionDate) buckets[getKsaDate(s.sessionDate).hour] = (buckets[getKsaDate(s.sessionDate).hour] || 0) + paidInstallments(s.installments); }
+
+  if (period === 'daily') {
+    return Array.from({ length: 24 }, (_, h) => ({ label: `${pad(h)}:00`, revenue: buckets[h] || 0 }));
+  }
+
+  const weekBuckets: Record<number, number> = {};
+  for (const s of sessions) { if (s.sessionDate) weekBuckets[getKsaDate(s.sessionDate).dayOfWeek] = (weekBuckets[getKsaDate(s.sessionDate).dayOfWeek] || 0) + (s.price ?? 0); }
+  for (const p of patients) { if (p.createdAt) weekBuckets[getKsaDate(p.createdAt).dayOfWeek] = (weekBuckets[getKsaDate(p.createdAt).dayOfWeek] || 0) + (p.price ?? 0); }
+  for (const s of subs) { if (s.sessionDate) weekBuckets[getKsaDate(s.sessionDate).dayOfWeek] = (weekBuckets[getKsaDate(s.sessionDate).dayOfWeek] || 0) + paidInstallments(s.installments); }
+
+  const order = [6, 0, 1, 2, 3, 4, 5];
+  const dayNames = locale === 'ar'
+    ? ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة']
+    : ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+  return order.map(dow => ({ label: dayNames[dow], revenue: weekBuckets[dow] || 0 }));
 }
 
 async function getMonthlyRevenue(year: number) {

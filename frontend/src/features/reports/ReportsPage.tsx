@@ -25,20 +25,8 @@ export default function ReportsPage({ period }: { period: string }) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}><CircularProgress /></Box>;
   }
 
-  const isCurrentPeriod = (dateStr: string | null) => {
-    if (!dateStr) return false;
-    const d = new Date(dateStr);
-    const now = new Date();
-    if (period === 'daily') return d.toDateString() === now.toDateString();
-    if (period === 'weekly') {
-      const weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay());
-      return d >= weekStart;
-    }
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  };
-
-  const recentPatients = data.recentPatients?.filter((p: any) => isCurrentPeriod(p.createdAt)) || data.recentPatients?.slice(0, 5) || [];
-  const recentAppts = data.recentAppointments?.filter((a: any) => isCurrentPeriod(a.date)) || data.recentAppointments?.slice(0, 5) || [];
+  const recentPatients = data.recentPatients || [];
+  const recentAppts = data.recentAppointments || [];
 
   return (
     <Box>
@@ -74,9 +62,9 @@ export default function ReportsPage({ period }: { period: string }) {
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>{t('dashboard.revenue')}</Typography>
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={data.monthlyRevenue}>
+                <BarChart data={data.periodChart}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                  <XAxis dataKey="label" tick={{ fontSize: 11 }} interval={period === 'daily' ? 2 : 0} />
                   <YAxis tick={{ fontSize: 11 }} />
                   <Tooltip />
                   <Bar dataKey="revenue" fill="#3e5679" radius={[4, 4, 0, 0]} />
