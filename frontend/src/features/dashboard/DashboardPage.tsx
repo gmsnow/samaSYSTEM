@@ -5,7 +5,7 @@ import {
   ListItemAvatar, Chip, CircularProgress,
 } from '@mui/material';
 import {
-  People, MedicalServices, Paid, TrendingUp, TrendingDown, ArrowForward,
+  People, Paid, TrendingUp, TrendingDown, ArrowForward,
   PersonAdd, Man, Woman, Receipt, Assignment,
 } from '@mui/icons-material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
@@ -25,7 +25,7 @@ interface DashboardData {
   mainCards: {
     totalPatients: { value: number; trend: string; up: boolean; trendLabel: string };
     dailyIncome: { value: number; trend: string; up: boolean; trendLabel: string };
-    activeTherapists: { value: number; trend: string; up: boolean; trendLabel: string };
+    weeklyIncome: { value: number; trend: string; up: boolean; trendLabel: string };
     monthlyRevenue: { value: number; trend: string; up: boolean; trendLabel: string };
   };
   patientTileStats: { daily: number; weekly: number; monthly: number; males: number; females: number };
@@ -55,7 +55,7 @@ export default function DashboardPage() {
   const statCards = data ? [
     { labelKey: 'dashboard.statTotalPatients', value: data.mainCards.totalPatients.value.toLocaleString(), icon: <People />, color: '#3e5679', trend: data.mainCards.totalPatients.trend, up: data.mainCards.totalPatients.up, trendLabel: data.mainCards.totalPatients.trendLabel },
     { labelKey: 'dashboard.statDailyIncome', value: `YER ${data.mainCards.dailyIncome.value.toLocaleString()}`, icon: <Paid />, color: '#2e7d32', trend: data.mainCards.dailyIncome.trend, up: data.mainCards.dailyIncome.up, trendLabel: data.mainCards.dailyIncome.trendLabel },
-    { labelKey: 'dashboard.statActiveTherapists', value: data.mainCards.activeTherapists.value.toLocaleString(), icon: <MedicalServices />, color: '#7c4dff', trend: data.mainCards.activeTherapists.trend, up: data.mainCards.activeTherapists.up, trendLabel: data.mainCards.activeTherapists.trendLabel },
+    { labelKey: 'dashboard.statWeeklyIncome', value: `YER ${data.mainCards.weeklyIncome.value.toLocaleString()}`, icon: <Paid />, color: '#7c4dff', trend: data.mainCards.weeklyIncome.trend, up: data.mainCards.weeklyIncome.up, trendLabel: data.mainCards.weeklyIncome.trendLabel },
     { labelKey: 'dashboard.statMonthlyRevenue', value: `YER ${data.mainCards.monthlyRevenue.value.toLocaleString()}`, icon: <Paid />, color: '#e65100', trend: data.mainCards.monthlyRevenue.trend, up: data.mainCards.monthlyRevenue.up, trendLabel: data.mainCards.monthlyRevenue.trendLabel },
   ] : [];
 

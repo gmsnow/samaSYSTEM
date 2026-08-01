@@ -61,6 +61,8 @@ export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'mont
   const startOfLastMonth = ksaMidnight(pm.year, pm.month, 1);
   const startOfTomorrow = ksaMidnight(ksaYear, ksaMonth, ksaDay + 1);
   const startOfYesterday = ksaMidnight(ksaYear, ksaMonth, ksaDay - 1);
+  const endOfThisWeek = ksaMidnight(ksaYear, ksaMonth, ksaDay - daysToSaturday(ksaDow) + 7);
+  const startOfLastWeek = ksaMidnight(ksaYear, ksaMonth, ksaDay - daysToSaturday(ksaDow) - 7);
   const monthNames = locale === 'ar' ? MONTHS_AR : MONTHS_EN;
 
   const todayStr = `${ksaYear}-${pad(ksaMonth + 1)}-${pad(ksaDay)}`;
@@ -123,6 +125,12 @@ export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'mont
     dailyPatRevenueLast,
     dailySubSessionsThis,
     dailySubSessionsLast,
+    weekRegRevenueThis,
+    weekRegRevenueLast,
+    weekPatRevenueThis,
+    weekPatRevenueLast,
+    weekSubSessionsThis,
+    weekSubSessionsLast,
   ] = await Promise.all([
     prisma.patient.count({ where: { deletedAt: null } }),
     prisma.patient.count({ where: { deletedAt: null, createdAt: { gte: startOfPeriod } } }),
@@ -223,6 +231,30 @@ export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'mont
       where: { deletedAt: null, subscriptionAmount: { gt: 0 }, sessionDate: { gte: startOfYesterday, lt: startOfDay } },
       select: { installments: true },
     }),
+    prisma.session.aggregate({
+      where: { deletedAt: null, status: 'complete', OR: [{ subscriptionAmount: null }, { subscriptionAmount: 0 }], sessionDate: { gte: startOfWeek, lt: endOfThisWeek } },
+      _sum: { price: true },
+    }),
+    prisma.session.aggregate({
+      where: { deletedAt: null, status: 'complete', OR: [{ subscriptionAmount: null }, { subscriptionAmount: 0 }], sessionDate: { gte: startOfLastWeek, lt: startOfWeek } },
+      _sum: { price: true },
+    }),
+    prisma.patient.aggregate({
+      where: { deletedAt: null, createdAt: { gte: startOfWeek, lt: endOfThisWeek } },
+      _sum: { price: true },
+    }),
+    prisma.patient.aggregate({
+      where: { deletedAt: null, createdAt: { gte: startOfLastWeek, lt: startOfWeek } },
+      _sum: { price: true },
+    }),
+    prisma.session.findMany({
+      where: { deletedAt: null, subscriptionAmount: { gt: 0 }, sessionDate: { gte: startOfWeek, lt: endOfThisWeek } },
+      select: { installments: true },
+    }),
+    prisma.session.findMany({
+      where: { deletedAt: null, subscriptionAmount: { gt: 0 }, sessionDate: { gte: startOfLastWeek, lt: startOfWeek } },
+      select: { installments: true },
+    }),
   ]);
 
   const subRevThis = subscriptionRevenueThisPeriod.reduce((sum, s) => sum + paidInstallments(s.installments), 0);
@@ -230,6 +262,9 @@ export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'mont
   const dailyRevThis = (dailyRegRevenueThis._sum.price ?? 0) + (dailyPatRevenueThis._sum.price ?? 0) + dailySubSessionsThis.reduce((sum, s) => sum + paidInstallments(s.installments), 0);
   const dailyRevLast = (dailyRegRevenueLast._sum.price ?? 0) + (dailyPatRevenueLast._sum.price ?? 0) + dailySubSessionsLast.reduce((sum, s) => sum + paidInstallments(s.installments), 0);
   const dailyIncomeChange = dailyRevLast > 0 ? ((dailyRevThis - dailyRevLast) / dailyRevLast) * 100 : 0;
+  const weekRevThis = (weekRegRevenueThis._sum.price ?? 0) + (weekPatRevenueThis._sum.price ?? 0) + weekSubSessionsThis.reduce((sum, s) => sum + paidInstallments(s.installments), 0);
+  const weekRevLast = (weekRegRevenueLast._sum.price ?? 0) + (weekPatRevenueLast._sum.price ?? 0) + weekSubSessionsLast.reduce((sum, s) => sum + paidInstallments(s.installments), 0);
+  const weeklyIncomeChange = weekRevLast > 0 ? ((weekRevThis - weekRevLast) / weekRevLast) * 100 : 0;
   const revThis = (revenueThisPeriod._sum.price ?? 0) + (patientRevenueThisPeriod._sum.price ?? 0) + subRevThis;
   const revLast = (revenuePrevPeriod._sum.price ?? 0) + (patientRevenuePrevPeriod._sum.price ?? 0) + subRevLast;
   const revChange = revLast > 0 ? ((revThis - revLast) / revLast) * 100 : 0;
@@ -295,7 +330,7 @@ export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'mont
     mainCards: {
       totalPatients: { value: totalPatients, trend: formatTrend(patientGrowth), up: patientGrowth >= 0, trendLabel: 'dashboard.vsLastMonth' },
       dailyIncome: { value: dailyRevThis, trend: formatTrend(dailyIncomeChange), up: dailyIncomeChange >= 0, trendLabel: 'dashboard.vsYesterday' },
-      activeTherapists: { value: therapists, trend: '+0%', up: true, trendLabel: '' },
+      weeklyIncome: { value: weekRevThis, trend: formatTrend(weeklyIncomeChange), up: weeklyIncomeChange >= 0, trendLabel: 'dashboard.vsLastWeek' },
       monthlyRevenue: { value: revThis, trend: formatTrend(revChange), up: revChange >= 0, trendLabel: 'dashboard.vsLastMonth' },
     },
     patientTileStats: {
