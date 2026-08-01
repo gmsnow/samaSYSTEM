@@ -424,6 +424,7 @@
   "chat.noFiles": "لا توجد ملفات مرفقة",
   "dashboard.expenses": "المصروفات",
   "dashboard.dailyIncome": "إجمالي الدخل",
+  "dashboard.dailyExpenses": "المصروفات",
   "dashboard.dailyAdvances": "السلف",
   "dashboard.dailyInvoices": "الفاتورة",
   "dashboard.dailyNet": "الإجمالي بعد الصرف اليومي",

@@ -424,6 +424,7 @@
   "chat.noFiles": "No attached files",
   "dashboard.expenses": "Expenses",
   "dashboard.dailyIncome": "Total Income",
+  "dashboard.dailyExpenses": "Expenses",
   "dashboard.dailyAdvances": "Advances",
   "dashboard.dailyInvoices": "Invoice",
   "dashboard.dailyNet": "Net after daily expenses",
