@@ -12,6 +12,19 @@ const periodLabel: Record<string, string> = {
 };
 
 const colors = ['#3e5679', '#2e7d32', '#7c4dff', '#e65100', '#00838f', '#558b2f', '#c62828', '#6a1b9a'];
+const RADIAN = Math.PI / 180;
+
+const renderPieLabel = ({ cx, cy, midAngle, outerRadius, percent, name }: any) => {
+  const radius = outerRadius + 18;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  return (
+    <text x={x} y={y} fill="#333" fontSize={12} fontWeight={600}
+      textAnchor={x > cx ? 'start' : x < cx ? 'end' : 'middle'} dominantBaseline="central">
+      {`${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
+    </text>
+  );
+};
 
 export default function ReportsPage({ period }: { period: string }) {
   const { t, locale } = useLanguage();
@@ -79,7 +92,7 @@ export default function ReportsPage({ period }: { period: string }) {
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>{t('dashboard.sessionTypes')}</Typography>
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
-                  <Pie data={data.sessionTypes} cx="50%" cy="50%" outerRadius={90} dataKey="value" label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}>
+                  <Pie data={data.sessionTypes} cx="50%" cy="50%" outerRadius={90} dataKey="value" labelLine label={renderPieLabel}>
                     {data.sessionTypes.map((e: any, i: number) => <Cell key={e.name} fill={colors[i % colors.length]} />)}
                   </Pie>
                   <Tooltip />

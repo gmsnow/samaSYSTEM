@@ -243,3 +243,16 @@ model Coverage {
 
   @@map("coverages")
 }
+
+model Invoice {
+  id        String    @id @default(uuid())
+  employee  String    @map("employee")
+  date      String    @map("date")
+  amount    Float     @map("amount")
+  notes     String?
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("invoices")
+}
