@@ -261,34 +261,11 @@
     <div class="section-header section-patients">
         <span class="b" style="background:#6ee7b7"></span>
         جدول المرضى
-        <span style="margin-right:auto;font-size:10px;opacity:0.8;font-weight:500;"><%= patients.length %> مرضى</span>
     </div>
-    <table>
-        <thead><tr>
-            <th style="width:28px">م</th><th>اسم المريض</th><th>نوع الخدمة</th><th style="width:40px">العمر</th><th style="width:35px">النوع</th><th>رقم الهاتف</th><th style="width:70px">السعر</th>
-        </tr></thead>
-        <tbody>
-            <% if (patients.length === 0) { %>
-                <tr><td colspan="7"><div class="empty-state">لا يوجد مرضى اليوم</div></td></tr>
-            <% } else { %>
-                <% patients.forEach((p, i) => { %>
-                    <tr>
-                        <td class="cell-num"><%= i + 1 %></td>
-                        <td class="cell-name"><%= p.fullname %></td>
-                        <td class="cell-service"><%= p.exam_type %></td>
-                        <td><%= p.age %></td>
-                        <td><%= p.sex %></td>
-                        <td dir="ltr"><%= p.phone %></td>
-                        <td class="cell-price"><%= Number(p.price || 0).toLocaleString('en-US') %></td>
-                    </tr>
-                <% }) %>
-                <tr class="total-row">
-                    <td colspan="3" class="tl">إجمالي المرضى</td><td></td><td></td><td></td>
-                    <td class="tv"><%= sumPatients.toLocaleString('en-US') %></td>
-                </tr>
-            <% } %>
-        </tbody>
-    </table>
+    <div class="summary-row">
+        <div class="summary-card"><div class="label">عدد المرضى</div><div class="value"><%= patients.length %></div></div>
+        <div class="summary-card"><div class="label">إجمالي المرضى</div><div class="value"><%= sumPatients.toLocaleString('en-US') %></div></div>
+    </div>
 
     <div class="section-spacing"></div>
 
