@@ -433,13 +433,16 @@ export async function getDailyReportData() {
   }));
 
   const mappedSubscriptions = subscriptions.map(s => {
-    const periodLabel = s.subscriptionPeriod === 'أسبوع' ? 'أسبوعي' : s.subscriptionPeriod === 'يوم' ? 'يومي' : 'شهري';
+    let periodLabel = 'شهري';
+    if (s.subscriptionPeriod === 'أسبوع') periodLabel = 'أسبوعي';
+    else if (s.subscriptionPeriod === 'يوم') periodLabel = 'يومي';
+    else if (s.subscriptionPeriod !== 'شهر') periodLabel = s.subscriptionDay ? `-${s.subscriptionDay}` : '';
     return {
       fullname: s.fullname,
       session_type: s.sessionType,
       subscription_amount: s.prepaid ? (s.price ?? 0) : paidInstallments(s.installments),
       subscription_period: s.prepaid ? 'مدفوع مسبقاً' : (s.subscriptionPeriod || ''),
-      payment_method: s.prepaid ? 'دفع مسبق' : `اشتراك ${periodLabel}`,
+      payment_method: s.prepaid ? 'دفع مسبق' : `اشتراك${periodLabel}`,
     };
   });
 
