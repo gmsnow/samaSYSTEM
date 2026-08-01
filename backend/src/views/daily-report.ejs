@@ -112,6 +112,10 @@
         .cell-price { color: #dc2626; font-weight: 700; direction: ltr; font-size: 11px; }
         .cell-id { color: #ea580c; font-weight: 600; font-size: 10px; direction: ltr; }
         .cell-notes { color: #64748b; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cell-prepaid td { background: #e0f7fa !important; }
+        .cell-prepaid .cell-name { color: #006064; }
+        .cell-prepaid .cell-service { color: #00838f; }
+        .cell-prepaid .cell-price { color: #00838f; }
         .total-row td {
             background: #fef2f2 !important;
             font-weight: 700;
@@ -220,16 +224,16 @@
 
     <div class="section-header section-sessions">
         <span class="b" style="background:#a5f3fc"></span>
-        جدول الجلسات
-        <span style="margin-right:auto;font-size:10px;opacity:0.8;font-weight:500;"><%= sessions.length %> جلسات</span>
+        جدول الجلسات والاشتراكات
+        <span style="margin-right:auto;font-size:10px;opacity:0.8;font-weight:500;"><%= sessions.length %> جلسة · <%= typeof subscriptions !== 'undefined' ? subscriptions.length : 0 %> اشتراك</span>
     </div>
     <table>
         <thead><tr>
             <th style="width:28px">م</th><th>اسم المريض</th><th>نوع الخدمة</th><th style="width:70px">السعر</th><th style="width:60px">رقم السند</th><th>ملاحظات</th>
         </tr></thead>
         <tbody>
-            <% if (sessions.length === 0) { %>
-                <tr><td colspan="6"><div class="empty-state">لا توجد جلسات اليوم</div></td></tr>
+            <% if (sessions.length === 0 && (typeof subscriptions === 'undefined' || subscriptions.length === 0)) { %>
+                <tr><td colspan="6"><div class="empty-state">لا توجد جلسات أو اشتراكات اليوم</div></td></tr>
             <% } else { %>
                 <% sessions.forEach((s, i) => { %>
                     <tr>
@@ -241,9 +245,19 @@
                         <td class="cell-notes"><%= s.note || '—' %></td>
                     </tr>
                 <% }) %>
+                <% if (typeof subscriptions !== 'undefined') subscriptions.forEach((sub, i) => { %>
+                    <tr class="cell-prepaid">
+                        <td class="cell-num"><%= sessions.length + i + 1 %></td>
+                        <td class="cell-name"><%= sub.fullname %></td>
+                        <td class="cell-service">اشتراك · <%= sub.subscription_period %></td>
+                        <td class="cell-price"><%= Number(sub.subscription_amount || 0).toLocaleString('en-US') %></td>
+                        <td class="cell-id">—</td>
+                        <td class="cell-notes">—</td>
+                    </tr>
+                <% }) %>
                 <tr class="total-row">
-                    <td colspan="2" class="tl">إجمالي الجلسات</td>
-                    <td></td><td class="tv" colspan="3"><%= sumSessions.toLocaleString('en-US') %></td>
+                    <td colspan="2" class="tl">إجمالي الجلسات والاشتراكات</td>
+                    <td></td><td class="tv" colspan="3"><%= (sumSessions + sumSubscriptions).toLocaleString('en-US') %></td>
                 </tr>
             <% } %>
         </tbody>
@@ -261,35 +275,6 @@
     </div>
 
     <div class="section-spacing"></div>
-
-    <div class="section-header section-patients" style="background:#fef3c7">
-        <span class="b" style="background:#f59e0b"></span>
-        الاشتراكات
-        <span style="margin-right:auto;font-size:10px;opacity:0.8;font-weight:500;"><%= typeof subscriptions !== 'undefined' ? subscriptions.length : 0 %> اشتراكات</span>
-    </div>
-    <table>
-        <thead><tr>
-            <th style="width:28px">م</th><th>اسم المريض</th><th>المدة</th><th style="width:80px">المبلغ</th>
-        </tr></thead>
-        <tbody>
-            <% if (typeof subscriptions === 'undefined' || subscriptions.length === 0) { %>
-                <tr><td colspan="4"><div class="empty-state">لا توجد اشتراكات اليوم</div></td></tr>
-            <% } else { %>
-                <% subscriptions.forEach((sub, i) => { %>
-                    <tr>
-                        <td class="cell-num"><%= i + 1 %></td>
-                        <td class="cell-name"><%= sub.fullname %></td>
-                        <td class="cell-service"><%= sub.subscription_period %></td>
-                        <td class="cell-price"><%= Number(sub.subscription_amount || 0).toLocaleString('en-US') %></td>
-                    </tr>
-                <% }) %>
-                <tr class="total-row">
-                    <td colspan="2" class="tl">إجمالي الاشتراكات</td><td></td>
-                    <td class="tv"><%= sumSubscriptions.toLocaleString('en-US') %></td>
-                </tr>
-            <% } %>
-        </tbody>
-    </table>
 
     <table>
         <tbody>
