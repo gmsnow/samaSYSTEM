@@ -217,12 +217,6 @@
         let incomeTotal = sumSessions + sumPatients + sumSubscriptions;
         let netTotal = incomeTotal - (sumExpenses + sumAdvances);
     %>
-    <div class="summary-row">
-        <div class="summary-card sc-income"><div class="label">إجمالي الدخل</div><div class="value"><%= incomeTotal.toLocaleString('en-US') %></div></div>
-        <div class="summary-card sc-expense"><div class="label">المصروفات</div><div class="value"><%= sumExpenses.toLocaleString('en-US') %></div></div>
-        <div class="summary-card sc-advance"><div class="label">السلف</div><div class="value"><%= sumAdvances.toLocaleString('en-US') %></div></div>
-        <div class="summary-card sc-profit"><div class="label">الصافي</div><div class="value"><%= netTotal.toLocaleString('en-US') %></div></div>
-    </div>
 
     <div class="section-header section-sessions">
         <span class="b" style="background:#a5f3fc"></span>
@@ -373,6 +367,13 @@
     <div class="final-result">
         <div class="label">الإجمالي بعد الصرف اليومي</div>
         <div class="value"><%= netTotal.toLocaleString('en-US') %></div>
+    </div>
+
+    <div class="summary-row">
+        <div class="summary-card sc-income"><div class="label">إجمالي الدخل</div><div class="value"><%= incomeTotal.toLocaleString('en-US') %></div></div>
+        <div class="summary-card sc-expense"><div class="label">المصروفات</div><div class="value"><%= sumExpenses.toLocaleString('en-US') %></div></div>
+        <div class="summary-card sc-advance"><div class="label">السلف</div><div class="value"><%= sumAdvances.toLocaleString('en-US') %></div></div>
+        <div class="summary-card sc-profit"><div class="label">الصافي</div><div class="value"><%= netTotal.toLocaleString('en-US') %></div></div>
     </div>
 
     <div class="footer">
