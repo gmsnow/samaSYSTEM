@@ -432,13 +432,16 @@ export async function getDailyReportData() {
     note: s.notes || '',
   }));
 
-  const mappedSubscriptions = subscriptions.map(s => ({
-    fullname: s.fullname,
-    session_type: s.sessionType,
-    subscription_amount: s.prepaid ? (s.price ?? 0) : paidInstallments(s.installments),
-    subscription_period: s.prepaid ? 'مدفوع مسبقاً' : (s.subscriptionPeriod || ''),
-    payment_method: s.prepaid ? 'دفع مسبق' : 'اشتراك',
-  }));
+  const mappedSubscriptions = subscriptions.map(s => {
+    const periodLabel = s.subscriptionPeriod === 'أسبوع' ? 'أسبوعي' : s.subscriptionPeriod === 'يوم' ? 'يومي' : 'شهري';
+    return {
+      fullname: s.fullname,
+      session_type: s.sessionType,
+      subscription_amount: s.prepaid ? (s.price ?? 0) : paidInstallments(s.installments),
+      subscription_period: s.prepaid ? 'مدفوع مسبقاً' : (s.subscriptionPeriod || ''),
+      payment_method: s.prepaid ? 'دفع مسبق' : `اشتراك ${periodLabel}`,
+    };
+  });
 
   const mappedPatients = patients.map(p => ({
     fullname: `${p.firstName || ''} ${p.lastName || ''}`.trim() || '—',
