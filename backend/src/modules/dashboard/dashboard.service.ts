@@ -30,6 +30,25 @@ function daysToSaturday(dow: number): number {
   return dow === 6 ? 0 : dow + 1;
 }
 
+function paidInstallments(installments: string | null): number {
+  if (!installments) return 0;
+  try {
+    const d = JSON.parse(installments);
+    const payments = Array.isArray(d) ? d : d?.payments || [];
+    return payments.reduce((sum: number, p: any) => sum + (Number(p.amount) || 0), 0);
+  } catch {
+    return 0;
+  }
+}
+
+async function getSubscriptionPaidRevenue(where: any): Promise<number> {
+  const sessions = await prisma.session.findMany({
+    where,
+    select: { installments: true },
+  });
+  return sessions.reduce((sum, s) => sum + paidInstallments(s.installments), 0);
+}
+
 export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'monthly' = 'monthly') {
   const now = new Date();
   const ksa = getKsaDate(now);
@@ -164,18 +183,18 @@ export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'mont
       : prisma.expense.aggregate({ where: { deletedAt: null, date: { gte: lastPeriodStr, lte: lastPeriodEndStr } }, _sum: { amount: true } }),
     prisma.session.count({ where: { deletedAt: null } }),
     prisma.session.count({ where: { deletedAt: null, sessionDate: { gte: startOfPeriod } } }),
-    prisma.session.aggregate({
+    prisma.session.findMany({
       where: { deletedAt: null, subscriptionAmount: { gt: 0 }, sessionDate: { gte: startOfPeriod } },
-      _sum: { subscriptionAmount: true },
+      select: { installments: true },
     }),
-    prisma.session.aggregate({
+    prisma.session.findMany({
       where: { deletedAt: null, subscriptionAmount: { gt: 0 }, sessionDate: { gte: startOfPrevPeriod, lt: startOfPeriod } },
-      _sum: { subscriptionAmount: true },
+      select: { installments: true },
     }),
   ]);
 
-  const subRevThis = subscriptionRevenueThisPeriod._sum.subscriptionAmount ?? 0;
-  const subRevLast = subscriptionRevenuePrevPeriod._sum.subscriptionAmount ?? 0;
+  const subRevThis = subscriptionRevenueThisPeriod.reduce((sum, s) => sum + paidInstallments(s.installments), 0);
+  const subRevLast = subscriptionRevenuePrevPeriod.reduce((sum, s) => sum + paidInstallments(s.installments), 0);
   const revThis = (revenueThisPeriod._sum.price ?? 0) + (patientRevenueThisPeriod._sum.price ?? 0) + subRevThis;
   const revLast = (revenuePrevPeriod._sum.price ?? 0) + (patientRevenuePrevPeriod._sum.price ?? 0) + subRevLast;
   const revChange = revLast > 0 ? ((revThis - revLast) / revLast) * 100 : 0;
@@ -338,7 +357,7 @@ export async function getDailyReportData() {
 
   const mappedSubscriptions = subscriptions.map(s => ({
     fullname: s.fullname,
-    subscription_amount: s.subscriptionAmount ?? 0,
+    subscription_amount: paidInstallments(s.installments),
     subscription_period: s.subscriptionPeriod || '',
   }));
 
@@ -402,9 +421,9 @@ export async function getMonthlyReportData(month?: number, year?: number) {
         where: { deletedAt: null, createdAt: { gte: startDate, lt: endDate } },
         _sum: { price: true },
       }),
-      prisma.session.aggregate({
+      prisma.session.findMany({
         where: { deletedAt: null, subscriptionAmount: { gt: 0 }, sessionDate: { gte: startDate, lt: endDate } },
-        _sum: { subscriptionAmount: true },
+        select: { installments: true },
       }),
       prisma.expense.aggregate({
         where: {
@@ -428,7 +447,7 @@ export async function getMonthlyReportData(month?: number, year?: number) {
       }),
     ]);
 
-    const totalIncome = (sessionRev._sum.price ?? 0) + (patientRev._sum.price ?? 0) + (subscriptionRev._sum.subscriptionAmount ?? 0);
+    const totalIncome = (sessionRev._sum.price ?? 0) + (patientRev._sum.price ?? 0) + subscriptionRev.reduce((sum, s) => sum + paidInstallments(s.installments), 0);
     const totalExpense = (expenseSum._sum.amount ?? 0) + (advanceSum._sum.amount ?? 0);
     const net = totalIncome - totalExpense;
 
@@ -467,9 +486,9 @@ export async function getWeeklyReportData() {
         where: { deletedAt: null, createdAt: { gte: dayStart, lt: dayEnd } },
         _sum: { price: true },
       }),
-      prisma.session.aggregate({
+      prisma.session.findMany({
         where: { deletedAt: null, subscriptionAmount: { gt: 0 }, sessionDate: { gte: dayStart, lt: dayEnd } },
-        _sum: { subscriptionAmount: true },
+        select: { installments: true },
       }),
       prisma.expense.aggregate({
         where: { deletedAt: null, date: dateStrExpense },
@@ -481,7 +500,7 @@ export async function getWeeklyReportData() {
       }),
     ]);
 
-    const income = (sessionRev._sum.price ?? 0) + (patientRev._sum.price ?? 0) + (subscriptionRev._sum.subscriptionAmount ?? 0);
+    const income = (sessionRev._sum.price ?? 0) + (patientRev._sum.price ?? 0) + subscriptionRev.reduce((sum, s) => sum + paidInstallments(s.installments), 0);
     const expense = (expenseSum._sum.amount ?? 0) + (advanceSum._sum.amount ?? 0);
 
     weekData.push({ day: arabicDay, date: dateStr, income, expense });
@@ -512,12 +531,12 @@ async function getMonthlyRevenue(year: number) {
         where: { deletedAt: null, createdAt: { gte: start, lt: end } },
         _sum: { price: true },
       }),
-      prisma.session.aggregate({
+      prisma.session.findMany({
         where: { deletedAt: null, subscriptionAmount: { gt: 0 }, sessionDate: { gte: start, lt: end } },
-        _sum: { subscriptionAmount: true },
+        select: { installments: true },
       }),
     ]);
-    results.push((sessionRev._sum.price ?? 0) + (patientRev._sum.price ?? 0) + (subscriptionRev._sum.subscriptionAmount ?? 0));
+    results.push((sessionRev._sum.price ?? 0) + (patientRev._sum.price ?? 0) + subscriptionRev.reduce((sum, s) => sum + paidInstallments(s.installments), 0));
   }
   return results;
 }
