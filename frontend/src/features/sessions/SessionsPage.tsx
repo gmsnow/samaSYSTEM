@@ -395,13 +395,13 @@ export default function SessionsPage() {
                 </RadioGroup>
               </FormControl>
 
-              {form.payment_method === 'نقد' && (
+              {form.payment_method === 'نقد' && !isSubscribe && (
                 <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} required={!isSubscribe && !isPrepaid} disabled={isSubscribe} />
               )}
 
               {form.payment_method === 'محفظة' && (
                 <>
-                  <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} required={!isSubscribe && !isPrepaid} disabled={isSubscribe} />
+                  {!isSubscribe && <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} required={!isSubscribe && !isPrepaid} disabled={isSubscribe} />}
                   <TextField select fullWidth label="نوع المحفظة" value={form.wallet_type} onChange={handleChange('wallet_type')}>
                     <MenuItem value="">اختر</MenuItem>
                     {WALLET_TYPES.map(w => <MenuItem key={w} value={w}>{w}</MenuItem>)}
@@ -677,13 +677,13 @@ export default function SessionsPage() {
               </RadioGroup>
             </FormControl>
 
-            {form.payment_method === 'نقد' && (
+            {form.payment_method === 'نقد' && !isSubscribe && (
               <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} sx={{ mb: 2 }} required={!isSubscribe && !isPrepaid} disabled={isSubscribe} />
             )}
 
             {form.payment_method === 'محفظة' && (
               <>
-                <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} sx={{ mb: 2 }} required={!isSubscribe && !isPrepaid} disabled={isSubscribe} />
+                {!isSubscribe && <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} sx={{ mb: 2 }} required={!isSubscribe && !isPrepaid} disabled={isSubscribe} />}
                 <TextField select fullWidth label="نوع المحفظة" value={form.wallet_type} onChange={handleChange('wallet_type')} sx={{ mb: 2 }}>
                   <MenuItem value="">اختر</MenuItem>
                   {WALLET_TYPES.map(w => <MenuItem key={w} value={w}>{w}</MenuItem>)}
