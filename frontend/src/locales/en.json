@@ -127,6 +127,7 @@
   "dashboard.inviteNow": "Register Now",
   "dashboard.statTotalPatients": "Total Patients",
   "dashboard.statTodayAppointments": "Today's Appointments",
+  "dashboard.statDailyIncome": "Daily Income",
   "dashboard.statActiveTherapists": "Active Therapists",
   "dashboard.statMonthlyRevenue": "Monthly Revenue",
   "dashboard.vsLastMonth": "vs last month",

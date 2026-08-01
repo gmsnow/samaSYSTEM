@@ -59,6 +59,8 @@ export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'mont
   const startOfWeek = ksaMidnight(ksaYear, ksaMonth, ksaDay - daysToSaturday(ksaDow));
   const startOfMonth = ksaMidnight(ksaYear, ksaMonth, 1);
   const startOfLastMonth = ksaMidnight(pm.year, pm.month, 1);
+  const startOfTomorrow = ksaMidnight(ksaYear, ksaMonth, ksaDay + 1);
+  const startOfYesterday = ksaMidnight(ksaYear, ksaMonth, ksaDay - 1);
   const monthNames = locale === 'ar' ? MONTHS_AR : MONTHS_EN;
 
   const todayStr = `${ksaYear}-${pad(ksaMonth + 1)}-${pad(ksaDay)}`;
@@ -115,6 +117,12 @@ export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'mont
     invoicesThisPeriod,
     subscriptionRevenueThisPeriod,
     subscriptionRevenuePrevPeriod,
+    dailyRegRevenueThis,
+    dailyRegRevenueLast,
+    dailyPatRevenueThis,
+    dailyPatRevenueLast,
+    dailySubSessionsThis,
+    dailySubSessionsLast,
   ] = await Promise.all([
     prisma.patient.count({ where: { deletedAt: null } }),
     prisma.patient.count({ where: { deletedAt: null, createdAt: { gte: startOfPeriod } } }),
@@ -191,10 +199,37 @@ export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'mont
       where: { deletedAt: null, subscriptionAmount: { gt: 0 }, sessionDate: { gte: startOfPrevPeriod, lt: startOfPeriod } },
       select: { installments: true },
     }),
+    prisma.session.aggregate({
+      where: { deletedAt: null, status: 'complete', OR: [{ subscriptionAmount: null }, { subscriptionAmount: 0 }], sessionDate: { gte: startOfDay, lt: startOfTomorrow } },
+      _sum: { price: true },
+    }),
+    prisma.session.aggregate({
+      where: { deletedAt: null, status: 'complete', OR: [{ subscriptionAmount: null }, { subscriptionAmount: 0 }], sessionDate: { gte: startOfYesterday, lt: startOfDay } },
+      _sum: { price: true },
+    }),
+    prisma.patient.aggregate({
+      where: { deletedAt: null, createdAt: { gte: startOfDay, lt: startOfTomorrow } },
+      _sum: { price: true },
+    }),
+    prisma.patient.aggregate({
+      where: { deletedAt: null, createdAt: { gte: startOfYesterday, lt: startOfDay } },
+      _sum: { price: true },
+    }),
+    prisma.session.findMany({
+      where: { deletedAt: null, subscriptionAmount: { gt: 0 }, sessionDate: { gte: startOfDay, lt: startOfTomorrow } },
+      select: { installments: true },
+    }),
+    prisma.session.findMany({
+      where: { deletedAt: null, subscriptionAmount: { gt: 0 }, sessionDate: { gte: startOfYesterday, lt: startOfDay } },
+      select: { installments: true },
+    }),
   ]);
 
   const subRevThis = subscriptionRevenueThisPeriod.reduce((sum, s) => sum + paidInstallments(s.installments), 0);
   const subRevLast = subscriptionRevenuePrevPeriod.reduce((sum, s) => sum + paidInstallments(s.installments), 0);
+  const dailyRevThis = (dailyRegRevenueThis._sum.price ?? 0) + (dailyPatRevenueThis._sum.price ?? 0) + dailySubSessionsThis.reduce((sum, s) => sum + paidInstallments(s.installments), 0);
+  const dailyRevLast = (dailyRegRevenueLast._sum.price ?? 0) + (dailyPatRevenueLast._sum.price ?? 0) + dailySubSessionsLast.reduce((sum, s) => sum + paidInstallments(s.installments), 0);
+  const dailyIncomeChange = dailyRevLast > 0 ? ((dailyRevThis - dailyRevLast) / dailyRevLast) * 100 : 0;
   const revThis = (revenueThisPeriod._sum.price ?? 0) + (patientRevenueThisPeriod._sum.price ?? 0) + subRevThis;
   const revLast = (revenuePrevPeriod._sum.price ?? 0) + (patientRevenuePrevPeriod._sum.price ?? 0) + subRevLast;
   const revChange = revLast > 0 ? ((revThis - revLast) / revLast) * 100 : 0;
@@ -259,7 +294,7 @@ export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'mont
   return {
     mainCards: {
       totalPatients: { value: totalPatients, trend: formatTrend(patientGrowth), up: patientGrowth >= 0, trendLabel: 'dashboard.vsLastMonth' },
-      todaysAppointments: { value: todaysAppointments, trend: formatTrend(apptDailyGrowth), up: apptDailyGrowth >= 0, trendLabel: 'dashboard.vsYesterday' },
+      dailyIncome: { value: dailyRevThis, trend: formatTrend(dailyIncomeChange), up: dailyIncomeChange >= 0, trendLabel: 'dashboard.vsYesterday' },
       activeTherapists: { value: therapists, trend: '+0%', up: true, trendLabel: '' },
       monthlyRevenue: { value: revThis, trend: formatTrend(revChange), up: revChange >= 0, trendLabel: 'dashboard.vsLastMonth' },
     },
