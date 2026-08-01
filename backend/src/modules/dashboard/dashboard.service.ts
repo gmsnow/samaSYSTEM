@@ -165,11 +165,11 @@ export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'mont
     prisma.session.count({ where: { deletedAt: null } }),
     prisma.session.count({ where: { deletedAt: null, sessionDate: { gte: startOfPeriod } } }),
     prisma.session.aggregate({
-      where: { deletedAt: null, status: 'complete', subscriptionAmount: { gt: 0 }, sessionDate: { gte: startOfPeriod } },
+      where: { deletedAt: null, subscriptionAmount: { gt: 0 }, sessionDate: { gte: startOfPeriod } },
       _sum: { subscriptionAmount: true },
     }),
     prisma.session.aggregate({
-      where: { deletedAt: null, status: 'complete', subscriptionAmount: { gt: 0 }, sessionDate: { gte: startOfPrevPeriod, lt: startOfPeriod } },
+      where: { deletedAt: null, subscriptionAmount: { gt: 0 }, sessionDate: { gte: startOfPrevPeriod, lt: startOfPeriod } },
       _sum: { subscriptionAmount: true },
     }),
   ]);
@@ -307,7 +307,7 @@ export async function getDailyReportData() {
       orderBy: { createdAt: 'asc' },
     }),
     prisma.session.findMany({
-      where: { deletedAt: null, status: 'complete', subscriptionAmount: { gt: 0 }, sessionDate: { gte: startOfDay, lt: endOfDay } },
+      where: { deletedAt: null, subscriptionAmount: { gt: 0 }, sessionDate: { gte: startOfDay, lt: endOfDay } },
       orderBy: { createdAt: 'asc' },
     }),
     prisma.expense.findMany({
@@ -403,7 +403,7 @@ export async function getMonthlyReportData(month?: number, year?: number) {
         _sum: { price: true },
       }),
       prisma.session.aggregate({
-        where: { deletedAt: null, status: 'complete', subscriptionAmount: { gt: 0 }, sessionDate: { gte: startDate, lt: endDate } },
+        where: { deletedAt: null, subscriptionAmount: { gt: 0 }, sessionDate: { gte: startDate, lt: endDate } },
         _sum: { subscriptionAmount: true },
       }),
       prisma.expense.aggregate({
@@ -468,7 +468,7 @@ export async function getWeeklyReportData() {
         _sum: { price: true },
       }),
       prisma.session.aggregate({
-        where: { deletedAt: null, status: 'complete', subscriptionAmount: { gt: 0 }, sessionDate: { gte: dayStart, lt: dayEnd } },
+        where: { deletedAt: null, subscriptionAmount: { gt: 0 }, sessionDate: { gte: dayStart, lt: dayEnd } },
         _sum: { subscriptionAmount: true },
       }),
       prisma.expense.aggregate({
@@ -513,7 +513,7 @@ async function getMonthlyRevenue(year: number) {
         _sum: { price: true },
       }),
       prisma.session.aggregate({
-        where: { deletedAt: null, status: 'complete', subscriptionAmount: { gt: 0 }, sessionDate: { gte: start, lt: end } },
+        where: { deletedAt: null, subscriptionAmount: { gt: 0 }, sessionDate: { gte: start, lt: end } },
         _sum: { subscriptionAmount: true },
       }),
     ]);
