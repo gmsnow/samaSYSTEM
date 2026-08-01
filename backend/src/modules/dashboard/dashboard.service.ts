@@ -501,7 +501,7 @@ export async function getMonthlyReportData(month?: number, year?: number) {
     const startStr = `${start} ${monthName}`;
     const endStr = `${actualEnd} ${monthName}`;
 
-    const [sessionRev, patientRev, subscriptionRev, expenseSum, advanceSum] = await Promise.all([
+    const [sessionRev, patientRev, subscriptionRev, expenseSum, advanceSum, invoiceSum] = await Promise.all([
       prisma.session.aggregate({
         where: { deletedAt: null, status: 'complete', OR: [{ subscriptionAmount: null }, { subscriptionAmount: 0 }], sessionDate: { gte: startDate, lt: endDate } },
         _sum: { price: true },
@@ -534,10 +534,20 @@ export async function getMonthlyReportData(month?: number, year?: number) {
         },
         _sum: { amount: true },
       }),
+      prisma.invoice.aggregate({
+        where: {
+          deletedAt: null,
+          date: {
+            gte: `${y}-${pad(m + 1)}-${pad(start)}`,
+            lte: `${y}-${pad(m + 1)}-${pad(actualEnd)}`,
+          },
+        },
+        _sum: { amount: true },
+      }),
     ]);
 
     const totalIncome = (sessionRev._sum.price ?? 0) + (patientRev._sum.price ?? 0) + subscriptionRev.reduce((sum, s) => sum + paidInstallments(s.installments), 0);
-    const totalExpense = (expenseSum._sum.amount ?? 0) + (advanceSum._sum.amount ?? 0);
+    const totalExpense = (expenseSum._sum.amount ?? 0) + (advanceSum._sum.amount ?? 0) + (invoiceSum._sum.amount ?? 0);
     const net = totalIncome - totalExpense;
 
     weeklyData.push({ weekNumber: weekNum, startDate: startStr, endDate: endStr, totalIncome, totalExpense, net });
@@ -566,7 +576,7 @@ export async function getWeeklyReportData() {
     const dateStr = `${dayKsa.day} ${MONTHS_AR[dayKsa.month]} ${dayKsa.year}`;
     const dateStrExpense = `${dayKsa.year}-${pad(dayKsa.month + 1)}-${pad(dayKsa.day)}`;
 
-    const [sessionRev, patientRev, subscriptionRev, expenseSum, advanceSum] = await Promise.all([
+    const [sessionRev, patientRev, subscriptionRev, expenseSum, advanceSum, invoiceSum] = await Promise.all([
       prisma.session.aggregate({
         where: { deletedAt: null, status: 'complete', OR: [{ subscriptionAmount: null }, { subscriptionAmount: 0 }], sessionDate: { gte: dayStart, lt: dayEnd } },
         _sum: { price: true },
@@ -587,10 +597,14 @@ export async function getWeeklyReportData() {
         where: { deletedAt: null, date: dateStrExpense },
         _sum: { amount: true },
       }),
+      prisma.invoice.aggregate({
+        where: { deletedAt: null, date: dateStrExpense },
+        _sum: { amount: true },
+      }),
     ]);
 
     const income = (sessionRev._sum.price ?? 0) + (patientRev._sum.price ?? 0) + subscriptionRev.reduce((sum, s) => sum + paidInstallments(s.installments), 0);
-    const expense = (expenseSum._sum.amount ?? 0) + (advanceSum._sum.amount ?? 0);
+    const expense = (expenseSum._sum.amount ?? 0) + (advanceSum._sum.amount ?? 0) + (invoiceSum._sum.amount ?? 0);
 
     weekData.push({ day: arabicDay, date: dateStr, income, expense });
   }
