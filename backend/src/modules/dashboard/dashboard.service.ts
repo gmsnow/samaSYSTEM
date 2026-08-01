@@ -432,19 +432,13 @@ export async function getDailyReportData() {
     note: s.notes || '',
   }));
 
-  const mappedSubscriptions = subscriptions.map(s => {
-    let periodLabel = 'شهري';
-    if (s.subscriptionPeriod === 'أسبوع') periodLabel = 'أسبوعي';
-    else if (s.subscriptionPeriod === 'يوم') periodLabel = 'يومي';
-    else if (s.subscriptionPeriod !== 'شهر') periodLabel = s.subscriptionDay ? `-${s.subscriptionDay}` : '';
-    return {
-      fullname: s.fullname,
-      session_type: s.sessionType,
-      subscription_amount: s.prepaid ? (s.price ?? 0) : paidInstallments(s.installments),
-      subscription_period: s.prepaid ? 'مدفوع مسبقاً' : (s.subscriptionPeriod || ''),
-      payment_method: s.prepaid ? 'دفع مسبق' : `اشتراك${periodLabel}`,
-    };
-  });
+  const mappedSubscriptions = subscriptions.map(s => ({
+    fullname: s.fullname,
+    session_type: s.sessionType,
+    subscription_amount: s.prepaid ? (s.price ?? 0) : paidInstallments(s.installments),
+    subscription_period: s.prepaid ? 'مدفوع مسبقاً' : (s.subscriptionPeriod || ''),
+    payment_method: s.prepaid ? 'دفع مسبق' : (s.subscriptionDay ? `اشتراك-${s.subscriptionDay}` : 'اشتراك'),
+  }));
 
   const mappedPatients = patients.map(p => ({
     fullname: `${p.firstName || ''} ${p.lastName || ''}`.trim() || '—',
