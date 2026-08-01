@@ -46,8 +46,8 @@
             background: linear-gradient(135deg, #06b6d4, #0ea5e9, #3b82f6);
             color: #fff;
             text-align: center;
-            padding: 8px 16px;
-            font-size: 15px;
+            padding: 2px 16px;
+            font-size: 12px;
             font-weight: 800;
             position: relative;
         }
@@ -57,11 +57,11 @@
             bottom: 0;
             left: 0;
             right: 0;
-            height: 3px;
+            height: 2px;
             background: linear-gradient(90deg, #fbbf24, #f59e0b, #fbbf24);
         }
-        .title-section p { margin: 0; color: #fff; }
-        .title-section .subtitle { font-size: 11px; font-weight: 500; opacity: 0.85; }
+        .title-section p { margin: 0; color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .title-section .subtitle { font-size: 10px; font-weight: 500; opacity: 0.9; }
         .section-header {
             padding: 6px 12px;
             margin: 0;
@@ -200,8 +200,7 @@
     </div>
 
     <div class="title-section">
-        <p>التقرير اليومي للمرضى (الفترة الصباحية)</p>
-        <div class="subtitle"><%= dateDisplay %></div>
+        <p>التقرير اليومي للمرضى (الفترة الصباحية) <span class="subtitle"><%= dateDisplay %></span></p>
     </div>
 
     <% 
