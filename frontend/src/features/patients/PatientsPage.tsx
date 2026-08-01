@@ -5,7 +5,7 @@ import {
   Pagination, Dialog, DialogTitle, DialogContent, DialogActions, Select, FormControl, InputLabel,
   FormControlLabel, FormLabel, Radio, RadioGroup, Chip, Stack,
 } from '@mui/material';
-import { KeyboardArrowUp, Close, CalendarMonth, Edit, Delete, DownloadForOffline, AccountBalanceWallet } from '@mui/icons-material';
+import { KeyboardArrowUp, Close, CalendarMonth, Edit, Delete, DownloadForOffline, AccountBalanceWallet, Description } from '@mui/icons-material';
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../services/api';
 
@@ -58,7 +58,7 @@ function getInstallmentRemaining(s: Patient): number {
 }
 
 export default function PatientsPage() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   const [addOpen, setAddOpen] = useState(true);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
@@ -69,6 +69,7 @@ export default function PatientsPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [installmentOpen, setInstallmentOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const rowsPerPage = 10;
 
@@ -234,6 +235,20 @@ export default function PatientsPage() {
     window.open(`${base ? `${base}/api` : '/api'}/patients/${p.id}/file?lang=en&token=${token}`, '_blank');
   };
 
+  const downloadExcel = async () => {
+    try {
+      const { data: blob } = await api.get('/patients/export', { params: { lang: locale }, responseType: 'blob' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'patients-report.xlsx';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch { /* ignore */ }
+  };
+
   const selectedForInstallment = patients.find(p => p.id === selectedId);
 
   return (
@@ -330,6 +345,9 @@ export default function PatientsPage() {
       <Card>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: 2.5, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
           <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{t('patients.list')}</Typography>
+          <Button variant="contained" color="primary" startIcon={<Description />} onClick={() => setReportOpen(true)}>
+            {t('patients.report.title')}
+          </Button>
         </Box>
         <Box sx={{ px: 2.5, py: 1.5 }}>
           <TextField
@@ -515,6 +533,60 @@ export default function PatientsPage() {
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={() => setInstallmentOpen(false)} color="secondary">إغلاق</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Patients Report Dialog */}
+      <Dialog open={reportOpen} onClose={() => setReportOpen(false)} maxWidth="lg" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+          {t('patients.report.title')}
+          <Button variant="contained" color="success" startIcon={<DownloadForOffline />} onClick={downloadExcel}>
+            {t('patients.report.download')}
+          </Button>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Box sx={{ overflowX: 'auto', maxHeight: '60vh' }}>
+            <Table size="small">
+              <TableHead>
+                <TableRow sx={{ '& th': { fontWeight: 700, whiteSpace: 'nowrap', bgcolor: 'action.hover' } }}>
+                  <TableCell>{t('patients.add.form.examType')}</TableCell>
+                  <TableCell>{t('patients.add.form.name')}</TableCell>
+                  <TableCell>{t('patients.add.form.manualId')}</TableCell>
+                  <TableCell>{t('patients.add.form.age')}</TableCell>
+                  <TableCell>{t('patients.add.form.phone')}</TableCell>
+                  <TableCell>{t('patients.add.form.date')}</TableCell>
+                  <TableCell>طريقة الدفع</TableCell>
+                  <TableCell>{t('patients.add.form.price')}</TableCell>
+                  <TableCell>{t('patients.report.paid')}</TableCell>
+                  <TableCell>{t('patients.report.remaining')}</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {patients.map(p => (
+                  <TableRow key={p.id} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
+                    <TableCell>{t(p.examType === 'nutrition' ? 'patients.add.form.examType.nutrition' : 'patients.add.form.examType.physiotherapy')}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{`${p.firstName ?? ''} ${p.lastName ?? ''}`.trim() || '—'}</TableCell>
+                    <TableCell>{p.manualId || '—'}</TableCell>
+                    <TableCell>{calcAge(p.dateOfBirth)}</TableCell>
+                    <TableCell dir="ltr">{p.phone}</TableCell>
+                    <TableCell>{formatDate(p.registrationDate)}</TableCell>
+                    <TableCell>{p.paymentMethod || 'نقد'}</TableCell>
+                    <TableCell>{p.price ?? ''}</TableCell>
+                    <TableCell>{getInstallmentPaid(p).toLocaleString()}</TableCell>
+                    <TableCell>{getInstallmentRemaining(p).toLocaleString()}</TableCell>
+                  </TableRow>
+                ))}
+                {patients.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={10} sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>{t('patients.empty')}</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setReportOpen(false)} color="secondary">{t('patients.add.form.cancel')}</Button>
         </DialogActions>
       </Dialog>
 

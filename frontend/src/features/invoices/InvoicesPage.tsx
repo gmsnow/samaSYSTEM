@@ -2,46 +2,65 @@ import { useState, useEffect, useMemo } from 'react';
 import {
   Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem,
-  FormControl, InputLabel, Select, IconButton, TablePagination, Chip, Stack, Tooltip,
+  FormControl, InputLabel, Select, IconButton, TablePagination, Chip, Stack, Tooltip, Card,
 } from '@mui/material';
-import { Add, Delete, Edit, Receipt } from '@mui/icons-material';
+import { Add, Delete, Edit, Print, Receipt } from '@mui/icons-material';
 import api from '../../services/api';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { formatDate } from '../../shared/formatDate';
 
 interface Invoice {
   id: string;
-  patient: string;
+  employee: string;
   amount: number;
   date: string;
-  status: string;
   notes: string | null;
+}
+
+interface Employee {
+  id: string;
+  name: string;
+  department: string | null;
+  salary: number | null;
 }
 
 export default function InvoicesPage() {
   const { t } = useLanguage();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [form, setForm] = useState({ patient: '', amount: 0, date: '', status: 'pending', notes: '' });
+  const [form, setForm] = useState({ employee: '', amount: 0, date: '', notes: '' });
   const [editing, setEditing] = useState<Invoice | null>(null);
+  const [selectedEmpId, setSelectedEmpId] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState('');
 
   useEffect(() => {
     api.get('/invoices').then(({ data }) => setInvoices(data)).catch(() => {});
+    api.get('/employees').then(({ data }) => setEmployees(data)).catch(() => {});
   }, []);
+
+  const selectedEmployee = employees.find(e => e.id === selectedEmpId);
+  const employeeInvoices = useMemo(() => {
+    if (!selectedEmployee) return [];
+    let list = invoices.filter(inv => inv.employee === selectedEmployee.name);
+    if (selectedMonth) list = list.filter(inv => inv.date.startsWith(selectedMonth));
+    return list;
+  }, [invoices, selectedEmployee, selectedMonth]);
+  const employeeTotal = useMemo(() => employeeInvoices.reduce((s, inv) => s + inv.amount, 0), [employeeInvoices]);
 
   const handleOpenAdd = () => {
     const today = new Date().toISOString().slice(0, 10);
     setEditing(null);
-    setForm({ patient: '', amount: 0, date: today, status: 'pending', notes: '' });
+    setForm({ employee: '', amount: 0, date: today, notes: '' });
     setDialogOpen(true);
   };
 
   const handleOpenEdit = (inv: Invoice) => {
     setEditing(inv);
-    setForm({ patient: inv.patient, amount: inv.amount, date: inv.date, status: inv.status, notes: inv.notes || '' });
+    setForm({ employee: inv.employee, amount: inv.amount, date: inv.date, notes: inv.notes || '' });
     setDialogOpen(true);
   };
 
@@ -70,8 +89,7 @@ export default function InvoicesPage() {
     if (!searchQuery) return invoices;
     const q = searchQuery.toLowerCase();
     return invoices.filter(inv =>
-      inv.patient.toLowerCase().includes(q)
-      || inv.status.toLowerCase().includes(q)
+      inv.employee.toLowerCase().includes(q)
       || inv.amount.toString().includes(q)
       || (inv.notes && inv.notes.toLowerCase().includes(q))
     );
@@ -81,13 +99,13 @@ export default function InvoicesPage() {
 
   const totalAmount = useMemo(() => invoices.reduce((sum, inv) => sum + inv.amount, 0), [invoices]);
 
-  const statusColor = (status: string) => {
-    switch (status) {
-      case 'paid': return 'success';
-      case 'pending': return 'warning';
-      case 'cancelled': return 'error';
-      default: return 'default';
-    }
+  const openPrintReport = (empId: string, month?: string) => {
+    const token = localStorage.getItem('accessToken');
+    const lang = document.documentElement.lang || 'en';
+    const base = import.meta.env.VITE_API_URL || '';
+    let url = `${base ? `${base}/api` : '/api'}/invoices/report/${empId}?lang=${lang}&token=${token}`;
+    if (month) url += `&month=${month}`;
+    window.open(url, '_blank');
   };
 
   return (
@@ -103,15 +121,82 @@ export default function InvoicesPage() {
         </Button>
       </Stack>
 
+      {/* Employee Report Section */}
+      <Card sx={{ mb: 3, p: 2.5 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>{t('invoices.report.title')}</Typography>
+        <Stack direction="row" spacing={2} sx={{ mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+          <FormControl sx={{ minWidth: 280 }}>
+            <InputLabel>{t('invoices.report.selectEmployee')}</InputLabel>
+            <Select
+              value={selectedEmpId}
+              label={t('invoices.report.selectEmployee')}
+              onChange={e => setSelectedEmpId(e.target.value)}
+            >
+              <MenuItem value="">{t('invoices.report.selectEmployee')}</MenuItem>
+              {employees.map(emp => (
+                <MenuItem key={emp.id} value={emp.id}>{emp.name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <TextField
+            type="month" size="small" label={t('invoices.report.selectMonth')}
+            value={selectedMonth}
+            onChange={e => setSelectedMonth(e.target.value)}
+            sx={{ minWidth: 200 }}
+            slotProps={{ inputLabel: { shrink: true } }}
+          />
+          {selectedMonth && (
+            <Button size="small" variant="text" color="secondary" onClick={() => setSelectedMonth('')}>
+              {t('common.clear')}
+            </Button>
+          )}
+        </Stack>
+
+        {selectedEmployee && (
+          <>
+            <Stack direction="row" spacing={2} sx={{ mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+              <Chip label={`${t('invoices.report.totalInvoices')}: ${employeeTotal.toLocaleString()} YER`} color="primary" variant="outlined" sx={{ fontWeight: 600, fontSize: '0.95rem', py: 2 }} />
+              <Button variant="contained" size="small" startIcon={<Print />} onClick={() => openPrintReport(selectedEmpId, selectedMonth)} sx={{ mr: 'auto' }}>
+                {t('invoices.report.print')}
+              </Button>
+            </Stack>
+
+            {employeeInvoices.length === 0 ? (
+              <Typography variant="body2" color="text.secondary">{t('invoices.report.noInvoices')}</Typography>
+            ) : (
+              <TableContainer component={Paper} variant="outlined">
+                <Table dir="rtl" size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 700 }}>{t('invoices.col.amount')}</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>{t('invoices.col.date')}</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>{t('invoices.col.notes')}</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {employeeInvoices.map(inv => (
+                      <TableRow key={inv.id}>
+                        <TableCell>{inv.amount.toLocaleString()} YER</TableCell>
+                        <TableCell>{formatDate(inv.date)}</TableCell>
+                        <TableCell>{inv.notes || '-'}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+          </>
+        )}
+      </Card>
+
       <TextField size="small" placeholder={t('invoices.search')} value={searchQuery} onChange={e => { setSearchQuery(e.target.value); setPage(0); }} sx={{ mb: 1.5, maxWidth: 320 }} />
       <TableContainer component={Paper}>
         <Table dir="rtl">
           <TableHead>
             <TableRow>
-              <TableCell>{t('invoices.col.patient')}</TableCell>
+              <TableCell>{t('invoices.col.employee')}</TableCell>
               <TableCell>{t('invoices.col.amount')}</TableCell>
               <TableCell>{t('invoices.col.date')}</TableCell>
-              <TableCell>{t('invoices.col.status')}</TableCell>
               <TableCell>{t('invoices.col.notes')}</TableCell>
               <TableCell>{t('invoices.col.actions')}</TableCell>
             </TableRow>
@@ -119,12 +204,9 @@ export default function InvoicesPage() {
           <TableBody>
             {paginated.map(inv => (
               <TableRow key={inv.id}>
-                <TableCell sx={{ fontWeight: 600 }}>{inv.patient}</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>{inv.employee}</TableCell>
                 <TableCell>{inv.amount.toLocaleString()} YER</TableCell>
                 <TableCell>{formatDate(inv.date)}</TableCell>
-                <TableCell>
-                  <Chip label={t(`invoices.status.${inv.status}`)} size="small" color={statusColor(inv.status)} sx={{ fontWeight: 600 }} />
-                </TableCell>
                 <TableCell>{inv.notes || '-'}</TableCell>
                 <TableCell>
                   <Tooltip title={t('common.edit')}>
@@ -137,7 +219,7 @@ export default function InvoicesPage() {
               </TableRow>
             ))}
             {paginated.length === 0 && (
-              <TableRow><TableCell colSpan={6} align="center">{t('invoices.empty')}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} align="center">{t('invoices.empty')}</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
@@ -156,12 +238,18 @@ export default function InvoicesPage() {
         <DialogTitle>{editing ? t('invoices.edit') : t('invoices.add')}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField
-              label={t('invoices.form.patient')}
-              value={form.patient}
-              onChange={e => setForm(f => ({ ...f, patient: e.target.value }))}
-              fullWidth
-            />
+            <FormControl fullWidth>
+              <InputLabel>{t('invoices.form.employee')}</InputLabel>
+              <Select
+                value={form.employee}
+                label={t('invoices.form.employee')}
+                onChange={e => setForm(f => ({ ...f, employee: e.target.value }))}
+              >
+                {employees.map(emp => (
+                  <MenuItem key={emp.id} value={emp.name}>{emp.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             <TextField
               label={t('invoices.form.amount')}
               type="number"
@@ -177,18 +265,6 @@ export default function InvoicesPage() {
               fullWidth
               slotProps={{ inputLabel: { shrink: true } }}
             />
-            <FormControl fullWidth>
-              <InputLabel>{t('invoices.form.status')}</InputLabel>
-              <Select
-                value={form.status}
-                label={t('invoices.form.status')}
-                onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
-              >
-                <MenuItem value="pending">{t('invoices.status.pending')}</MenuItem>
-                <MenuItem value="paid">{t('invoices.status.paid')}</MenuItem>
-                <MenuItem value="cancelled">{t('invoices.status.cancelled')}</MenuItem>
-              </Select>
-            </FormControl>
             <TextField
               label={t('invoices.form.notes')}
               value={form.notes}

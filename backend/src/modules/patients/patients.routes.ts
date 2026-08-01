@@ -11,6 +11,7 @@ router.use(authenticate);
 router.use(requirePermission('patients'));
 
 router.get('/', controller.list);
+router.get('/export', controller.exportExcel);
 router.get('/stats', controller.stats);
 router.get('/:id', controller.getById);
 router.get('/:id/file', controller.getFile);
