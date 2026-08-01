@@ -417,8 +417,7 @@ export default function SessionsPage() {
                   setIsSubscribe(v === 'subscribe');
                   setIsPrepaid(v === 'prepaid');
                   if (v === 'prepaid') setForm(f => ({ ...f, subscription_period: '', subscription_amount: '', subscription_day: '', price: '0', notes: 'دفع مسبق' }));
-                  else if (v === 'subscribe') setForm(f => ({ ...f, subscription_period: 'شهر', subscription_day: '30' }));
-                  else setForm(f => ({ ...f, subscription_period: '', subscription_amount: '', subscription_day: '' }));
+                  else setForm(f => ({ ...f, subscription_period: v === 'subscribe' ? 'شهر' : '', subscription_amount: '', subscription_day: v === 'subscribe' ? '30' : '', price: isPrepaid ? '' : f.price, notes: isPrepaid ? '' : f.notes }));
                 }}>
                   <FormControlLabel value="subscribe" control={<Radio size="small" />} label="اشتراك" />
                   <FormControlLabel value="prepaid" control={<Radio size="small" />} label="دفع مسبق" />
@@ -699,8 +698,7 @@ export default function SessionsPage() {
                 setIsSubscribe(v === 'subscribe');
                 setIsPrepaid(v === 'prepaid');
                 if (v === 'prepaid') setForm(f => ({ ...f, subscription_period: '', subscription_amount: '', subscription_day: '', price: '0', notes: 'دفع مسبق' }));
-                else if (v === 'subscribe') setForm(f => ({ ...f, subscription_period: 'شهر', subscription_day: '30' }));
-                else setForm(f => ({ ...f, subscription_period: '', subscription_amount: '', subscription_day: '' }));
+                else setForm(f => ({ ...f, subscription_period: v === 'subscribe' ? 'شهر' : '', subscription_amount: '', subscription_day: v === 'subscribe' ? '30' : '', price: isPrepaid ? '' : f.price, notes: isPrepaid ? '' : f.notes }));
               }}>
                 <FormControlLabel value="subscribe" control={<Radio size="small" />} label="اشتراك" />
                 <FormControlLabel value="prepaid" control={<Radio size="small" />} label="دفع مسبق" />

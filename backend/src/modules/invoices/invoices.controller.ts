@@ -74,6 +74,7 @@ export async function getReport(req: Request, res: Response, next: NextFunction)
         dateFormatted: formatDate(inv.date),
         day: dayIndex >= 0 ? days[dayIndex] : '-',
         amount: inv.amount,
+        type: inv.type === 'water' ? 'water' : 'electricity',
         notes: inv.notes || '',
       };
     });

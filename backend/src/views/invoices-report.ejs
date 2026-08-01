@@ -180,7 +180,7 @@
           <td><%= r.day %></td>
           <td><%= r.amount.toLocaleString('en-US') %></td>
           <td></td>
-          <td><%= r.notes || '' %></td>
+          <td><%= t(r.type === 'water' ? 'invoices.type.water' : 'invoices.type.electricity') %><% if (r.notes) { %> - <%= r.notes %><% } %></td>
           </tr><tr>
         <% }); %>
         <% for (var i = 0; i < paddingRows; i++) { %>

@@ -248,6 +248,7 @@ model Coverage {
 model Invoice {
   id        String    @id @default(uuid())
   employee  String    @map("employee")
+  type      String    @default("electricity") @map("type")
   date      String    @map("date")
   amount    Float     @map("amount")
   notes     String?
