@@ -392,7 +392,7 @@ export async function getDailyReportData() {
   const dayName = days[ksaDow];
   const dateDisplay = `${dayName} ${pad(ksaDay)}/${pad(ksaMonth + 1)}/${ksaYear}م`;
 
-  const [sessions, patients, subscriptions, expenses, advances] = await Promise.all([
+  const [sessions, patients, subscriptions, expenses, advances, invoices] = await Promise.all([
     prisma.session.findMany({
       where: { deletedAt: null, status: 'complete', subscriptionPeriod: null, prepaid: { not: true }, OR: [{ subscriptionAmount: null }, { subscriptionAmount: 0 }], sessionDate: { gte: startOfDay, lt: endOfDay } },
       orderBy: { createdAt: 'asc' },
@@ -410,6 +410,10 @@ export async function getDailyReportData() {
       orderBy: { createdAt: 'asc' },
     }),
     prisma.salaryAdvance.findMany({
+      where: { deletedAt: null, date: todayStr },
+      orderBy: { createdAt: 'asc' },
+    }),
+    prisma.invoice.findMany({
       where: { deletedAt: null, date: todayStr },
       orderBy: { createdAt: 'asc' },
     }),
@@ -461,7 +465,13 @@ export async function getDailyReportData() {
     note: a.notes || '',
   }));
 
-  return { dateDisplay, sessions: mappedSessions, patients: mappedPatients, subscriptions: mappedSubscriptions, expenses: mappedExpenses, advances: mappedAdvances };
+  const mappedInvoices = invoices.map(i => ({
+    type: i.type === 'water' ? 'water' : 'electricity',
+    amount: i.amount,
+    notes: i.notes || '',
+  }));
+
+  return { dateDisplay, sessions: mappedSessions, patients: mappedPatients, subscriptions: mappedSubscriptions, expenses: mappedExpenses, advances: mappedAdvances, invoices: mappedInvoices };
 }
 
 export async function getMonthlyReportData(month?: number, year?: number) {

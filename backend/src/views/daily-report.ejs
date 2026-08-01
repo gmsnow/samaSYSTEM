@@ -112,10 +112,14 @@
         .cell-price { color: #dc2626; font-weight: 700; direction: ltr; font-size: 11px; }
         .cell-id { color: #ea580c; font-weight: 600; font-size: 10px; direction: ltr; }
         .cell-notes { color: #64748b; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .cell-prepaid td { background: #e0f7fa !important; }
-        .cell-prepaid .cell-name { color: #006064; }
-        .cell-prepaid .cell-service { color: #00838f; }
-        .cell-prepaid .cell-price { color: #00838f; }
+        .cell-subscription td { background: #e0f7fa !important; }
+        .cell-subscription .cell-name { color: #006064; }
+        .cell-subscription .cell-service { color: #00838f; }
+        .cell-subscription .cell-price { color: #00838f; }
+        .cell-prepaid td { background: #fce7f3 !important; }
+        .cell-prepaid .cell-name { color: #9d174d; }
+        .cell-prepaid .cell-service { color: #be185d; }
+        .cell-prepaid .cell-price { color: #be185d; }
         .total-row td {
             background: #fef2f2 !important;
             font-weight: 700;
@@ -161,6 +165,7 @@
         .sc-income .value { color: #059669; }
         .sc-expense .value { color: #dc2626; }
         .sc-advance .value { color: #7c3aed; }
+        .sc-invoice .value { color: #e11d48; }
         .sc-profit .value { color: #059669; }
         .footer {
             display: flex;
@@ -218,8 +223,10 @@
         expenses.forEach(e => { sumExpenses += Number(e.amount || 0); });
         let sumAdvances = 0;
         advances.forEach(a => { sumAdvances += Number(a.amount || 0); });
+        let sumInvoices = 0;
+        invoices.forEach(i => { sumInvoices += Number(i.amount || 0); });
         let incomeTotal = sumSessions + sumPatients + sumSubscriptions;
-        let netTotal = incomeTotal - (sumExpenses + sumAdvances);
+        let netTotal = incomeTotal - (sumExpenses + sumAdvances + sumInvoices);
     %>
 
     <div class="section-header section-sessions">
@@ -247,7 +254,7 @@
                     </tr>
                 <% }) %>
                 <% if (typeof subscriptions !== 'undefined') subscriptions.forEach((sub, i) => { %>
-                    <tr class="cell-prepaid">
+                    <tr class="<%= sub.payment_method === 'دفع مسبق' ? 'cell-prepaid' : 'cell-subscription' %>">
                         <td class="cell-num"><%= sessions.length + i + 1 %></td>
                         <td class="cell-name"><%= sub.fullname %></td>
                         <td class="cell-service"><%= sub.session_type %></td>
@@ -294,15 +301,15 @@
     <div class="section-header section-expenses">
         <span class="b" style="background:#fcd34d"></span>
         المصروفات والسلف
-        <span style="margin-right:auto;font-size:10px;opacity:0.8;font-weight:500;"><%= expenses.length %> مصروف · <%= advances.length %> سلف</span>
+        <span style="margin-right:auto;font-size:10px;opacity:0.8;font-weight:500;"><%= expenses.length %> مصروف · <%= advances.length %> سلف · <%= invoices.length %> فاتورة</span>
     </div>
     <table>
         <thead><tr>
             <th style="width:28px">م</th><th>نوع المصروف</th><th>اسم الموظف</th><th style="width:70px">المبلغ</th><th>ملاحظات</th>
         </tr></thead>
         <tbody>
-            <% if (expenses.length === 0 && advances.length === 0) { %>
-                <tr><td colspan="5"><div class="empty-state">لا توجد مصروفات أو سلف اليوم</div></td></tr>
+            <% if (expenses.length === 0 && advances.length === 0 && invoices.length === 0) { %>
+                <tr><td colspan="5"><div class="empty-state">لا توجد مصروفات أو سلف أو فواتير اليوم</div></td></tr>
             <% } else { %>
                 <% expenses.forEach((e, i) => { %>
                     <tr>
@@ -322,9 +329,18 @@
                         <td class="cell-notes"><%= a.note || '—' %></td>
                     </tr>
                 <% }) %>
+                <% invoices.forEach((inv, i) => { %>
+                    <tr>
+                        <td class="cell-num"><%= expenses.length + advances.length + i + 1 %></td>
+                        <td class="cell-name"><%= inv.type === 'water' ? 'فاتورة ماء' : 'فاتورة كهرباء' %></td>
+                        <td class="cell-name">—</td>
+                        <td class="cell-price"><%= Number(inv.amount).toLocaleString('en-US') %></td>
+                        <td class="cell-notes"><%= inv.notes || '—' %></td>
+                    </tr>
+                <% }) %>
                 <tr class="total-row">
                     <td colspan="3" class="tl">إجمالي المصروفات والسلف</td>
-                    <td class="tv"><%= (sumExpenses + sumAdvances).toLocaleString('en-US') %></td><td></td>
+                    <td class="tv"><%= (sumExpenses + sumAdvances + sumInvoices).toLocaleString('en-US') %></td><td></td>
                 </tr>
             <% } %>
         </tbody>
@@ -339,6 +355,7 @@
         <div class="summary-card sc-income"><div class="label">إجمالي الدخل</div><div class="value"><%= incomeTotal.toLocaleString('en-US') %></div></div>
         <div class="summary-card sc-expense"><div class="label">المصروفات</div><div class="value"><%= sumExpenses.toLocaleString('en-US') %></div></div>
         <div class="summary-card sc-advance"><div class="label">السلف</div><div class="value"><%= sumAdvances.toLocaleString('en-US') %></div></div>
+        <div class="summary-card sc-invoice"><div class="label">الفاتورة</div><div class="value"><%= sumInvoices.toLocaleString('en-US') %></div></div>
         <div class="summary-card sc-profit"><div class="label">الصافي</div><div class="value"><%= netTotal.toLocaleString('en-US') %></div></div>
     </div>
 
