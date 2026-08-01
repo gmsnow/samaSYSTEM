@@ -17,6 +17,13 @@ export async function dailyReport(req: Request, res: Response, next: NextFunctio
   } catch (err) { next(err); }
 }
 
+export async function dailySummary(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await dashboardService.getDailySummary();
+    res.json(data);
+  } catch (err) { next(err); }
+}
+
 export async function weeklyReport(req: Request, res: Response, next: NextFunction) {
   try {
     const data = await dashboardService.getWeeklyReportData();

@@ -474,6 +474,19 @@ export async function getDailyReportData() {
   return { dateDisplay, sessions: mappedSessions, patients: mappedPatients, subscriptions: mappedSubscriptions, expenses: mappedExpenses, advances: mappedAdvances, invoices: mappedInvoices };
 }
 
+export async function getDailySummary() {
+  const { dateDisplay, sessions, patients, subscriptions, expenses, advances, invoices } = await getDailyReportData();
+  const sumSessions = sessions.reduce((s, x) => s + Number(x.price || 0), 0);
+  const sumPatients = patients.reduce((s, x) => s + Number(x.price || 0), 0);
+  const sumSubscriptions = subscriptions.reduce((s, x) => s + Number(x.subscription_amount || 0), 0);
+  const sumExpenses = expenses.reduce((s, x) => s + Number(x.amount || 0), 0);
+  const sumAdvances = advances.reduce((s, x) => s + Number(x.amount || 0), 0);
+  const sumInvoices = invoices.reduce((s, x) => s + Number(x.amount || 0), 0);
+  const incomeTotal = sumSessions + sumPatients + sumSubscriptions;
+  const netTotal = incomeTotal - (sumExpenses + sumAdvances + sumInvoices);
+  return { dateDisplay, incomeTotal, sumExpenses, sumAdvances, sumInvoices, netTotal };
+}
+
 export async function getMonthlyReportData(month?: number, year?: number) {
   const now = new Date();
   const ksa = getKsaDate(now);

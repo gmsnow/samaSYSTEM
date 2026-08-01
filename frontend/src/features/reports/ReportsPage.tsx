@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Box, Typography, Grid, Card, CardContent, Table, TableHead, TableBody, TableRow, TableCell, Chip, Avatar, CircularProgress } from '@mui/material';
-import { People, Paid, Receipt } from '@mui/icons-material';
+import { People, Paid, Receipt, TrendingDown, AccountBalanceWallet, ReceiptLong, Savings } from '@mui/icons-material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../services/api';
@@ -29,10 +29,16 @@ const renderPieLabel = ({ cx, cy, midAngle, outerRadius, percent, name }: any) =
 export default function ReportsPage({ period }: { period: string }) {
   const { t, locale } = useLanguage();
   const [data, setData] = useState<any>(null);
+  const [summary, setSummary] = useState<any>(null);
 
   useEffect(() => {
     api.get('/dashboard/stats', { params: { locale, period } }).then(r => setData(r.data)).catch(() => {});
   }, [locale]);
+
+  useEffect(() => {
+    if (period !== 'daily') return;
+    api.get('/dashboard/daily-summary').then(r => setSummary(r.data)).catch(() => {});
+  }, [period, locale]);
 
   if (!data) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}><CircularProgress /></Box>;
@@ -40,6 +46,14 @@ export default function ReportsPage({ period }: { period: string }) {
 
   const recentPatients = data.recentPatients || [];
   const recentAppts = data.recentAppointments || [];
+
+  const dailyCards = summary ? [
+    { label: t('dashboard.dailyIncome'), value: summary.incomeTotal, color: '#059669', icon: <Paid /> },
+    { label: t('dashboard.dailyExpenses'), value: summary.sumExpenses, color: '#dc2626', icon: <TrendingDown /> },
+    { label: t('dashboard.dailyAdvances'), value: summary.sumAdvances, color: '#7c3aed', icon: <AccountBalanceWallet /> },
+    { label: t('dashboard.dailyInvoices'), value: summary.sumInvoices, color: '#ea580c', icon: <ReceiptLong /> },
+    { label: t('dashboard.dailyNet'), value: summary.netTotal, color: '#3e5679', icon: <Savings /> },
+  ] : [];
 
   return (
     <Box>
@@ -103,38 +117,54 @@ export default function ReportsPage({ period }: { period: string }) {
         </Grid>
       </Grid>
 
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>{t('dashboard.recentAppointments')}</Typography>
-              <Box sx={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid', borderColor: 'divider' }}>
-                      <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600 }}>{t('appointments.col.patient')}</th>
-                      <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600 }}>{t('appointments.col.therapist')}</th>
-                      <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600 }}>{t('appointments.col.date')}</th>
-                      <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600 }}>{t('appointments.col.status')}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentAppts.map((a: any, i: number) => (
-                      <tr key={a.id} style={{ borderBottom: i < recentAppts.length - 1 ? '1px solid' : 'none', borderColor: 'divider' }}>
-                        <td style={{ padding: '10px 12px', fontWeight: 600 }}>{a.patient}</td>
-                        <td style={{ padding: '10px 12px' }}>{a.therapist || '—'}</td>
-                        <td style={{ padding: '10px 12px' }}>{a.date || '—'}</td>
-                        <td style={{ padding: '10px 12px' }}><Chip label={a.status || '—'} size="small" color={a.status === 'paid' ? 'success' : a.status === 'cancelled' ? 'error' : 'warning'} sx={{ height: 22, fontSize: 11 }} /></td>
-                      </tr>
-                    ))}
-                    {recentAppts.length === 0 && <tr><td colSpan={4} style={{ padding: 20, textAlign: 'center', color: 'text.secondary' }}>{t('dashboard.noAppointments')}</td></tr>}
-                  </tbody>
-                </table>
-              </Box>
-            </CardContent>
-          </Card>
+      {period === 'daily' && summary && (
+        <Grid container spacing={3} sx={{ mb: 3 }}>
+          {dailyCards.map((c, i) => (
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={i}>
+              <Card><CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <Avatar sx={{ width: 48, height: 48, bgcolor: `${c.color}15`, color: c.color, mx: 'auto', mb: 1 }}>{c.icon}</Avatar>
+                <Typography variant="h4" sx={{ fontWeight: 800 }}>YER {c.value.toLocaleString()}</Typography>
+                <Typography variant="body2" color="text.secondary">{c.label}</Typography>
+              </CardContent></Card>
+            </Grid>
+          ))}
         </Grid>
-        <Grid size={{ xs: 12, md: 6 }}>
+      )}
+
+      <Grid container spacing={3}>
+        {period !== 'daily' && (
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>{t('dashboard.recentAppointments')}</Typography>
+                <Box sx={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid', borderColor: 'divider' }}>
+                        <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600 }}>{t('appointments.col.patient')}</th>
+                        <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600 }}>{t('appointments.col.therapist')}</th>
+                        <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600 }}>{t('appointments.col.date')}</th>
+                        <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600 }}>{t('appointments.col.status')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recentAppts.map((a: any, i: number) => (
+                        <tr key={a.id} style={{ borderBottom: i < recentAppts.length - 1 ? '1px solid' : 'none', borderColor: 'divider' }}>
+                          <td style={{ padding: '10px 12px', fontWeight: 600 }}>{a.patient}</td>
+                          <td style={{ padding: '10px 12px' }}>{a.therapist || '—'}</td>
+                          <td style={{ padding: '10px 12px' }}>{a.date || '—'}</td>
+                          <td style={{ padding: '10px 12px' }}><Chip label={a.status || '—'} size="small" color={a.status === 'paid' ? 'success' : a.status === 'cancelled' ? 'error' : 'warning'} sx={{ height: 22, fontSize: 11 }} /></td>
+                        </tr>
+                      ))}
+                      {recentAppts.length === 0 && <tr><td colSpan={4} style={{ padding: 20, textAlign: 'center', color: 'text.secondary' }}>{t('dashboard.noAppointments')}</td></tr>}
+                    </tbody>
+                  </table>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
+        <Grid size={{ xs: 12, md: period === 'daily' ? 12 : 6 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>{t('dashboard.recentPatients')}</Typography>
