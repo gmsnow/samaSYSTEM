@@ -192,7 +192,7 @@ export default function SessionsPage() {
     setForm(f => ({
       ...f,
       subscription_period: v,
-      subscription_day: v === 'شهر' ? '30' : v === 'أسبوع' ? '7' : '1',
+      subscription_day: v === 'شهر' ? '30' : v === 'أسبوع' ? '7' : v === 'يوم' ? '1' : f.subscription_day,
     }));
   };
 
@@ -432,6 +432,7 @@ export default function SessionsPage() {
                     <MenuItem value="شهر">شهر</MenuItem>
                     <MenuItem value="أسبوع">أسبوع</MenuItem>
                     <MenuItem value="يوم">يوم</MenuItem>
+                    <MenuItem value="غير محدد">غير محدد</MenuItem>
                   </TextField>
                   <TextField fullWidth label="عدد الأيام" type="number" value={form.subscription_day} onChange={handleChange('subscription_day')} slotProps={{ htmlInput: { min: 1 } }} />
                 </Stack>
@@ -713,6 +714,7 @@ export default function SessionsPage() {
                   <MenuItem value="شهر">شهر</MenuItem>
                   <MenuItem value="أسبوع">أسبوع</MenuItem>
                   <MenuItem value="يوم">يوم</MenuItem>
+                  <MenuItem value="غير محدد">غير محدد</MenuItem>
                 </TextField>
                 <TextField fullWidth label="عدد الأيام" type="number" value={form.subscription_day} onChange={handleChange('subscription_day')} slotProps={{ htmlInput: { min: 1 } }} />
               </Stack>
