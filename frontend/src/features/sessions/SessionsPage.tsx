@@ -59,6 +59,7 @@ interface Session {
   subscriptionDay: number | null;
   installments: string | null;
   paymentMethod: string | null;
+  prepaid?: boolean;
 }
 
 interface Employee {
@@ -157,6 +158,7 @@ export default function SessionsPage() {
     transaction_number: '',
   });
   const [isSubscribe, setIsSubscribe] = useState(false);
+  const [isPrepaid, setIsPrepaid] = useState(false);
 
   const fetchSessions = useCallback(async () => {
     try {
@@ -197,11 +199,18 @@ export default function SessionsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const payload: any = isSubscribe ? form : { ...form, subscription_period: '', subscription_amount: '', subscription_day: '' };
+      const payload: any = { ...form };
+      if (!isSubscribe) {
+        payload.subscription_period = '';
+        payload.subscription_amount = '';
+        payload.subscription_day = '';
+      }
+      payload.prepaid = isPrepaid;
       const { data } = await api.post('/sessions', payload);
       setMessage({ text: data.message, type: 'success' });
       setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: '', subscription_amount: '', subscription_day: '', payment_method: 'نقد', wallet_type: '', transaction_number: '' });
       setIsSubscribe(false);
+      setIsPrepaid(false);
       fetchSessions();
     } catch (err: any) {
       setMessage({ text: err.response?.data?.error || 'Error', type: 'error' });
@@ -217,6 +226,7 @@ export default function SessionsPage() {
       const subAmount = (data as any).subscription_amount || '';
       const subDay = (data as any).subscription_day || '';
       setIsSubscribe(!!(subPeriod && subAmount));
+      setIsPrepaid(!!(data as any).prepaid);
       setForm({
         fullname: data.fullname,
         session_type: data.sessionType,
@@ -239,7 +249,13 @@ export default function SessionsPage() {
     e.preventDefault();
     if (!selectedId) return;
     try {
-      const payload: any = isSubscribe ? form : { ...form, subscription_period: '', subscription_amount: '', subscription_day: '' };
+      const payload: any = { ...form };
+      if (!isSubscribe) {
+        payload.subscription_period = '';
+        payload.subscription_amount = '';
+        payload.subscription_day = '';
+      }
+      payload.prepaid = isPrepaid;
       const { data } = await api.put(`/sessions/${selectedId}`, payload);
       setMessage({ text: data.message, type: 'success' });
       setEditOpen(false);
@@ -380,12 +396,12 @@ export default function SessionsPage() {
               </FormControl>
 
               {form.payment_method === 'نقد' && (
-                <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} required={!isSubscribe} disabled={isSubscribe} />
+                <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} required={!isSubscribe && !isPrepaid} disabled={isSubscribe || isPrepaid} />
               )}
 
               {form.payment_method === 'محفظة' && (
                 <>
-                  <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} required={!isSubscribe} disabled={isSubscribe} />
+                  <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} required={!isSubscribe && !isPrepaid} disabled={isSubscribe || isPrepaid} />
                   <TextField select fullWidth label="نوع المحفظة" value={form.wallet_type} onChange={handleChange('wallet_type')}>
                     <MenuItem value="">اختر</MenuItem>
                     {WALLET_TYPES.map(w => <MenuItem key={w} value={w}>{w}</MenuItem>)}
@@ -396,13 +412,16 @@ export default function SessionsPage() {
 
               <FormControl>
                 <FormLabel sx={{ mb: 0.5 }}>الاشتراكات</FormLabel>
-                <RadioGroup row value={isSubscribe ? 'subscribe' : 'normal'} onChange={e => {
+                <RadioGroup row value={isPrepaid ? 'prepaid' : isSubscribe ? 'subscribe' : 'normal'} onChange={e => {
                   const v = e.target.value;
                   setIsSubscribe(v === 'subscribe');
-                  if (v === 'subscribe') setForm(f => ({ ...f, subscription_period: 'شهر', subscription_day: '30' }));
+                  setIsPrepaid(v === 'prepaid');
+                  if (v === 'prepaid') setForm(f => ({ ...f, subscription_period: '', subscription_amount: '', subscription_day: '', price: '0', notes: 'دفع مسبق' }));
+                  else if (v === 'subscribe') setForm(f => ({ ...f, subscription_period: 'شهر', subscription_day: '30' }));
                   else setForm(f => ({ ...f, subscription_period: '', subscription_amount: '', subscription_day: '' }));
                 }}>
                   <FormControlLabel value="subscribe" control={<Radio size="small" />} label="اشتراك" />
+                  <FormControlLabel value="prepaid" control={<Radio size="small" />} label="دفع مسبق" />
                   <FormControlLabel value="normal" control={<Radio size="small" />} label="جلسة عادية" />
                 </RadioGroup>
               </FormControl>
@@ -422,7 +441,7 @@ export default function SessionsPage() {
               <TextField fullWidth label={t('patients.add.form.notes')} multiline rows={2} value={form.notes} onChange={handleChange('notes')} />
 
               <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2, flexWrap: 'wrap' }}>
-                <Button variant="outlined" color="warning" onClick={() => { setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: '', subscription_amount: '', subscription_day: '', payment_method: 'نقد', wallet_type: '', transaction_number: '' }); setIsSubscribe(false); }}>{t('patients.add.form.cancel')}</Button>
+                <Button variant="outlined" color="warning" onClick={() => { setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: '', subscription_amount: '', subscription_day: '', payment_method: 'نقد', wallet_type: '', transaction_number: '' }); setIsSubscribe(false); setIsPrepaid(false); }}>{t('patients.add.form.cancel')}</Button>
                 <Button variant="contained" color="success" type="submit">{t('patients.add.form.save')}</Button>
               </Box>
             </Box>
@@ -659,12 +678,12 @@ export default function SessionsPage() {
             </FormControl>
 
             {form.payment_method === 'نقد' && (
-              <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} sx={{ mb: 2 }} required={!isSubscribe} disabled={isSubscribe} />
+              <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} sx={{ mb: 2 }} required={!isSubscribe && !isPrepaid} disabled={isSubscribe || isPrepaid} />
             )}
 
             {form.payment_method === 'محفظة' && (
               <>
-                <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} sx={{ mb: 2 }} required={!isSubscribe} disabled={isSubscribe} />
+                <TextField fullWidth label={t('patients.add.form.price')} type="number" value={form.price} onChange={handleChange('price')} sx={{ mb: 2 }} required={!isSubscribe && !isPrepaid} disabled={isSubscribe || isPrepaid} />
                 <TextField select fullWidth label="نوع المحفظة" value={form.wallet_type} onChange={handleChange('wallet_type')} sx={{ mb: 2 }}>
                   <MenuItem value="">اختر</MenuItem>
                   {WALLET_TYPES.map(w => <MenuItem key={w} value={w}>{w}</MenuItem>)}
@@ -675,13 +694,16 @@ export default function SessionsPage() {
 
             <FormControl sx={{ mb: 2 }}>
               <FormLabel sx={{ mb: 0.5 }}>الاشتراكات</FormLabel>
-              <RadioGroup row value={isSubscribe ? 'subscribe' : 'normal'} onChange={e => {
+              <RadioGroup row value={isPrepaid ? 'prepaid' : isSubscribe ? 'subscribe' : 'normal'} onChange={e => {
                 const v = e.target.value;
                 setIsSubscribe(v === 'subscribe');
-                if (v === 'subscribe') setForm(f => ({ ...f, subscription_period: 'شهر', subscription_day: '30' }));
+                setIsPrepaid(v === 'prepaid');
+                if (v === 'prepaid') setForm(f => ({ ...f, subscription_period: '', subscription_amount: '', subscription_day: '', price: '0', notes: 'دفع مسبق' }));
+                else if (v === 'subscribe') setForm(f => ({ ...f, subscription_period: 'شهر', subscription_day: '30' }));
                 else setForm(f => ({ ...f, subscription_period: '', subscription_amount: '', subscription_day: '' }));
               }}>
                 <FormControlLabel value="subscribe" control={<Radio size="small" />} label="اشتراك" />
+                <FormControlLabel value="prepaid" control={<Radio size="small" />} label="دفع مسبق" />
                 <FormControlLabel value="normal" control={<Radio size="small" />} label="جلسة عادية" />
               </RadioGroup>
             </FormControl>

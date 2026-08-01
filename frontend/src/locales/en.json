@@ -437,6 +437,7 @@
   "common.edit": "Edit",
   "common.delete": "Delete",
   "common.rowsPerPage": "Rows per page",
+  "common.clear": "Clear",
   "common.print": "Print",
   "nav.users": "Users",
   "users.title": "Users Management",

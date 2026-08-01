@@ -437,6 +437,7 @@
   "common.edit": "تعديل",
   "common.delete": "حذف",
   "common.rowsPerPage": "عدد الصفوف",
+  "common.clear": "مسح",
   "common.print": "طباعة",
   "nav.users": "المستخدمين",
   "users.title": "إدارة المستخدمين",

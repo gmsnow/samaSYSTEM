@@ -394,7 +394,7 @@ export async function getDailyReportData() {
 
   const [sessions, patients, subscriptions, expenses, advances] = await Promise.all([
     prisma.session.findMany({
-      where: { deletedAt: null, status: 'complete', subscriptionPeriod: null, OR: [{ subscriptionAmount: null }, { subscriptionAmount: 0 }], sessionDate: { gte: startOfDay, lt: endOfDay } },
+      where: { deletedAt: null, status: 'complete', subscriptionPeriod: null, prepaid: { not: true }, OR: [{ subscriptionAmount: null }, { subscriptionAmount: 0 }], sessionDate: { gte: startOfDay, lt: endOfDay } },
       orderBy: { createdAt: 'asc' },
     }),
     prisma.patient.findMany({
@@ -402,7 +402,7 @@ export async function getDailyReportData() {
       orderBy: { createdAt: 'asc' },
     }),
     prisma.session.findMany({
-      where: { deletedAt: null, OR: [{ subscriptionPeriod: { not: null } }, { subscriptionAmount: { gt: 0 } }], sessionDate: { gte: startOfDay, lt: endOfDay } },
+      where: { deletedAt: null, OR: [{ subscriptionPeriod: { not: null } }, { subscriptionAmount: { gt: 0 } }, { prepaid: true }], sessionDate: { gte: startOfDay, lt: endOfDay } },
       orderBy: { createdAt: 'asc' },
     }),
     prisma.expense.findMany({
@@ -434,8 +434,8 @@ export async function getDailyReportData() {
   const mappedSubscriptions = subscriptions.map(s => ({
     fullname: s.fullname,
     session_type: s.sessionType,
-    subscription_amount: paidInstallments(s.installments),
-    subscription_period: s.subscriptionPeriod || '',
+    subscription_amount: s.prepaid ? (s.price ?? 0) : paidInstallments(s.installments),
+    subscription_period: s.prepaid ? 'مدفوع مسبقاً' : (s.subscriptionPeriod || ''),
   }));
 
   const mappedPatients = patients.map(p => ({

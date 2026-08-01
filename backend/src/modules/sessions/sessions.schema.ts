@@ -15,6 +15,7 @@ export const createSessionSchema = z.object({
   payment_method: z.string().optional(),
   wallet_type: z.string().optional(),
   transaction_number: z.string().optional(),
+  prepaid: z.boolean().optional(),
 });
 
 export const updateSessionSchema = z.object({
@@ -32,4 +33,5 @@ export const updateSessionSchema = z.object({
   payment_method: z.string().optional(),
   wallet_type: z.string().optional(),
   transaction_number: z.string().optional(),
+  prepaid: z.boolean().optional(),
 });
