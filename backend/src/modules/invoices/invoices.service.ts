@@ -30,6 +30,7 @@ export async function getInvoice(id: string) {
 
 export async function createInvoice(data: {
   employee: string;
+  type: 'water' | 'electricity';
   amount: number;
   date: string;
   notes?: string;
@@ -39,6 +40,7 @@ export async function createInvoice(data: {
 
 export async function updateInvoice(id: string, data: {
   employee?: string;
+  type?: 'water' | 'electricity';
   amount?: number;
   date?: string;
   notes?: string;
