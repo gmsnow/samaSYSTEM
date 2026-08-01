@@ -594,11 +594,12 @@ export async function getWeeklyReportData() {
 }
 
 async function getPeriodChart(period: 'daily' | 'weekly', locale: string, ksaYear: number, ksaMonth: number, ksaDay: number, ksaDow: number) {
-  const start = period === 'daily'
-    ? ksaMidnight(ksaYear, ksaMonth, ksaDay)
+  const isDaily = period === 'daily';
+  const start = isDaily
+    ? ksaMidnight(ksaYear, ksaMonth, 1)
     : ksaMidnight(ksaYear, ksaMonth, ksaDay - daysToSaturday(ksaDow));
-  const end = period === 'daily'
-    ? ksaMidnight(ksaYear, ksaMonth, ksaDay + 1)
+  const end = isDaily
+    ? ksaMidnight(ksaYear, ksaMonth + 1, 1)
     : ksaMidnight(ksaYear, ksaMonth, ksaDay - daysToSaturday(ksaDow) + 7);
 
   const [sessions, patients, subs] = await Promise.all([
@@ -616,13 +617,13 @@ async function getPeriodChart(period: 'daily' | 'weekly', locale: string, ksaYea
     }),
   ]);
 
-  const buckets: Record<number, number> = {};
-  for (const s of sessions) { if (s.sessionDate) buckets[getKsaDate(s.sessionDate).hour] = (buckets[getKsaDate(s.sessionDate).hour] || 0) + (s.price ?? 0); }
-  for (const p of patients) { if (p.createdAt) buckets[getKsaDate(p.createdAt).hour] = (buckets[getKsaDate(p.createdAt).hour] || 0) + (p.price ?? 0); }
-  for (const s of subs) { if (s.sessionDate) buckets[getKsaDate(s.sessionDate).hour] = (buckets[getKsaDate(s.sessionDate).hour] || 0) + paidInstallments(s.installments); }
-
-  if (period === 'daily') {
-    return Array.from({ length: 24 }, (_, h) => ({ label: `${pad(h)}:00`, revenue: buckets[h] || 0 }));
+  if (isDaily) {
+    const daysInMonth = new Date(Date.UTC(ksaYear, ksaMonth + 1, 0)).getUTCDate();
+    const dayBuckets: Record<number, number> = {};
+    for (const s of sessions) { if (s.sessionDate) { const d = getKsaDate(s.sessionDate).day; dayBuckets[d] = (dayBuckets[d] || 0) + (s.price ?? 0); } }
+    for (const p of patients) { if (p.createdAt) { const d = getKsaDate(p.createdAt).day; dayBuckets[d] = (dayBuckets[d] || 0) + (p.price ?? 0); } }
+    for (const s of subs) { if (s.sessionDate) { const d = getKsaDate(s.sessionDate).day; dayBuckets[d] = (dayBuckets[d] || 0) + paidInstallments(s.installments); } }
+    return Array.from({ length: daysInMonth }, (_, i) => ({ label: String(i + 1), revenue: dayBuckets[i + 1] || 0 }));
   }
 
   const weekBuckets: Record<number, number> = {};
