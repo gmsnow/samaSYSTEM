@@ -293,59 +293,38 @@
 
     <div class="section-header section-expenses">
         <span class="b" style="background:#fcd34d"></span>
-        المصروفات
-        <span style="margin-right:auto;font-size:10px;opacity:0.8;font-weight:500;"><%= expenses.length %> مدخلات</span>
+        المصروفات والسلف
+        <span style="margin-right:auto;font-size:10px;opacity:0.8;font-weight:500;"><%= expenses.length %> مصروف · <%= advances.length %> سلف</span>
     </div>
     <table>
         <thead><tr>
-            <th style="width:28px">م</th><th colspan="2">نوع المصروف</th><th style="width:70px">المبلغ</th><th>ملاحظات</th>
+            <th style="width:28px">م</th><th>نوع المصروف</th><th>اسم الموظف</th><th style="width:70px">المبلغ</th><th>ملاحظات</th>
         </tr></thead>
         <tbody>
-            <% if (expenses.length === 0) { %>
-                <tr><td colspan="5"><div class="empty-state">لا توجد مصروفات اليوم</div></td></tr>
+            <% if (expenses.length === 0 && advances.length === 0) { %>
+                <tr><td colspan="5"><div class="empty-state">لا توجد مصروفات أو سلف اليوم</div></td></tr>
             <% } else { %>
                 <% expenses.forEach((e, i) => { %>
                     <tr>
                         <td class="cell-num"><%= i + 1 %></td>
-                        <td colspan="2" class="cell-name"><%= e.category %></td>
+                        <td class="cell-name"><%= e.category %></td>
+                        <td class="cell-name">—</td>
                         <td class="cell-price"><%= Number(e.amount).toLocaleString('en-US') %></td>
                         <td class="cell-notes"><%= e.notes || '—' %></td>
                     </tr>
                 <% }) %>
-                <tr class="total-row">
-                    <td colspan="2" class="tl">إجمالي المصروفات</td><td></td>
-                    <td class="tv"><%= sumExpenses.toLocaleString('en-US') %></td><td></td>
-                </tr>
-            <% } %>
-        </tbody>
-    </table>
-
-    <div class="section-spacing"></div>
-
-    <div class="section-header section-advances">
-        <span class="b" style="background:#c4b5fd"></span>
-        السلف
-        <span style="margin-right:auto;font-size:10px;opacity:0.8;font-weight:500;"><%= advances.length %> سلف</span>
-    </div>
-    <table>
-        <thead><tr>
-            <th style="width:28px">م</th><th colspan="2">اسم الموظف</th><th style="width:70px">المبلغ</th><th>ملاحظات</th>
-        </tr></thead>
-        <tbody>
-            <% if (advances.length === 0) { %>
-                <tr><td colspan="5"><div class="empty-state">لا توجد سلف اليوم</div></td></tr>
-            <% } else { %>
                 <% advances.forEach((a, i) => { %>
                     <tr>
-                        <td class="cell-num"><%= i + 1 %></td>
-                        <td colspan="2" class="cell-name"><%= a.employee_name %></td>
+                        <td class="cell-num"><%= expenses.length + i + 1 %></td>
+                        <td class="cell-name">سلفة</td>
+                        <td class="cell-name"><%= a.employee_name %></td>
                         <td class="cell-price"><%= Number(a.amount).toLocaleString('en-US') %></td>
                         <td class="cell-notes"><%= a.note || '—' %></td>
                     </tr>
                 <% }) %>
                 <tr class="total-row">
-                    <td colspan="2" class="tl">إجمالي السلف</td><td></td>
-                    <td class="tv"><%= sumAdvances.toLocaleString('en-US') %></td><td></td>
+                    <td colspan="3" class="tl">إجمالي المصروفات والسلف</td>
+                    <td class="tv"><%= (sumExpenses + sumAdvances).toLocaleString('en-US') %></td><td></td>
                 </tr>
             <% } %>
         </tbody>
