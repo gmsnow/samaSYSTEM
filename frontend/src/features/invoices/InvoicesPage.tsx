@@ -12,6 +12,7 @@ import { formatDate } from '../../shared/formatDate';
 interface Invoice {
   id: string;
   employee: string;
+  type: string;
   amount: number;
   date: string;
   notes: string | null;
@@ -32,7 +33,7 @@ export default function InvoicesPage() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [form, setForm] = useState({ employee: '', amount: 0, date: '', notes: '' });
+  const [form, setForm] = useState({ type: 'electricity', employee: '', amount: 0, date: '', notes: '' });
   const [editing, setEditing] = useState<Invoice | null>(null);
   const [selectedEmpId, setSelectedEmpId] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('');
@@ -54,13 +55,13 @@ export default function InvoicesPage() {
   const handleOpenAdd = () => {
     const today = new Date().toISOString().slice(0, 10);
     setEditing(null);
-    setForm({ employee: '', amount: 0, date: today, notes: '' });
+    setForm({ type: 'electricity', employee: '', amount: 0, date: today, notes: '' });
     setDialogOpen(true);
   };
 
   const handleOpenEdit = (inv: Invoice) => {
     setEditing(inv);
-    setForm({ employee: inv.employee, amount: inv.amount, date: inv.date, notes: inv.notes || '' });
+    setForm({ type: inv.type || 'electricity', employee: inv.employee, amount: inv.amount, date: inv.date, notes: inv.notes || '' });
     setDialogOpen(true);
   };
 
@@ -90,6 +91,7 @@ export default function InvoicesPage() {
     const q = searchQuery.toLowerCase();
     return invoices.filter(inv =>
       inv.employee.toLowerCase().includes(q)
+      || (inv.type === 'water' ? t('invoices.type.water') : t('invoices.type.electricity')).toLowerCase().includes(q)
       || inv.amount.toString().includes(q)
       || (inv.notes && inv.notes.toLowerCase().includes(q))
     );
@@ -168,6 +170,7 @@ export default function InvoicesPage() {
                 <Table dir="rtl" size="small">
                   <TableHead>
                     <TableRow>
+                      <TableCell sx={{ fontWeight: 700 }}>{t('invoices.col.type')}</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>{t('invoices.col.amount')}</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>{t('invoices.col.date')}</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>{t('invoices.col.notes')}</TableCell>
@@ -176,6 +179,9 @@ export default function InvoicesPage() {
                   <TableBody>
                     {employeeInvoices.map(inv => (
                       <TableRow key={inv.id}>
+                        <TableCell>
+                          <Chip label={inv.type === 'water' ? t('invoices.type.water') : t('invoices.type.electricity')} size="small" color={inv.type === 'water' ? 'info' : 'warning'} sx={{ fontWeight: 600 }} />
+                        </TableCell>
                         <TableCell>{inv.amount.toLocaleString()} YER</TableCell>
                         <TableCell>{formatDate(inv.date)}</TableCell>
                         <TableCell>{inv.notes || '-'}</TableCell>
@@ -195,6 +201,7 @@ export default function InvoicesPage() {
           <TableHead>
             <TableRow>
               <TableCell>{t('invoices.col.employee')}</TableCell>
+              <TableCell>{t('invoices.col.type')}</TableCell>
               <TableCell>{t('invoices.col.amount')}</TableCell>
               <TableCell>{t('invoices.col.date')}</TableCell>
               <TableCell>{t('invoices.col.notes')}</TableCell>
@@ -205,6 +212,9 @@ export default function InvoicesPage() {
             {paginated.map(inv => (
               <TableRow key={inv.id}>
                 <TableCell sx={{ fontWeight: 600 }}>{inv.employee}</TableCell>
+                <TableCell>
+                  <Chip label={inv.type === 'water' ? t('invoices.type.water') : t('invoices.type.electricity')} size="small" color={inv.type === 'water' ? 'info' : 'warning'} sx={{ fontWeight: 600 }} />
+                </TableCell>
                 <TableCell>{inv.amount.toLocaleString()} YER</TableCell>
                 <TableCell>{formatDate(inv.date)}</TableCell>
                 <TableCell>{inv.notes || '-'}</TableCell>
@@ -219,7 +229,7 @@ export default function InvoicesPage() {
               </TableRow>
             ))}
             {paginated.length === 0 && (
-              <TableRow><TableCell colSpan={5} align="center">{t('invoices.empty')}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} align="center">{t('invoices.empty')}</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
@@ -238,6 +248,17 @@ export default function InvoicesPage() {
         <DialogTitle>{editing ? t('invoices.edit') : t('invoices.add')}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
+            <FormControl fullWidth>
+              <InputLabel>{t('invoices.form.type')}</InputLabel>
+              <Select
+                value={form.type}
+                label={t('invoices.form.type')}
+                onChange={e => setForm(f => ({ ...f, type: e.target.value }))}
+              >
+                <MenuItem value="electricity">{t('invoices.type.electricity')}</MenuItem>
+                <MenuItem value="water">{t('invoices.type.water')}</MenuItem>
+              </Select>
+            </FormControl>
             <FormControl fullWidth>
               <InputLabel>{t('invoices.form.employee')}</InputLabel>
               <Select
