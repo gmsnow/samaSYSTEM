@@ -1,25 +1,20 @@
 import { prisma } from '../../config/database.js';
 import { NotFoundError } from '../../shared/errors.js';
 
-export async function listInvoices(employeeName?: string) {
-  const where: any = { deletedAt: null };
-  if (employeeName) where.employee = employeeName;
+export async function listInvoices() {
   return prisma.invoice.findMany({
-    where,
+    where: { deletedAt: null },
     orderBy: { date: 'desc' },
   });
 }
 
-export async function listInvoicesByEmployee(employeeId: string, month?: string) {
-  const employee = await prisma.employee.findUnique({ where: { id: employeeId } });
-  if (!employee || employee.deletedAt) throw new NotFoundError('Employee');
-  const where: any = { deletedAt: null, employee: employee.name };
+export async function listInvoicesByMonth(month?: string) {
+  const where: any = { deletedAt: null };
   if (month) where.date = { startsWith: month };
-  const invoices = await prisma.invoice.findMany({
+  return prisma.invoice.findMany({
     where,
     orderBy: { date: 'asc' },
   });
-  return { employee, invoices };
 }
 
 export async function getInvoice(id: string) {
@@ -29,7 +24,6 @@ export async function getInvoice(id: string) {
 }
 
 export async function createInvoice(data: {
-  employee: string;
   type: 'water' | 'electricity';
   amount: number;
   date: string;
@@ -39,7 +33,6 @@ export async function createInvoice(data: {
 }
 
 export async function updateInvoice(id: string, data: {
-  employee?: string;
   type?: 'water' | 'electricity';
   amount?: number;
   date?: string;

@@ -148,7 +148,6 @@
   </div>
 
   <div class="meta">
-    <span><%= t('invoices.report.employee') %>: <strong><%= employeeName %></strong></span>
     <% if (month) { %><span><%= month %></span><% } %>
     <span><%= t('invoices.report.generated') %>: <%= generatedDate %></span>
   </div>
@@ -158,41 +157,31 @@
     <thead>
       <tr>
         <th><%= t('invoices.report.num') %></th>
-        <th class="employee-header"><%= t('invoices.report.employee') %></th>
         <th><%= t('invoices.report.date') %></th>
         <th><%= t('invoices.report.day') %></th>
+        <th><%= t('invoices.report.type') %></th>
         <th><%= t('invoices.report.amount') %></th>
         <th><%= t('invoices.report.signature') %></th>
         <th><%= t('invoices.report.notes') %></th>
-        <th><%= t('invoices.report.operationTotal') %></th>
       </tr>
     </thead>
     <tbody>
-      <%
-        var paddingRows = Math.max(0, 10 - rows.length - 1);
-        var totalRows = rows.length + 1 + paddingRows;
-      %>
+      <% rows.forEach(function(r, i) { %>
       <tr>
-        <td rowspan="<%= totalRows %>"></td>
-        <td class="employee-cell" rowspan="<%= totalRows %>"><%= employeeName %></td>
-        <% rows.forEach(function(r) { %>
-          <td><%= r.dateFormatted %></td>
-          <td><%= r.day %></td>
-          <td><%= r.amount.toLocaleString('en-US') %></td>
-          <td></td>
-          <td><%= t(r.type === 'water' ? 'invoices.type.water' : 'invoices.type.electricity') %><% if (r.notes) { %> - <%= r.notes %><% } %></td>
-          </tr><tr>
-        <% }); %>
-        <% for (var i = 0; i < paddingRows; i++) { %>
-          <td></td><td></td><td></td><td></td><td></td>
-          </tr><tr>
-        <% } %>
+        <td><%= i + 1 %></td>
+        <td><%= r.dateFormatted %></td>
+        <td><%= r.day %></td>
+        <td><%= t(r.type === 'water' ? 'invoices.type.water' : 'invoices.type.electricity') %></td>
+        <td><%= r.amount.toLocaleString('en-US') %></td>
         <td></td>
-        <td></td>
+        <td><%= r.notes || '' %></td>
+      </tr>
+      <% }); %>
+      <tr>
+        <td colspan="4"><%= t('invoices.report.total') %></td>
         <td class="amount-total"><%= total.toLocaleString('en-US') %></td>
         <td></td>
         <td></td>
-        <td class="total-cell" rowspan="<%= totalRows %>"><%= total.toLocaleString('en-US') %></td>
       </tr>
     </tbody>
   </table>

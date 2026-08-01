@@ -428,7 +428,7 @@ export async function getDailyReportData() {
     fullname: s.fullname,
     session_type: s.sessionType,
     price: s.price ?? 0,
-    payment_method: s.paymentMethod || '',
+    payment_method: 'جلسة عادية',
     note: s.notes || '',
   }));
 
@@ -437,7 +437,7 @@ export async function getDailyReportData() {
     session_type: s.sessionType,
     subscription_amount: s.prepaid ? (s.price ?? 0) : paidInstallments(s.installments),
     subscription_period: s.prepaid ? 'مدفوع مسبقاً' : (s.subscriptionPeriod || ''),
-    payment_method: s.paymentMethod || '',
+    payment_method: s.prepaid ? 'دفع مسبق' : 'اشتراك',
   }));
 
   const mappedPatients = patients.map(p => ({

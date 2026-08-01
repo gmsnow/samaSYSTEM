@@ -11,8 +11,7 @@ router.use(authenticate);
 router.use(requirePermission('invoices'));
 
 router.get('/', controller.list);
-router.get('/report/:id', controller.getReport);
-router.get('/by-employee/:id', controller.listByEmployee);
+router.get('/report', controller.getReport);
 router.get('/:id', controller.getById);
 router.post('/', validate(createInvoiceSchema), controller.create);
 router.put('/:id', validate(updateInvoiceSchema), controller.update);

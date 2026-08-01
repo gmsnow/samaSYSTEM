@@ -4,17 +4,8 @@ import { notify } from '../../shared/notify.js';
 
 export async function list(req: Request, res: Response, next: NextFunction) {
   try {
-    const employeeName = req.query.employee as string | undefined;
-    const invoices = await invoicesService.listInvoices(employeeName);
+    const invoices = await invoicesService.listInvoices();
     res.json(invoices);
-  } catch (err) { next(err); }
-}
-
-export async function listByEmployee(req: Request, res: Response, next: NextFunction) {
-  try {
-    const month = req.query.month as string | undefined;
-    const result = await invoicesService.listInvoicesByEmployee(req.params.id as string, month);
-    res.json(result);
   } catch (err) { next(err); }
 }
 
@@ -28,7 +19,7 @@ export async function getById(req: Request, res: Response, next: NextFunction) {
 export async function create(req: Request, res: Response, next: NextFunction) {
   try {
     const invoice = await invoicesService.createInvoice(req.body);
-    notify('notification.invoice_created', { employee: req.body.employee, amount: req.body.amount });
+    notify('notification.invoice_created', { type: req.body.type, amount: req.body.amount });
     res.status(201).json({ message: 'تم إضافة الفاتورة بنجاح', invoice });
   } catch (err) { next(err); }
 }
@@ -51,7 +42,7 @@ export async function getReport(req: Request, res: Response, next: NextFunction)
   try {
     const lang = (req.query.lang as string) || 'en';
     const month = req.query.month as string | undefined;
-    const result = await invoicesService.listInvoicesByEmployee(req.params.id as string, month);
+    const invoices = await invoicesService.listInvoicesByMonth(month);
     const { t } = await import('../../shared/translate.js');
     const dir = lang === 'ar' ? 'rtl' : 'ltr';
 
@@ -66,7 +57,7 @@ export async function getReport(req: Request, res: Response, next: NextFunction)
       return `${parts[2]}/${parts[1]}/${parts[0]}`;
     };
 
-    const rows = result.invoices.map(inv => {
+    const rows = invoices.map(inv => {
       const parts = inv.date.split('-');
       const dayIndex = parts.length === 3 ? new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])).getDay() : -1;
       return {
@@ -84,7 +75,6 @@ export async function getReport(req: Request, res: Response, next: NextFunction)
     const generatedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
 
     res.render('invoices-report', {
-      employeeName: result.employee.name,
       rows,
       total,
       count: rows.length,
