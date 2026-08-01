@@ -152,7 +152,6 @@ export default function SessionsPage() {
     subscription_period: '',
     subscription_amount: '',
     subscription_day: '',
-    installments: '',
     payment_method: 'نقد',
     wallet_type: '',
     transaction_number: '',
@@ -186,19 +185,22 @@ export default function SessionsPage() {
     });
   };
 
+  const handlePeriodChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const v = e.target.value;
+    setForm(f => ({
+      ...f,
+      subscription_period: v,
+      subscription_day: v === 'شهر' ? '30' : v === 'أسبوع' ? '7' : '1',
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const payload: any = isSubscribe ? form : { ...form, subscription_period: '', subscription_amount: '', subscription_day: '' };
-      if (!isSubscribe && form.installments && form.installments !== '' && form.price) {
-        const count = parseInt(form.installments);
-        const perInstallment = Math.floor(Number(form.price) / count);
-        const payments = Array.from({ length: count }, () => ({ amount: perInstallment, date: new Date().toISOString().split('T')[0] }));
-        payload.installments = JSON.stringify({ payments });
-      }
       const { data } = await api.post('/sessions', payload);
       setMessage({ text: data.message, type: 'success' });
-      setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: '', subscription_amount: '', subscription_day: '', installments: '', payment_method: 'نقد', wallet_type: '', transaction_number: '' });
+      setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: '', subscription_amount: '', subscription_day: '', payment_method: 'نقد', wallet_type: '', transaction_number: '' });
       setIsSubscribe(false);
       fetchSessions();
     } catch (err: any) {
@@ -211,7 +213,7 @@ export default function SessionsPage() {
     try {
       const { data } = await api.get<Session>(`/sessions/${id}`);
       setSelectedId(id);
-      const subPeriod = (data as any).subscription_period || '';
+      const subPeriod = (data as any).subscription_period || 'شهر';
       const subAmount = (data as any).subscription_amount || '';
       const subDay = (data as any).subscription_day || '';
       setIsSubscribe(!!(subPeriod && subAmount));
@@ -225,7 +227,6 @@ export default function SessionsPage() {
         subscription_period: subPeriod,
         subscription_amount: subAmount.toString(),
         subscription_day: subDay,
-        installments: (data as any).installments || '',
         payment_method: (data as any).payment_method || '',
         wallet_type: (data as any).wallet_type || '',
         transaction_number: (data as any).transaction_number || '',
@@ -239,12 +240,6 @@ export default function SessionsPage() {
     if (!selectedId) return;
     try {
       const payload: any = isSubscribe ? form : { ...form, subscription_period: '', subscription_amount: '', subscription_day: '' };
-      if (!isSubscribe && form.installments && form.installments !== '' && form.price) {
-        const count = parseInt(form.installments);
-        const perInstallment = Math.floor(Number(form.price) / count);
-        const payments = Array.from({ length: count }, () => ({ amount: perInstallment, date: new Date().toISOString().split('T')[0] }));
-        payload.installments = JSON.stringify({ payments });
-      }
       const { data } = await api.put(`/sessions/${selectedId}`, payload);
       setMessage({ text: data.message, type: 'success' });
       setEditOpen(false);
@@ -404,8 +399,8 @@ export default function SessionsPage() {
                 <RadioGroup row value={isSubscribe ? 'subscribe' : 'normal'} onChange={e => {
                   const v = e.target.value;
                   setIsSubscribe(v === 'subscribe');
-                  if (v === 'subscribe') setForm(f => ({ ...f, subscription_period: 'شهر' }));
-                  else setForm(f => ({ ...f, subscription_period: '', subscription_amount: '', subscription_day: '', installments: '' }));
+                  if (v === 'subscribe') setForm(f => ({ ...f, subscription_period: 'شهر', subscription_day: '30' }));
+                  else setForm(f => ({ ...f, subscription_period: '', subscription_amount: '', subscription_day: '' }));
                 }}>
                   <FormControlLabel value="subscribe" control={<Radio size="small" />} label="اشتراك" />
                   <FormControlLabel value="normal" control={<Radio size="small" />} label="جلسة عادية" />
@@ -415,21 +410,19 @@ export default function SessionsPage() {
               {isSubscribe && (
                 <Stack direction="row" spacing={2}>
                   <TextField fullWidth label="مبلغ الاشتراك" type="number" value={form.subscription_amount} onChange={handleChange('subscription_amount')} />
-                  <TextField fullWidth label="اليوم" type="number" value={form.subscription_day} onChange={handleChange('subscription_day')} slotProps={{ htmlInput: { min: 1, max: 31 } }} />
-                  <TextField select fullWidth label="عدد الأقساط" value={form.installments} onChange={handleChange('installments')}>
-                    <MenuItem value="">اختر</MenuItem>
-                    <MenuItem value="1">قسط واحد</MenuItem>
-                    <MenuItem value="2">قصدين</MenuItem>
-                    <MenuItem value="3">ثلاثة أقساط</MenuItem>
-                    <MenuItem value="4">أربعة أقساط</MenuItem>
+                  <TextField select fullWidth label="فترة الاشتراك" value={form.subscription_period} onChange={handlePeriodChange}>
+                    <MenuItem value="شهر">شهر</MenuItem>
+                    <MenuItem value="أسبوع">أسبوع</MenuItem>
+                    <MenuItem value="يوم">يوم</MenuItem>
                   </TextField>
+                  <TextField fullWidth label="عدد الأيام" type="number" value={form.subscription_day} onChange={handleChange('subscription_day')} slotProps={{ htmlInput: { min: 1 } }} />
                 </Stack>
               )}
 
               <TextField fullWidth label={t('patients.add.form.notes')} multiline rows={2} value={form.notes} onChange={handleChange('notes')} />
 
               <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2, flexWrap: 'wrap' }}>
-                <Button variant="outlined" color="warning" onClick={() => { setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: '', subscription_amount: '', subscription_day: '', installments: '', payment_method: 'نقد', wallet_type: '', transaction_number: '' }); setIsSubscribe(false); }}>{t('patients.add.form.cancel')}</Button>
+                <Button variant="outlined" color="warning" onClick={() => { setForm({ fullname: '', session_type: '', speacial: '', session_date: '', price: '', notes: '', subscription_period: '', subscription_amount: '', subscription_day: '', payment_method: 'نقد', wallet_type: '', transaction_number: '' }); setIsSubscribe(false); }}>{t('patients.add.form.cancel')}</Button>
                 <Button variant="contained" color="success" type="submit">{t('patients.add.form.save')}</Button>
               </Box>
             </Box>
@@ -685,8 +678,8 @@ export default function SessionsPage() {
               <RadioGroup row value={isSubscribe ? 'subscribe' : 'normal'} onChange={e => {
                 const v = e.target.value;
                 setIsSubscribe(v === 'subscribe');
-                if (v === 'subscribe') setForm(f => ({ ...f, subscription_period: 'شهر' }));
-                else setForm(f => ({ ...f, subscription_period: '', subscription_amount: '', subscription_day: '', installments: '' }));
+                if (v === 'subscribe') setForm(f => ({ ...f, subscription_period: 'شهر', subscription_day: '30' }));
+                else setForm(f => ({ ...f, subscription_period: '', subscription_amount: '', subscription_day: '' }));
               }}>
                 <FormControlLabel value="subscribe" control={<Radio size="small" />} label="اشتراك" />
                 <FormControlLabel value="normal" control={<Radio size="small" />} label="جلسة عادية" />
@@ -696,14 +689,12 @@ export default function SessionsPage() {
             {isSubscribe && (
               <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
                 <TextField fullWidth label="مبلغ الاشتراك" type="number" value={form.subscription_amount} onChange={handleChange('subscription_amount')} />
-                <TextField fullWidth label="اليوم" type="number" value={form.subscription_day} onChange={handleChange('subscription_day')} slotProps={{ htmlInput: { min: 1, max: 31 } }} />
-                <TextField select fullWidth label="عدد الأقساط" value={form.installments} onChange={handleChange('installments')}>
-                  <MenuItem value="">اختر</MenuItem>
-                  <MenuItem value="1">قسط واحد</MenuItem>
-                  <MenuItem value="2">قصدين</MenuItem>
-                  <MenuItem value="3">ثلاثة أقساط</MenuItem>
-                  <MenuItem value="4">أربعة أقساط</MenuItem>
+                <TextField select fullWidth label="فترة الاشتراك" value={form.subscription_period} onChange={handlePeriodChange}>
+                  <MenuItem value="شهر">شهر</MenuItem>
+                  <MenuItem value="أسبوع">أسبوع</MenuItem>
+                  <MenuItem value="يوم">يوم</MenuItem>
                 </TextField>
+                <TextField fullWidth label="عدد الأيام" type="number" value={form.subscription_day} onChange={handleChange('subscription_day')} slotProps={{ htmlInput: { min: 1 } }} />
               </Stack>
             )}
 

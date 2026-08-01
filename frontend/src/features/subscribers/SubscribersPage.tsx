@@ -189,7 +189,7 @@ export default function SubscribersPage() {
     const { attended, free: freeDays } = getAttendance(s);
 
     const startDate = s.sessionDate ? new Date(s.sessionDate) : today;
-    const totalDays = s.subscriptionPeriod === 'شهر' ? 30 : s.subscriptionPeriod === 'أسبوع' ? 7 : 1;
+    const totalDays = s.subscriptionPeriod === 'يوم' && s.subscriptionDay ? s.subscriptionDay : (s.subscriptionPeriod === 'شهر' ? 30 : s.subscriptionPeriod === 'أسبوع' ? 7 : 1);
     const perDay = Math.floor((s.subscriptionAmount ?? 0) / totalDays);
 
     let rows = '';
@@ -363,7 +363,7 @@ ${rows}
                   const editing = subscribers.find(s => s.id === selectedId);
                   if (!editing) return null;
                   const startDate = editing.sessionDate ? new Date(editing.sessionDate) : new Date();
-                  const totalDays = editing.subscriptionPeriod === 'شهر' ? 30 : editing.subscriptionPeriod === 'أسبوع' ? 7 : 1;
+                  const totalDays = editing.subscriptionPeriod === 'يوم' && editing.subscriptionDay ? editing.subscriptionDay : (editing.subscriptionPeriod === 'شهر' ? 30 : editing.subscriptionPeriod === 'أسبوع' ? 7 : 1);
                   return Array.from({ length: totalDays }, (_, i) => {
                     const d = new Date(startDate);
                     d.setDate(d.getDate() + i);

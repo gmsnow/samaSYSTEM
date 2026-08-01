@@ -249,7 +249,7 @@
                     <tr class="cell-prepaid">
                         <td class="cell-num"><%= sessions.length + i + 1 %></td>
                         <td class="cell-name"><%= sub.fullname %></td>
-                        <td class="cell-service">اشتراك · <%= sub.subscription_period %></td>
+                        <td class="cell-service"><%= sub.session_type %></td>
                         <td class="cell-price"><%= Number(sub.subscription_amount || 0).toLocaleString('en-US') %></td>
                         <td class="cell-id">—</td>
                         <td class="cell-notes">—</td>
