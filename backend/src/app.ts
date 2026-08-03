@@ -21,6 +21,7 @@ import userRoutes from './modules/users/users.routes.js';
 import notificationRoutes from './modules/notifications/notifications.routes.js';
 import coverageRoutes from './modules/coverages/coverages.routes.js';
 import invoiceRoutes from './modules/invoices/invoices.routes.js';
+import websiteRoutes from './modules/website/website.routes.js';
 import logger from './shared/logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -65,6 +66,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/coverages', coverageRoutes);
 app.use('/api/invoices', invoiceRoutes);
+app.use('/api/website', websiteRoutes);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

@@ -12,7 +12,7 @@ import {
   NotificationsNone, Mail, Warning, Fullscreen, FullscreenExit,
   ExpandMore, ExpandLess, FiberManualRecord, Search as SearchIcon,
   Person, EventNote, CalendarMonth, HelpOutlined, Lock, Message, Payments, Receipt, People, Assessment, MedicalServices, AccountBalanceWallet,
-  Notifications,
+  Notifications, Language,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useThemeMode } from '../contexts/ThemeContext';
@@ -179,6 +179,7 @@ export default function MainLayout() {
       { text: t('nav.services'), icon: <MedicalServices />, path: '/services', permission: 'services' },
       { text: t('nav.coverages'), icon: <MedicalServices />, path: '/coverages' },
       { text: t('nav.invoices'), icon: <Receipt />, path: '/invoices' },
+      { text: t('nav.website'), icon: <Language />, path: '/website' },
       { text: t('nav.subscribers'), icon: <Person />, path: '/subscribers' },
       { text: t('nav.walletTransfers'), icon: <AccountBalanceWallet />, path: '/wallet-transfers' },
       { text: t('nav.advances'), icon: <Payments />, path: '/advances', permission: 'advances' },

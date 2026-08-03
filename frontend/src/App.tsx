@@ -25,6 +25,7 @@ import WeeklyReportPage from './features/reports/WeeklyReportPage';
 import MonthlyReportPage from './features/reports/MonthlyReportPage';
 import ProfilePage from './features/profile/ProfilePage';
 import NotificationsPage from './features/notifications/NotificationsPage';
+import WebsitePage from './features/website/WebsitePage';
 import NotFoundPage from './features/NotFoundPage';
 import UnauthorizedPage from './features/auth/UnauthorizedPage';
 
@@ -65,6 +66,7 @@ export default function App() {
           <Route path="/invoices" element={<InvoicesPage />} />
           <Route path="/subscribers" element={<SubscribersPage />} />
           <Route path="/wallet-transfers" element={<WalletTransfersPage />} />
+          <Route path="/website" element={<WebsitePage />} />
           <Route path="/employees" element={<PermissionGuard permission="employees"><EmployeesPage /></PermissionGuard>} />
           <Route path="/users" element={<PermissionGuard permission="users"><UsersPage /></PermissionGuard>} />
           <Route path="/reports/daily" element={<DailyReportPage />} />

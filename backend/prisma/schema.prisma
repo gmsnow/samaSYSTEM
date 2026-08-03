@@ -257,3 +257,90 @@ model Invoice {
 
   @@map("invoices")
 }
+
+model Package {
+  id        String    @id @default(uuid())
+  name      String    @map("name")
+  priceUsd  Float     @map("price_usd")
+  priceYer  Float     @map("price_yer")
+  features  String[]  @default([])
+  popular   Boolean   @default(false)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("packages")
+}
+
+model Testimonial {
+  id          String   @id @default(dbgenerated("gen_random_uuid()"))
+  patientName String   @map("patient_name")
+  rating      Int      @default(5)
+  textEn      String   @map("text_en")
+  textAr      String?  @map("text_ar")
+  treatment   String?  @map("treatment")
+  photoUrl    String?  @map("photo_url")
+  isFeatured  Boolean  @default(false) @map("is_featured")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("testimonials")
+}
+
+model Doctor {
+  id              String   @id @default(dbgenerated("gen_random_uuid()"))
+  slug            String
+  name            String
+  nameAr          String?  @map("name_ar")
+  specialty       String
+  specialtyAr     String?  @map("specialty_ar")
+  bio             String?
+  photoUrl        String?  @map("photo_url")
+  experienceYears Int      @default(0) @map("experience_years")
+  rating          Decimal  @default(5) @db.Decimal(3, 2)
+  isActive        Boolean  @default(true) @map("is_active")
+  sortOrder       Int      @default(0) @map("sort_order")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@map("doctors")
+}
+
+model BlogPost {
+  id          String    @id @default(dbgenerated("gen_random_uuid()"))
+  slug        String
+  titleEn     String    @map("title_en")
+  titleAr     String?   @map("title_ar")
+  excerptEn   String?   @map("excerpt_en")
+  excerptAr   String?   @map("excerpt_ar")
+  contentEn   String?   @map("content_en")
+  contentAr   String?   @map("content_ar")
+  coverUrl    String?   @map("cover_url")
+  authorId    String?   @map("author_id")
+  category    String?
+  tags        String[]  @default([])
+  isPublished Boolean   @default(false) @map("is_published")
+  publishedAt DateTime? @map("published_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@map("blog_posts")
+}
+
+model ContactMessage {
+  id         String   @id @default(dbgenerated("gen_random_uuid()"))
+  name       String
+  email      String
+  phone      String?
+  subject    String?
+  message    String
+  isResolved Boolean  @default(false) @map("is_resolved")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("contact_messages")
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  email     String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("newsletter_subscribers")
+}

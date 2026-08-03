@@ -1,0 +1,56 @@
+import { useState } from 'react';
+import { Box, Tabs, Tab, Typography, Paper } from '@mui/material';
+import { Workspaces, Comment, MedicalServices, Article, Email, MarkEmailRead } from '@mui/icons-material';
+import { useLanguage } from '../../contexts/LanguageContext';
+import PackagesTab from './PackagesTab';
+import TestimonialsTab from './TestimonialsTab';
+import DoctorsTab from './DoctorsTab';
+import BlogTab from './BlogTab';
+import ContactMessagesTab from './ContactMessagesTab';
+import NewsletterTab from './NewsletterTab';
+
+export default function WebsitePage() {
+  const { t } = useLanguage();
+  const [tab, setTab] = useState(0);
+
+  const tabs = [
+    { label: t('website.tab.packages'), icon: <Workspaces /> },
+    { label: t('website.tab.testimonials'), icon: <Comment /> },
+    { label: t('website.tab.doctors'), icon: <MedicalServices /> },
+    { label: t('website.tab.blog'), icon: <Article /> },
+    { label: t('website.tab.contact'), icon: <Email /> },
+    { label: t('website.tab.newsletter'), icon: <MarkEmailRead /> },
+  ];
+
+  return (
+    <Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+        <Workspaces sx={{ fontSize: 32, color: 'primary.main' }} />
+        <Typography variant="h5" sx={{ fontWeight: 700 }}>{t('website.title')}</Typography>
+      </Box>
+
+      <Paper sx={{ mb: 2 }}>
+        <Tabs
+          value={tab}
+          onChange={(_, v) => setTab(v)}
+          variant="scrollable"
+          scrollButtons="auto"
+          dir="rtl"
+        >
+          {tabs.map((tb, i) => (
+            <Tab key={tb.label} icon={tb.icon} iconPosition="start" label={tb.label} value={i} />
+          ))}
+        </Tabs>
+      </Paper>
+
+      <Box>
+        {tab === 0 && <PackagesTab />}
+        {tab === 1 && <TestimonialsTab />}
+        {tab === 2 && <DoctorsTab />}
+        {tab === 3 && <BlogTab />}
+        {tab === 4 && <ContactMessagesTab />}
+        {tab === 5 && <NewsletterTab />}
+      </Box>
+    </Box>
+  );
+}

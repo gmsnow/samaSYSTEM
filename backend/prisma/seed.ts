@@ -10,7 +10,7 @@ async function main() {
   const password = await bcrypt.hash('123', 12);
 
   const users = [
-    { username: 'admin', email: 'admin@sama.com', firstName: 'Admin', lastName: 'User', role: 'ADMIN' as const, password, permissions: ['dashboard', 'patients', 'sessions', 'appointments', 'calendar', 'advances', 'expenses', 'services', 'subscribers', 'employees', 'chat', 'users'] },
+    { username: 'admin', email: 'admin@sama.com', firstName: 'Admin', lastName: 'User', role: 'ADMIN' as const, password, permissions: ['dashboard', 'patients', 'sessions', 'appointments', 'calendar', 'advances', 'expenses', 'services', 'subscribers', 'employees', 'chat', 'users', 'website'] },
     { username: 'samacenter', email: 'samacenter@sama.com', firstName: 'أحمد', lastName: 'علي', role: 'THERAPIST' as const, password, department: 'علاج طبيعي' },
     { username: 'therapist2', email: 'therapist2@sama.com', firstName: 'سارة', lastName: 'محمد', role: 'THERAPIST' as const, password, department: 'علاج طبيعي' },
     { username: 'receptionist', email: 'receptionist@sama.com', firstName: 'نورا', lastName: 'حسن', role: 'RECEPTIONIST' as const, password },
@@ -65,13 +65,46 @@ async function main() {
     });
   }
 
+  const packages = [
+    {
+      name: 'الأساسية',
+      priceUsd: 60,
+      priceYer: 24000,
+      popular: false,
+      features: ['جلسة علاج واحدة', 'تقييم كامل', 'أنماط علاج قياسية', 'خطة تمارين منزلية', 'اختر الباقة'],
+    },
+    {
+      name: 'التعافي',
+      priceUsd: 290,
+      priceYer: 116000,
+      popular: true,
+      features: ['5 جلسات علاج', 'برنامج مخصص', 'أنماط علاج متقدمة', 'تتبع التقدم', 'حجز بأولوية', 'اختر الباقة'],
+    },
+    {
+      name: 'التميّز',
+      priceUsd: 1200,
+      priceYer: 480000,
+      popular: false,
+      features: ['20 جلسة علاج', 'أخصائي مخصص', 'كل الأنماط بما فيها الموجات الصادمة', 'زيارات منزلية متاحة', 'دعم على مدار الساعة', 'خصومات للعائلة'],
+    },
+  ];
+
+  for (const p of packages) {
+    const existing = await prisma.package.findFirst({ where: { name: p.name, deletedAt: null } });
+    if (existing) {
+      await prisma.package.update({ where: { id: existing.id }, data: p });
+    } else {
+      await prisma.package.create({ data: p });
+    }
+  }
+
   console.log('Seed completed!');
   console.log('  All users password: 123');
   console.log('  Users: admin, samacenter, therapist2, receptionist, therapist3');
   console.log(`  ${employees.length} employees created`);
   console.log(`  ${services.length} services created`);
+  console.log(`  ${packages.length} packages created`);
 }
-
 main()
   .catch(e => { console.error(e); process.exit(1); })
   .finally(() => prisma.$disconnect());
