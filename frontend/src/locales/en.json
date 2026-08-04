@@ -537,6 +537,7 @@
   "coverages.delete.confirmBtn": "Confirm Delete",
   "nav.website": "Website",
   "website.title": "Website Management",
+  "website.openSite": "Open Website",
   "website.tab.packages": "Packages",
   "website.tab.testimonials": "Testimonials",
   "website.tab.doctors": "Doctors",
