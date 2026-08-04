@@ -8,11 +8,11 @@ export async function listServices() {
   });
 }
 
-export async function createService(data: { name: string; price: number }) {
+export async function createService(data: { name: string; price: number; iconUrl?: string }) {
   return prisma.service.create({ data });
 }
 
-export async function updateService(id: string, data: { name?: string; price?: number; isActive?: boolean }) {
+export async function updateService(id: string, data: { name?: string; price?: number; isActive?: boolean; iconUrl?: string }) {
   const existing = await prisma.service.findUnique({ where: { id } });
   if (!existing || existing.deletedAt) throw new NotFoundError('Service');
   return prisma.service.update({ where: { id }, data });

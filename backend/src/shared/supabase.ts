@@ -10,6 +10,15 @@ function getClient() {
   return supabase;
 }
 
+export async function ensureBucket(bucket: string): Promise<void> {
+  const client = getClient();
+  const { data: existing } = await client.storage.getBucket(bucket);
+  if (!existing) {
+    const { error: createError } = await client.storage.createBucket(bucket, { public: true });
+    if (createError) throw createError;
+  }
+}
+
 export async function uploadFile(
   bucket: string,
   path: string,

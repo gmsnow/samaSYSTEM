@@ -112,6 +112,7 @@ model Service {
   id        String    @id @default(uuid())
   name      String    @unique @map("name")
   price     Float     @map("price")
+  iconUrl   String?   @map("icon_url")
   isActive  Boolean   @default(true)
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")

@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton, Tooltip,
-  Stack, Chip, Rating,
+  Stack, Chip, Rating, CircularProgress, Avatar,
 } from '@mui/material';
-import { Add, Delete, Edit } from '@mui/icons-material';
+import { Add, Delete, Edit, CloudUpload } from '@mui/icons-material';
 import api from '../../services/api';
 import { useLanguage } from '../../contexts/LanguageContext';
 
@@ -30,6 +30,8 @@ export default function DoctorsTab() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<DoctorItem | null>(null);
   const [form, setForm] = useState({ ...emptyForm });
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchData = () => {
     api.get('/website/doctors').then(({ data }) => setItems(data)).catch(() => {});
@@ -65,6 +67,19 @@ export default function DoctorsTab() {
       setDialogOpen(false);
       fetchData();
     } catch { /* ignore */ }
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const { data } = await api.post('/website/upload', fd);
+      setForm(f => ({ ...f, photoUrl: data.url }));
+    } catch { /* ignore */ }
+    finally { setUploading(false); if (e.target) e.target.value = ''; }
   };
 
   const handleDelete = async (d: DoctorItem) => {
@@ -139,6 +154,34 @@ export default function DoctorsTab() {
             </Stack>
             <TextField label={t('website.doctors.bio')} value={form.bio}
               onChange={e => setForm(f => ({ ...f, bio: e.target.value }))} fullWidth multiline rows={3} />
+            <Box>
+              <Typography variant="body2" sx={{ mb: 1 }}>{t('website.doctors.photoUrl')}</Typography>
+              <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+                <Avatar src={form.photoUrl || undefined} sx={{ width: 64, height: 64, border: '1px solid', borderColor: 'divider' }}>
+                  {form.photoUrl ? undefined : <CloudUpload />}
+                </Avatar>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={handleFileSelect}
+                />
+                <Button
+                  variant="outlined"
+                  startIcon={uploading ? <CircularProgress size={18} /> : <CloudUpload />}
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                >
+                  {t('website.uploadImage')}
+                </Button>
+                {form.photoUrl && (
+                  <Button size="small" color="error" onClick={() => setForm(f => ({ ...f, photoUrl: '' }))}>
+                    {t('common.delete')}
+                  </Button>
+                )}
+              </Stack>
+            </Box>
             <TextField label={t('website.doctors.photoUrl')} value={form.photoUrl}
               onChange={e => setForm(f => ({ ...f, photoUrl: e.target.value }))} fullWidth />
             <Stack direction="row" spacing={2}>
