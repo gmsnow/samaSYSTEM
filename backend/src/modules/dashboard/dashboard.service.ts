@@ -406,15 +406,15 @@ export async function getDailyReportData() {
       orderBy: { createdAt: 'asc' },
     }),
     prisma.expense.findMany({
-      where: { deletedAt: null, date: todayStr },
+      where: { deletedAt: null, date: { startsWith: todayStr } },
       orderBy: { createdAt: 'asc' },
     }),
     prisma.salaryAdvance.findMany({
-      where: { deletedAt: null, date: todayStr },
+      where: { deletedAt: null, date: { startsWith: todayStr } },
       orderBy: { createdAt: 'asc' },
     }),
     prisma.invoice.findMany({
-      where: { deletedAt: null, date: todayStr },
+      where: { deletedAt: null, date: { startsWith: todayStr } },
       orderBy: { createdAt: 'asc' },
     }),
   ]);
