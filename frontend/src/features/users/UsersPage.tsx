@@ -13,7 +13,9 @@ const ROLES = ['ADMIN', 'SUPERVISOR', 'RECEPTIONIST', 'THERAPIST'];
 
 const ALL_PERMISSIONS = [
   'dashboard', 'patients', 'sessions', 'appointments', 'calendar',
-  'advances', 'expenses', 'employees', 'chat', 'users',
+  'services', 'coverages', 'invoices', 'website', 'subscribers',
+  'wallet-transfers', 'advances', 'expenses', 'employees', 'users',
+  'reports', 'notifications', 'chat',
 ];
 
 interface User {

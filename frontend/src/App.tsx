@@ -62,17 +62,17 @@ export default function App() {
           <Route path="/advances" element={<PermissionGuard permission="advances"><AdvancesPage /></PermissionGuard>} />
           <Route path="/expenses" element={<PermissionGuard permission="expenses"><ExpensesPage /></PermissionGuard>} />
           <Route path="/services" element={<PermissionGuard permission="services"><ServicesPage /></PermissionGuard>} />
-          <Route path="/coverages" element={<CoveragesPage />} />
-          <Route path="/invoices" element={<InvoicesPage />} />
-          <Route path="/subscribers" element={<SubscribersPage />} />
-          <Route path="/wallet-transfers" element={<WalletTransfersPage />} />
-          <Route path="/website" element={<WebsitePage />} />
+          <Route path="/coverages" element={<PermissionGuard permission="coverages"><CoveragesPage /></PermissionGuard>} />
+          <Route path="/invoices" element={<PermissionGuard permission="invoices"><InvoicesPage /></PermissionGuard>} />
+          <Route path="/subscribers" element={<PermissionGuard permission="subscribers"><SubscribersPage /></PermissionGuard>} />
+          <Route path="/wallet-transfers" element={<PermissionGuard permission="wallet-transfers"><WalletTransfersPage /></PermissionGuard>} />
+          <Route path="/website" element={<PermissionGuard permission="website"><WebsitePage /></PermissionGuard>} />
           <Route path="/employees" element={<PermissionGuard permission="employees"><EmployeesPage /></PermissionGuard>} />
           <Route path="/users" element={<PermissionGuard permission="users"><UsersPage /></PermissionGuard>} />
-          <Route path="/reports/daily" element={<DailyReportPage />} />
-          <Route path="/reports/weekly" element={<WeeklyReportPage />} />
-          <Route path="/reports/monthly" element={<MonthlyReportPage />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/reports/daily" element={<PermissionGuard permission="reports"><DailyReportPage /></PermissionGuard>} />
+          <Route path="/reports/weekly" element={<PermissionGuard permission="reports"><WeeklyReportPage /></PermissionGuard>} />
+          <Route path="/reports/monthly" element={<PermissionGuard permission="reports"><MonthlyReportPage /></PermissionGuard>} />
+          <Route path="/notifications" element={<PermissionGuard permission="notifications"><NotificationsPage /></PermissionGuard>} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Route>
