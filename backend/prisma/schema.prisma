@@ -345,3 +345,17 @@ model NewsletterSubscriber {
 
   @@map("newsletter_subscribers")
 }
+
+model InsuranceCompany {
+  id          String    @id @default(uuid())
+  name        String    @map("name")
+  logoUrl     String?   @map("logo_url")
+  description String?
+  sortOrder   Int       @default(0) @map("sort_order")
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  @@map("insurance_companies")
+}

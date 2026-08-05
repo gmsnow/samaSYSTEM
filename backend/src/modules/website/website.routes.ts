@@ -8,6 +8,7 @@ import doctorsRoutes from './doctors.routes.js';
 import blogRoutes from './blog.routes.js';
 import contactMessagesRoutes from './contact-messages.routes.js';
 import newsletterRoutes from './newsletter.routes.js';
+import insuranceCompaniesRoutes from './insurance-companies.routes.js';
 import * as uploadController from './upload.controller.js';
 
 const router = Router();
@@ -23,5 +24,6 @@ router.use('/doctors', doctorsRoutes);
 router.use('/blog', blogRoutes);
 router.use('/contact-messages', contactMessagesRoutes);
 router.use('/newsletter', newsletterRoutes);
+router.use('/insurance-companies', insuranceCompaniesRoutes);
 
 export default router;

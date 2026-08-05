@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Box, Tabs, Tab, Typography, Paper, Button } from '@mui/material';
-import { Workspaces, Comment, MedicalServices, Article, Email, MarkEmailRead, OpenInNew } from '@mui/icons-material';
+import { Workspaces, Comment, MedicalServices, Article, Email, MarkEmailRead, OpenInNew, HealthAndSafety } from '@mui/icons-material';
 import { useLanguage } from '../../contexts/LanguageContext';
 import PackagesTab from './PackagesTab';
 import TestimonialsTab from './TestimonialsTab';
@@ -8,6 +8,7 @@ import DoctorsTab from './DoctorsTab';
 import BlogTab from './BlogTab';
 import ContactMessagesTab from './ContactMessagesTab';
 import NewsletterTab from './NewsletterTab';
+import InsuranceCompaniesTab from './InsuranceCompaniesTab';
 
 export default function WebsitePage() {
   const { t } = useLanguage();
@@ -17,6 +18,7 @@ export default function WebsitePage() {
     { label: t('website.tab.packages'), icon: <Workspaces /> },
     { label: t('website.tab.testimonials'), icon: <Comment /> },
     { label: t('website.tab.doctors'), icon: <MedicalServices /> },
+    { label: t('website.tab.insuranceCompanies'), icon: <HealthAndSafety /> },
     { label: t('website.tab.blog'), icon: <Article /> },
     { label: t('website.tab.contact'), icon: <Email /> },
     { label: t('website.tab.newsletter'), icon: <MarkEmailRead /> },
@@ -59,9 +61,10 @@ export default function WebsitePage() {
         {tab === 0 && <PackagesTab />}
         {tab === 1 && <TestimonialsTab />}
         {tab === 2 && <DoctorsTab />}
-        {tab === 3 && <BlogTab />}
-        {tab === 4 && <ContactMessagesTab />}
-        {tab === 5 && <NewsletterTab />}
+        {tab === 3 && <InsuranceCompaniesTab />}
+        {tab === 4 && <BlogTab />}
+        {tab === 5 && <ContactMessagesTab />}
+        {tab === 6 && <NewsletterTab />}
       </Box>
     </Box>
   );
