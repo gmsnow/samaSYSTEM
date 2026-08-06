@@ -392,7 +392,7 @@ export async function getDailyReportData() {
   const dayName = days[ksaDow];
   const dateDisplay = `${dayName} ${pad(ksaDay)}/${pad(ksaMonth + 1)}/${ksaYear}م`;
 
-  const [sessions, patients, subscriptions, expenses, advances, invoices] = await Promise.all([
+  const [sessions, patients, subscriptions, expenses, advances, invoices, coverages] = await Promise.all([
     prisma.session.findMany({
       where: { deletedAt: null, status: 'complete', subscriptionPeriod: null, prepaid: { not: true }, OR: [{ subscriptionAmount: null }, { subscriptionAmount: 0 }], sessionDate: { gte: startOfDay, lt: endOfDay } },
       orderBy: { createdAt: 'asc' },
@@ -414,6 +414,10 @@ export async function getDailyReportData() {
       orderBy: { createdAt: 'asc' },
     }),
     prisma.invoice.findMany({
+      where: { deletedAt: null, date: { startsWith: todayStr } },
+      orderBy: { createdAt: 'asc' },
+    }),
+    prisma.coverage.findMany({
       where: { deletedAt: null, date: { startsWith: todayStr } },
       orderBy: { createdAt: 'asc' },
     }),
@@ -472,19 +476,28 @@ export async function getDailyReportData() {
     notes: i.notes || '',
   }));
 
-  return { dateDisplay, sessions: mappedSessions, patients: mappedPatients, subscriptions: mappedSubscriptions, expenses: mappedExpenses, advances: mappedAdvances, invoices: mappedInvoices };
+  const mappedCoverages = coverages.map(c => ({
+    employee_name: c.name,
+    session_type: c.sessionType === 'hijama' ? 'حجامة - تغطية' : 'تغطية',
+    amount: c.price,
+    therapistShare: c.therapistShare ?? 0,
+    date: c.date,
+  }));
+
+  return { dateDisplay, sessions: mappedSessions, patients: mappedPatients, subscriptions: mappedSubscriptions, expenses: mappedExpenses, advances: mappedAdvances, invoices: mappedInvoices, coverages: mappedCoverages };
 }
 
 export async function getDailySummary() {
-  const { dateDisplay, sessions, patients, subscriptions, expenses, advances, invoices } = await getDailyReportData();
+  const { dateDisplay, sessions, patients, subscriptions, expenses, advances, invoices, coverages } = await getDailyReportData();
   const sumSessions = sessions.reduce((s, x) => s + Number(x.price || 0), 0);
   const sumPatients = patients.reduce((s, x) => s + Number(x.price || 0), 0);
   const sumSubscriptions = subscriptions.reduce((s, x) => s + Number(x.subscription_amount || 0), 0);
   const sumExpenses = expenses.reduce((s, x) => s + Number(x.amount || 0), 0);
+  const sumCoverages = coverages.reduce((s, x) => s + Number(x.amount || 0), 0);
   const sumAdvances = advances.reduce((s, x) => s + Number(x.amount || 0), 0);
   const sumInvoices = invoices.reduce((s, x) => s + Number(x.amount || 0), 0);
   const incomeTotal = sumSessions + sumPatients + sumSubscriptions;
-  const netTotal = incomeTotal - (sumExpenses + sumAdvances + sumInvoices);
+  const netTotal = incomeTotal - (sumExpenses + sumCoverages + sumAdvances + sumInvoices);
   return { dateDisplay, incomeTotal, sumExpenses, sumAdvances, sumInvoices, netTotal };
 }
 

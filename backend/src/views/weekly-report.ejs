@@ -140,6 +140,12 @@
             direction: ltr;
             background: #fef2f2;
         }
+        .cell-net {
+            color: #7c3aed;
+            font-weight: 800;
+            direction: ltr;
+            background: #f3e8ff;
+        }
         .cell-notes {
             color: #94a3b8;
         }
@@ -162,6 +168,13 @@
         }
         .total-exp {
             color: #dc2626;
+            font-weight: 800;
+            font-size: 16px;
+            direction: ltr;
+            text-align: center;
+        }
+        .total-net {
+            color: #7c3aed;
             font-weight: 800;
             font-size: 16px;
             direction: ltr;
@@ -252,12 +265,13 @@
                 <th>التاريخ</th>
                 <th>الوارد</th>
                 <th>الصادر</th>
+                <th>الإجمالي بعد الصادر (وارد - صادر)</th>
                 <th>ملاحظات</th>
             </tr>
         </thead>
         <tbody>
             <% if (weekData.length === 0) { %>
-                <tr><td colspan="6"><div class="empty-state">لا توجد بيانات لهذا الأسبوع</div></td></tr>
+                <tr><td colspan="7"><div class="empty-state">لا توجد بيانات لهذا الأسبوع</div></td></tr>
             <% } else { %>
                 <% weekData.forEach((d, i) => { %>
                     <tr>
@@ -266,6 +280,7 @@
                         <td class="cell-date"><%= d.date %></td>
                         <td class="cell-income"><%= Number(d.income || 0).toLocaleString('en-US') %></td>
                         <td class="cell-expense"><%= Number(d.expense || 0).toLocaleString('en-US') %></td>
+                        <td class="cell-net"><%= (Number(d.income || 0) - Number(d.expense || 0)).toLocaleString('en-US') %></td>
                         <td class="cell-notes">—</td>
                     </tr>
                 <% }) %>
@@ -282,11 +297,12 @@
                 <td></td>
                 <td class="total-inc"><%= totalIncome.toLocaleString('en-US') %></td>
                 <td class="total-exp"><%= totalExpense.toLocaleString('en-US') %></td>
+                <td class="total-net"><%= netTotal.toLocaleString('en-US') %></td>
                 <td></td>
             </tr>
             <tr class="grand-final">
                 <td></td>
-                <td colspan="2" class="grand-label">صافي الأسبوع (وارد - صادر)</td>
+                <td colspan="3" class="grand-label">صافي الأسبوع (وارد - صادر)</td>
                 <td colspan="3" class="grand-value"><%= netTotal.toLocaleString('en-US') %></td>
             </tr>
         </tbody>
