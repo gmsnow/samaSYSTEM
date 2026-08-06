@@ -23,25 +23,13 @@ export async function listCoveragesByEmployee(employeeId: string, month?: string
 export async function createCoverage(data: { name: string; sessionType?: string; date: string; price: number; therapistShare?: number; from?: string; to?: string }) {
   const coverage = await prisma.coverage.create({ data });
 
-  if (data.sessionType === 'hijama') {
+  if (data.price > 0) {
     await prisma.expense.create({
       data: {
-        category: 'حجامة - تغطية',
+        category: data.sessionType === 'hijama' ? 'حجامة - تغطية' : 'تغطية',
         amount: data.price,
         date: data.date,
-        notes: `تغطية حجامة - ${data.name}`,
-      },
-    });
-  }
-
-  if (data.price > 0) {
-    await prisma.salaryAdvance.create({
-      data: {
-        employee: data.name,
-        specialty: data.sessionType === 'hijama' ? 'حجامة' : 'تغطية',
-        amount: data.price,
-        date: data.date,
-        notes: data.sessionType === 'hijama' ? 'تغطية حجامة - كاملة' : 'تغطية عادية - كاملة',
+        notes: data.sessionType === 'hijama' ? `تغطية حجامة - ${data.name}` : `تغطية - ${data.name}`,
       },
     });
   }
