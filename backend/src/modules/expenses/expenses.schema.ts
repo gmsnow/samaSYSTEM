@@ -5,6 +5,7 @@ export const createExpenseSchema = z.object({
   amount: z.coerce.number().positive(),
   date: z.string().min(1),
   paymentMethod: z.string().optional(),
+  employee: z.string().optional(),
   notes: z.string().optional(),
 });
 
@@ -13,5 +14,6 @@ export const updateExpenseSchema = z.object({
   amount: z.coerce.number().positive().optional(),
   date: z.string().optional(),
   paymentMethod: z.string().optional(),
+  employee: z.string().optional(),
   notes: z.string().optional(),
 });

@@ -19,6 +19,7 @@ export async function createExpense(data: {
   amount: number;
   date: string;
   paymentMethod?: string;
+  employee?: string;
   notes?: string;
 }) {
   return prisma.expense.create({ data });
@@ -29,6 +30,7 @@ export async function updateExpense(id: string, data: {
   amount?: number;
   date?: string;
   paymentMethod?: string;
+  employee?: string;
   notes?: string;
 }) {
   const existing = await prisma.expense.findUnique({ where: { id } });

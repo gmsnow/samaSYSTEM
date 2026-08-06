@@ -29,7 +29,8 @@ export async function createCoverage(data: { name: string; sessionType?: string;
         category: data.sessionType === 'hijama' ? 'حجامة - تغطية' : 'تغطية',
         amount: data.price,
         date: data.date,
-        notes: data.sessionType === 'hijama' ? `تغطية حجامة - ${data.name}` : `تغطية - ${data.name}`,
+        employee: data.name,
+        notes: data.sessionType === 'hijama' ? 'تغطية حجامة' : 'تغطية',
       },
     });
   }

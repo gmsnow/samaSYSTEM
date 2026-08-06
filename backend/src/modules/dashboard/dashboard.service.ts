@@ -456,6 +456,7 @@ export async function getDailyReportData() {
   const mappedExpenses = expenses.map(e => ({
     category: e.category,
     amount: e.amount,
+    employee: e.employee || '',
     notes: e.notes || '',
   }));
 
