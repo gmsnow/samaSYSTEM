@@ -36,8 +36,11 @@ export default function ReportsPage({ period }: { period: string }) {
   }, [locale]);
 
   useEffect(() => {
-    if (period !== 'daily') return;
-    api.get('/dashboard/daily-summary').then(r => setSummary(r.data)).catch(() => {});
+    if (period === 'daily') {
+      api.get('/dashboard/daily-summary').then(r => setSummary(r.data)).catch(() => {});
+    } else if (period === 'weekly') {
+      api.get('/dashboard/weekly-summary').then(r => setSummary(r.data)).catch(() => {});
+    }
   }, [period, locale]);
 
   if (!data) {
@@ -52,7 +55,7 @@ export default function ReportsPage({ period }: { period: string }) {
     { label: t('dashboard.dailyExpenses'), value: summary.sumExpenses, color: '#dc2626', icon: <TrendingDown /> },
     { label: t('dashboard.dailyAdvances'), value: summary.sumAdvances, color: '#7c3aed', icon: <AccountBalanceWallet /> },
     { label: t('dashboard.dailyInvoices'), value: summary.sumInvoices, color: '#ea580c', icon: <ReceiptLong /> },
-    { label: t('dashboard.dailyNet'), value: summary.netTotal, color: '#3e5679', icon: <Savings /> },
+    { label: t(period === 'daily' ? 'dashboard.dailyNet' : 'dashboard.weeklyNet'), value: summary.netTotal, color: '#3e5679', icon: <Savings /> },
   ] : [];
 
   return (
@@ -117,7 +120,7 @@ export default function ReportsPage({ period }: { period: string }) {
         </Grid>
       </Grid>
 
-      {period === 'daily' && summary && (
+      {period !== 'monthly' && summary && (
         <Grid container spacing={3} sx={{ mb: 3 }}>
           {dailyCards.map((c, i) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={i}>

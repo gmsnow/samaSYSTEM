@@ -488,6 +488,55 @@ export async function getDailySummary() {
   return { dateDisplay, incomeTotal, sumExpenses, sumAdvances, sumInvoices, netTotal };
 }
 
+export async function getWeeklySummary() {
+  const now = new Date();
+  const ksa = getKsaDate(now);
+  const { year: ksaYear, month: ksaMonth, day: ksaDay, dayOfWeek: ksaDow } = ksa;
+
+  const start = ksaMidnight(ksaYear, ksaMonth, ksaDay - daysToSaturday(ksaDow));
+  const end = new Date(start.getTime() + 7 * 86400000);
+
+  const startKsa = getKsaDate(start);
+  const endKsa = getKsaDate(new Date(end.getTime() - 1));
+  const startStr = `${startKsa.year}-${pad(startKsa.month + 1)}-${pad(startKsa.day)}`;
+  const endStr = `${endKsa.year}-${pad(endKsa.month + 1)}-${pad(endKsa.day)}`;
+
+  const [sessionRev, patientRev, subscriptionRev, expenseSum, advanceSum, invoiceSum] = await Promise.all([
+    prisma.session.aggregate({
+      where: { deletedAt: null, status: 'complete', OR: [{ subscriptionAmount: null }, { subscriptionAmount: 0 }], sessionDate: { gte: start, lt: end } },
+      _sum: { price: true },
+    }),
+    prisma.patient.aggregate({
+      where: { deletedAt: null, createdAt: { gte: start, lt: end } },
+      _sum: { price: true },
+    }),
+    prisma.session.findMany({
+      where: { deletedAt: null, subscriptionAmount: { gt: 0 }, sessionDate: { gte: start, lt: end } },
+      select: { installments: true },
+    }),
+    prisma.expense.aggregate({
+      where: { deletedAt: null, date: { gte: startStr, lte: endStr } },
+      _sum: { amount: true },
+    }),
+    prisma.salaryAdvance.aggregate({
+      where: { deletedAt: null, date: { gte: startStr, lte: endStr } },
+      _sum: { amount: true },
+    }),
+    prisma.invoice.aggregate({
+      where: { deletedAt: null, date: { gte: startStr, lte: endStr } },
+      _sum: { amount: true },
+    }),
+  ]);
+
+  const incomeTotal = (sessionRev._sum.price ?? 0) + (patientRev._sum.price ?? 0) + subscriptionRev.reduce((sum, s) => sum + paidInstallments(s.installments), 0);
+  const sumExpenses = expenseSum._sum.amount ?? 0;
+  const sumAdvances = advanceSum._sum.amount ?? 0;
+  const sumInvoices = invoiceSum._sum.amount ?? 0;
+  const netTotal = incomeTotal - (sumExpenses + sumAdvances + sumInvoices);
+
+  return { incomeTotal, sumExpenses, sumAdvances, sumInvoices, netTotal };
+}
+
 export async function getMonthlyReportData(month?: number, year?: number) {
   const now = new Date();
   const ksa = getKsaDate(now);

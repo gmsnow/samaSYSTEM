@@ -432,6 +432,7 @@
   "dashboard.dailyAdvances": "السلف",
   "dashboard.dailyInvoices": "الفاتورة",
   "dashboard.dailyNet": "الإجمالي بعد الصرف اليومي",
+  "dashboard.weeklyNet": "الإجمالي بعد الصرف الأسبوعي",
   "dashboard.netProfit": "صافي الربح",
   "dashboard.patientGrowth": "نمو المرضى",
   "dashboard.totalSessions": "إجمالي الجلسات",

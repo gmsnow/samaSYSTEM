@@ -31,6 +31,13 @@ export async function weeklyReport(req: Request, res: Response, next: NextFuncti
   } catch (err) { next(err); }
 }
 
+export async function weeklySummary(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await dashboardService.getWeeklySummary();
+    res.json(data);
+  } catch (err) { next(err); }
+}
+
 export async function monthlyReport(req: Request, res: Response, next: NextFunction) {
   try {
     const month = req.query.month ? parseInt(req.query.month as string) : undefined;

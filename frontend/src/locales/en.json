@@ -432,6 +432,7 @@
   "dashboard.dailyAdvances": "Advances",
   "dashboard.dailyInvoices": "Invoice",
   "dashboard.dailyNet": "Net after daily expenses",
+  "dashboard.weeklyNet": "Net after weekly expenses",
   "dashboard.netProfit": "Net Profit",
   "dashboard.patientGrowth": "Patient Growth",
   "dashboard.totalSessions": "Total Sessions",
