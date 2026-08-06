@@ -78,9 +78,10 @@ export default function CoveragesPage() {
   }, [form.sessionType, form.from, form.to]);
 
   const handleOpenAdd = () => {
-    const now = new Date().toISOString().slice(0, 16);
+    const now = new Date();
+    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
     setEditing(null);
-    setForm({ ...emptyForm, date: now });
+    setForm({ ...emptyForm, date: local });
     setDialogOpen(true);
   };
 
