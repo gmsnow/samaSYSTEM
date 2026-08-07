@@ -67,8 +67,10 @@ export default function ReportsPage({ period, date }: { period: string; date?: s
     { label: t('dashboard.dailyExpenses'), value: summary.sumExpenses, color: '#dc2626', icon: <TrendingDown /> },
     { label: t('dashboard.dailyAdvances'), value: summary.sumAdvances, color: '#7c3aed', icon: <AccountBalanceWallet /> },
     { label: t('dashboard.dailyInvoices'), value: summary.sumInvoices, color: '#ea580c', icon: <ReceiptLong /> },
-    { label: t(period === 'daily' ? 'dashboard.dailyNet' : 'dashboard.weeklyNet'), value: summary.netTotal, color: '#3e5679', icon: <Savings /> },
+    { label: t(period === 'daily' ? 'dashboard.dailyNet' : period === 'weekly' ? 'dashboard.weeklyNet' : 'dashboard.monthlyNet'), value: summary.netTotal, color: '#3e5679', icon: <Savings /> },
   ] : [];
+
+  const showSummaryCards = summary && (period === 'daily' || period === 'weekly' || period === 'monthly');
 
   return (
     <Box>
@@ -132,7 +134,7 @@ export default function ReportsPage({ period, date }: { period: string; date?: s
         </Grid>
       </Grid>
 
-      {period !== 'monthly' && summary && (
+      {showSummaryCards && (
         <Grid container spacing={3} sx={{ mb: 3 }}>
           {dailyCards.map((c, i) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={i}>

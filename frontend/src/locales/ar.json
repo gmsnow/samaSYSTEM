@@ -433,6 +433,7 @@
   "dashboard.dailyInvoices": "الفاتورة",
   "dashboard.dailyNet": "الإجمالي بعد الصرف اليومي",
   "dashboard.weeklyNet": "الإجمالي بعد الصرف الأسبوعي",
+  "dashboard.monthlyNet": "الإجمالي بعد الصرف الشهري",
   "dashboard.netProfit": "صافي الربح",
   "dashboard.patientGrowth": "نمو المرضى",
   "dashboard.totalSessions": "إجمالي الجلسات",
