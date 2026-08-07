@@ -450,6 +450,7 @@
   "common.rowsPerPage": "عدد الصفوف",
   "common.clear": "مسح",
   "common.print": "طباعة",
+  "common.downloadPdf": "تحميل PDF",
   "nav.users": "المستخدمين",
   "users.title": "إدارة المستخدمين",
   "users.add": "إضافة مستخدم",

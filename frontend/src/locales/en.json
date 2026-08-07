@@ -450,6 +450,7 @@
   "common.rowsPerPage": "Rows per page",
   "common.clear": "Clear",
   "common.print": "Print",
+  "common.downloadPdf": "Download PDF",
   "nav.users": "Users",
   "users.title": "Users Management",
   "users.add": "Add User",

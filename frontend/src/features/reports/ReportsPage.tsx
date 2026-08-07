@@ -26,7 +26,7 @@ const renderPieLabel = ({ cx, cy, midAngle, outerRadius, percent, name }: any) =
   );
 };
 
-export default function ReportsPage({ period }: { period: string }) {
+export default function ReportsPage({ period, date }: { period: string; date?: string }) {
   const { t, locale } = useLanguage();
   const [data, setData] = useState<any>(null);
   const [summary, setSummary] = useState<any>(null);
@@ -37,11 +37,11 @@ export default function ReportsPage({ period }: { period: string }) {
 
   useEffect(() => {
     if (period === 'daily') {
-      api.get('/dashboard/daily-summary').then(r => setSummary(r.data)).catch(() => {});
+      api.get('/dashboard/daily-summary', { params: { date } }).then(r => setSummary(r.data)).catch(() => {});
     } else if (period === 'weekly') {
       api.get('/dashboard/weekly-summary').then(r => setSummary(r.data)).catch(() => {});
     }
-  }, [period, locale]);
+  }, [period, locale, date]);
 
   if (!data) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}><CircularProgress /></Box>;

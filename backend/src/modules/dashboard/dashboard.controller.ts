@@ -12,14 +12,17 @@ export async function stats(req: Request, res: Response, next: NextFunction) {
 
 export async function dailyReport(req: Request, res: Response, next: NextFunction) {
   try {
-    const data = await dashboardService.getDailyReportData();
-    res.render('daily-report', data);
+    const date = req.query.date as string | undefined;
+    const autoprint = req.query.autoprint !== '0';
+    const data = await dashboardService.getDailyReportData(date);
+    res.render('daily-report', { ...data, autoprint });
   } catch (err) { next(err); }
 }
 
 export async function dailySummary(req: Request, res: Response, next: NextFunction) {
   try {
-    const data = await dashboardService.getDailySummary();
+    const date = req.query.date as string | undefined;
+    const data = await dashboardService.getDailySummary(date);
     res.json(data);
   } catch (err) { next(err); }
 }

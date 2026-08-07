@@ -379,9 +379,10 @@ export async function getStats(locale = 'ar', period: 'daily' | 'weekly' | 'mont
   };
 }
 
-export async function getDailyReportData() {
-  const now = new Date();
-  const ksa = getKsaDate(now);
+export async function getDailyReportData(dateStr?: string) {
+  const ksa = dateStr
+    ? getKsaDate(ksaMidnight(Number(dateStr.slice(0, 4)), Number(dateStr.slice(5, 7)) - 1, Number(dateStr.slice(8, 10))))
+    : getKsaDate();
   const { year: ksaYear, month: ksaMonth, day: ksaDay, dayOfWeek: ksaDow } = ksa;
 
   const startOfDay = ksaMidnight(ksaYear, ksaMonth, ksaDay);
@@ -487,8 +488,8 @@ export async function getDailyReportData() {
   return { dateDisplay, sessions: mappedSessions, patients: mappedPatients, subscriptions: mappedSubscriptions, expenses: mappedExpenses, advances: mappedAdvances, invoices: mappedInvoices, coverages: mappedCoverages };
 }
 
-export async function getDailySummary() {
-  const { dateDisplay, sessions, patients, subscriptions, expenses, advances, invoices, coverages } = await getDailyReportData();
+export async function getDailySummary(dateStr?: string) {
+  const { dateDisplay, sessions, patients, subscriptions, expenses, advances, invoices, coverages } = await getDailyReportData(dateStr);
   const sumSessions = sessions.reduce((s, x) => s + Number(x.price || 0), 0);
   const sumPatients = patients.reduce((s, x) => s + Number(x.price || 0), 0);
   const sumSubscriptions = subscriptions.reduce((s, x) => s + Number(x.subscription_amount || 0), 0);
