@@ -39,7 +39,7 @@ export default function ReportsPage({ period, date }: { period: string; date?: s
     if (period === 'daily') {
       api.get('/dashboard/daily-summary', { params: { date } }).then(r => setSummary(r.data)).catch(() => {});
     } else if (period === 'weekly') {
-      api.get('/dashboard/weekly-summary').then(r => setSummary(r.data)).catch(() => {});
+      api.get('/dashboard/weekly-summary', { params: { weekStart: date } }).then(r => setSummary(r.data)).catch(() => {});
     }
   }, [period, locale, date]);
 

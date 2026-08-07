@@ -504,12 +504,20 @@ export async function getDailySummary(dateStr?: string) {
   return { dateDisplay, incomeTotal, sumExpenses, sumAdvances, sumInvoices, netTotal };
 }
 
-export async function getWeeklySummary() {
-  const now = new Date();
-  const ksa = getKsaDate(now);
-  const { year: ksaYear, month: ksaMonth, day: ksaDay, dayOfWeek: ksaDow } = ksa;
+export async function getWeeklySummary(weekStartStr?: string) {
+  let anchor: Date;
+  if (weekStartStr) {
+    const y = Number(weekStartStr.slice(0, 4));
+    const m = Number(weekStartStr.slice(5, 7)) - 1;
+    const d = Number(weekStartStr.slice(8, 10));
+    const ksa = getKsaDate(ksaMidnight(y, m, d));
+    anchor = ksaMidnight(ksa.year, ksa.month, ksa.day - daysToSaturday(ksa.dayOfWeek));
+  } else {
+    const ksa = getKsaDate();
+    anchor = ksaMidnight(ksa.year, ksa.month, ksa.day - daysToSaturday(ksa.dayOfWeek));
+  }
 
-  const start = ksaMidnight(ksaYear, ksaMonth, ksaDay - daysToSaturday(ksaDow));
+  const start = anchor;
   const end = new Date(start.getTime() + 7 * 86400000);
 
   const startKsa = getKsaDate(start);
@@ -635,12 +643,18 @@ export async function getMonthlyReportData(month?: number, year?: number) {
   return { monthName, year: y, weeklyData };
 }
 
-export async function getWeeklyReportData() {
-  const now = new Date();
-  const ksa = getKsaDate(now);
-  const { year: ksaYear, month: ksaMonth, day: ksaDay, dayOfWeek: ksaDow } = ksa;
-
-  const saturdayMidnight = ksaMidnight(ksaYear, ksaMonth, ksaDay - daysToSaturday(ksaDow));
+export async function getWeeklyReportData(weekStartStr?: string) {
+  let saturdayMidnight: Date;
+  if (weekStartStr) {
+    const y = Number(weekStartStr.slice(0, 4));
+    const m = Number(weekStartStr.slice(5, 7)) - 1;
+    const d = Number(weekStartStr.slice(8, 10));
+    const ksa = getKsaDate(ksaMidnight(y, m, d));
+    saturdayMidnight = ksaMidnight(ksa.year, ksa.month, ksa.day - daysToSaturday(ksa.dayOfWeek));
+  } else {
+    const ksa = getKsaDate();
+    saturdayMidnight = ksaMidnight(ksa.year, ksa.month, ksa.day - daysToSaturday(ksa.dayOfWeek));
+  }
 
   const dayNames = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 
@@ -692,9 +706,9 @@ export async function getWeeklyReportData() {
   const friMidnight = new Date(saturdayMidnight.getTime() + 6 * 86400000);
   const friKsa = getKsaDate(friMidnight);
 
-  const weekStartStr = `${satKsa.day} ${MONTHS_AR[satKsa.month]} ${satKsa.year}`;
+  const weekStartLabel = `${satKsa.day} ${MONTHS_AR[satKsa.month]} ${satKsa.year}`;
   const weekEndStr = `${friKsa.day} ${MONTHS_AR[friKsa.month]} ${friKsa.year}`;
-  const weekLabel = `من تاريخ ${weekStartStr} - إلى ${weekEndStr}`;
+  const weekLabel = `من تاريخ ${weekStartLabel} - إلى ${weekEndStr}`;
 
   return { weekData, weekLabel };
 }

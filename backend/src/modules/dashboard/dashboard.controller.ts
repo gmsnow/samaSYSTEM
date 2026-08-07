@@ -29,14 +29,17 @@ export async function dailySummary(req: Request, res: Response, next: NextFuncti
 
 export async function weeklyReport(req: Request, res: Response, next: NextFunction) {
   try {
-    const data = await dashboardService.getWeeklyReportData();
-    res.render('weekly-report', data);
+    const weekStart = req.query.weekStart as string | undefined;
+    const autoprint = req.query.autoprint !== '0';
+    const data = await dashboardService.getWeeklyReportData(weekStart);
+    res.render('weekly-report', { ...data, autoprint });
   } catch (err) { next(err); }
 }
 
 export async function weeklySummary(req: Request, res: Response, next: NextFunction) {
   try {
-    const data = await dashboardService.getWeeklySummary();
+    const weekStart = req.query.weekStart as string | undefined;
+    const data = await dashboardService.getWeeklySummary(weekStart);
     res.json(data);
   } catch (err) { next(err); }
 }
@@ -45,7 +48,8 @@ export async function monthlyReport(req: Request, res: Response, next: NextFunct
   try {
     const month = req.query.month ? parseInt(req.query.month as string) : undefined;
     const year = req.query.year ? parseInt(req.query.year as string) : undefined;
+    const autoprint = req.query.autoprint !== '0';
     const data = await dashboardService.getMonthlyReportData(month, year);
-    res.render('monthly-report', data);
+    res.render('monthly-report', { ...data, autoprint });
   } catch (err) { next(err); }
 }
