@@ -322,12 +322,13 @@ export default function SessionsPage() {
 
   const selectedForInstallment = sessions.find(s => s.id === selectedId);
 
-  const uniquePatients = [...new Set(sessions.map(s => s.fullname))].sort();
+  const nonCompletedSessions = sessions.filter(s => s.status !== 'complete');
+  const uniquePatients = [...new Set(nonCompletedSessions.map(s => s.fullname))].sort();
   const statusSessionTypes = statusForm.patient
-    ? [...new Set(sessions.filter(s => s.fullname === statusForm.patient).map(s => s.sessionType))]
+    ? [...new Set(nonCompletedSessions.filter(s => s.fullname === statusForm.patient).map(s => s.sessionType))]
     : [];
   const selectedSession = statusForm.patient && statusForm.sessionType
-    ? sessions.find(s => s.fullname === statusForm.patient && s.sessionType === statusForm.sessionType)
+    ? nonCompletedSessions.find(s => s.fullname === statusForm.patient && s.sessionType === statusForm.sessionType)
     : null;
 
   const handleStatusChange = async (e: React.FormEvent) => {
