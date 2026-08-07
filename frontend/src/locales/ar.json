@@ -629,6 +629,8 @@
   "website.contact.phone": "رقم الهاتف",
   "website.contact.subject": "الموضوع",
   "website.contact.message": "رسالتك",
+  "website.contact.reply": "الرد",
+  "website.contact.replyBtn": "رد على الرسالة",
   "website.contact.resolved": "تمت المعالجة",
   "website.contact.markResolved": "تحديد كمعالجة",
   "website.contact.unresolve": "إلغاء المعالجة",

@@ -629,6 +629,8 @@
   "website.contact.phone": "Phone Number",
   "website.contact.subject": "Subject",
   "website.contact.message": "Your Message",
+  "website.contact.reply": "Reply",
+  "website.contact.replyBtn": "Reply to Message",
   "website.contact.resolved": "Resolved",
   "website.contact.markResolved": "Mark Resolved",
   "website.contact.unresolve": "Unresolve",

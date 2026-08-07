@@ -335,6 +335,8 @@ model ContactMessage {
   subject    String?
   message    String
   isResolved Boolean  @default(false) @map("is_resolved")
+  reply      String?  @map("reply")
+  repliedAt  DateTime? @map("replied_at")
   createdAt  DateTime @default(now()) @map("created_at")
 
   @@map("contact_messages")

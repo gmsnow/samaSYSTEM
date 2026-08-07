@@ -11,10 +11,14 @@ export async function getContactMessage(id: string) {
   return m;
 }
 
-export async function updateContactMessage(id: string, data: { isResolved?: boolean }) {
+export async function updateContactMessage(id: string, data: { isResolved?: boolean; reply?: string }) {
   const existing = await prisma.contactMessage.findUnique({ where: { id } });
   if (!existing) throw new NotFoundError('ContactMessage');
-  return prisma.contactMessage.update({ where: { id }, data });
+  const updateData: { isResolved?: boolean; reply?: string; repliedAt?: Date } = { ...data };
+  if (data.reply !== undefined) {
+    updateData.repliedAt = new Date();
+  }
+  return prisma.contactMessage.update({ where: { id }, data: updateData });
 }
 
 export async function deleteContactMessage(id: string) {
