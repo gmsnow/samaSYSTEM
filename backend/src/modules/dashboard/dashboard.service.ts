@@ -561,7 +561,51 @@ export async function getWeeklySummary(weekStartStr?: string) {
   return { incomeTotal, sumExpenses, sumAdvances, sumInvoices, netTotal };
 }
 
-export async function getMonthlyReportData(month?: number, year?: number) {
+export async function getMonthlySummary(month?: number, year?: number) {
+  const now = new Date();
+  const ksa = getKsaDate(now);
+  const m = month !== undefined ? month : ksa.month;
+  const y = year !== undefined ? year : ksa.year;
+
+  const start = ksaMidnight(y, m, 1);
+  const end = ksaMidnight(y, m + 1, 1);
+  const monthStr = `${y}-${pad(m + 1)}`;
+
+  const [sessionRev, patientRev, subscriptionRev, expenseSum, advanceSum, invoiceSum] = await Promise.all([
+    prisma.session.aggregate({
+      where: { deletedAt: null, status: 'complete', OR: [{ subscriptionAmount: null }, { subscriptionAmount: 0 }], sessionDate: { gte: start, lt: end } },
+      _sum: { price: true },
+    }),
+    prisma.patient.aggregate({
+      where: { deletedAt: null, createdAt: { gte: start, lt: end } },
+      _sum: { price: true },
+    }),
+    prisma.session.findMany({
+      where: { deletedAt: null, subscriptionAmount: { gt: 0 }, sessionDate: { gte: start, lt: end } },
+      select: { installments: true },
+    }),
+    prisma.expense.aggregate({
+      where: { deletedAt: null, date: { startsWith: monthStr } },
+      _sum: { amount: true },
+    }),
+    prisma.salaryAdvance.aggregate({
+      where: { deletedAt: null, date: { startsWith: monthStr } },
+      _sum: { amount: true },
+    }),
+    prisma.invoice.aggregate({
+      where: { deletedAt: null, date: { startsWith: monthStr } },
+      _sum: { amount: true },
+    }),
+  ]);
+
+  const incomeTotal = (sessionRev._sum.price ?? 0) + (patientRev._sum.price ?? 0) + subscriptionRev.reduce((sum, s) => sum + paidInstallments(s.installments), 0);
+  const sumExpenses = expenseSum._sum.amount ?? 0;
+  const sumAdvances = advanceSum._sum.amount ?? 0;
+  const sumInvoices = invoiceSum._sum.amount ?? 0;
+  const netTotal = incomeTotal - (sumExpenses + sumAdvances + sumInvoices);
+
+  return { incomeTotal, sumExpenses, sumAdvances, sumInvoices, netTotal };
+}
   const now = new Date();
   const ksa = getKsaDate(now);
   const m = month !== undefined ? month : ksa.month;

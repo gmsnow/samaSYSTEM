@@ -32,15 +32,25 @@ export default function ReportsPage({ period, date }: { period: string; date?: s
   const [summary, setSummary] = useState<any>(null);
 
   useEffect(() => {
-    api.get('/dashboard/stats', { params: { locale, period } }).then(r => setData(r.data)).catch(() => {});
-  }, [locale]);
+    const load = () => {
+      api.get('/dashboard/stats', { params: { locale, period } }).then(r => setData(r.data)).catch(() => {});
+    };
+    load();
+    const id = setInterval(load, 5000);
+    return () => clearInterval(id);
+  }, [locale, period]);
 
   useEffect(() => {
-    if (period === 'daily') {
-      api.get('/dashboard/daily-summary', { params: { date } }).then(r => setSummary(r.data)).catch(() => {});
-    } else if (period === 'weekly') {
-      api.get('/dashboard/weekly-summary', { params: { weekStart: date } }).then(r => setSummary(r.data)).catch(() => {});
-    }
+    const load = () => {
+      if (period === 'daily') {
+        api.get('/dashboard/daily-summary', { params: { date } }).then(r => setSummary(r.data)).catch(() => {});
+      } else if (period === 'weekly') {
+        api.get('/dashboard/weekly-summary', { params: { weekStart: date } }).then(r => setSummary(r.data)).catch(() => {});
+      }
+    };
+    load();
+    const id = setInterval(load, 5000);
+    return () => clearInterval(id);
   }, [period, locale, date]);
 
   if (!data) {
