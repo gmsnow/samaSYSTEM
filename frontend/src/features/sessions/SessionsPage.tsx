@@ -508,7 +508,6 @@ export default function SessionsPage() {
                 <InputLabel>حالة المريض</InputLabel>
                 <Select value={statusForm.status} onChange={e => setStatusForm(prev => ({ ...prev, status: e.target.value }))} label="حالة المريض" required disabled={!selectedSession}>
                   <MenuItem value="" disabled>حالة المريض</MenuItem>
-                  <MenuItem value="complete">الحالة مكتملة</MenuItem>
                   <MenuItem value="progress">قيد المتابعة</MenuItem>
                   <MenuItem value="negative">حالة سلبية</MenuItem>
                 </Select>
