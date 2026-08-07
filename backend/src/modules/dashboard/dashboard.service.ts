@@ -494,12 +494,13 @@ export async function getDailySummary(dateStr?: string) {
   const sumPatients = patients.reduce((s, x) => s + Number(x.price || 0), 0);
   const sumSubscriptions = subscriptions.reduce((s, x) => s + Number(x.subscription_amount || 0), 0);
   const sumExpenses = expenses.reduce((s, x) => s + Number(x.amount || 0), 0);
-  const sumCoverages = coverages.reduce((s, x) => s + Number(x.amount || 0), 0);
+  const sumHijamaCoverages = coverages.reduce((s, x) => s + (x.session_type === 'حجامة - تغطية' ? Number(x.amount || 0) : 0), 0);
+  const sumNormalCoverages = coverages.reduce((s, x) => s + (x.session_type !== 'حجامة - تغطية' ? Number(x.amount || 0) : 0), 0);
   const sumTherapistShares = coverages.reduce((s, x) => s + Number(x.therapistShare || 0), 0);
   const sumAdvances = advances.reduce((s, x) => s + Number(x.amount || 0), 0);
   const sumInvoices = invoices.reduce((s, x) => s + Number(x.amount || 0), 0);
-  const incomeTotal = sumSessions + sumPatients + sumSubscriptions;
-  const netTotal = incomeTotal - (sumExpenses + (sumCoverages - sumTherapistShares) + sumAdvances + sumInvoices);
+  const incomeTotal = sumSessions + sumPatients + sumSubscriptions + sumHijamaCoverages;
+  const netTotal = incomeTotal - (sumExpenses + sumNormalCoverages + sumTherapistShares + sumAdvances + sumInvoices);
   return { dateDisplay, incomeTotal, sumExpenses, sumAdvances, sumInvoices, netTotal };
 }
 
