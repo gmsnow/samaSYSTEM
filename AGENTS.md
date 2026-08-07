@@ -1,3 +1,11 @@
+# Workflow
+
+- ALWAYS commit and push to `origin/main` after completing any code change (user prefers auto-push, no need to ask).
+- Run the relevant lint (`npm run lint`) before committing.
+- Backend lives at `H:\hitham\new project\SAMACENTERSYS\backend`, frontend at `H:\hitham\new project\SAMACENTERSYS\frontend`.
+- Website project (separate repo): `H:\hitham\new project\SAMACENTERSYS`'s sibling `H:\hitham\new project\SAMACENTERWEB` (remote `samaweb`).
+- `prisma db push` fails with `P4002` (Supabase `auth.users` cross-schema). Use direct SQL + `npx prisma generate` instead.
+
 # Commands
 
 ## Backend
