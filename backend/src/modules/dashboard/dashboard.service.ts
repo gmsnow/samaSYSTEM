@@ -606,6 +606,8 @@ export async function getMonthlySummary(month?: number, year?: number) {
 
   return { incomeTotal, sumExpenses, sumAdvances, sumInvoices, netTotal };
 }
+
+export async function getMonthlyReportData(month?: number, year?: number) {
   const now = new Date();
   const ksa = getKsaDate(now);
   const m = month !== undefined ? month : ksa.month;

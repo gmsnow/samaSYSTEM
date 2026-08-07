@@ -46,6 +46,8 @@ export default function ReportsPage({ period, date }: { period: string; date?: s
         api.get('/dashboard/daily-summary', { params: { date } }).then(r => setSummary(r.data)).catch(() => {});
       } else if (period === 'weekly') {
         api.get('/dashboard/weekly-summary', { params: { weekStart: date } }).then(r => setSummary(r.data)).catch(() => {});
+      } else if (period === 'monthly') {
+        api.get('/dashboard/monthly-summary').then(r => setSummary(r.data)).catch(() => {});
       }
     };
     load();
