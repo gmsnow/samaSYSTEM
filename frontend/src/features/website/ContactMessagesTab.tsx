@@ -57,7 +57,6 @@ export default function ContactMessagesTab() {
           <TableHead>
             <TableRow>
               <TableCell>{t('website.contact.name')}</TableCell>
-              <TableCell>{t('website.contact.email')}</TableCell>
               <TableCell>{t('website.contact.phone')}</TableCell>
               <TableCell>{t('website.contact.subject')}</TableCell>
               <TableCell>{t('website.contact.message')}</TableCell>
@@ -69,7 +68,6 @@ export default function ContactMessagesTab() {
             {items.map(m => (
               <TableRow key={m.id} hover sx={m.isResolved ? { opacity: 0.6 } : undefined}>
                 <TableCell sx={{ fontWeight: 600 }}>{m.name}</TableCell>
-                <TableCell>{m.email}</TableCell>
                 <TableCell>{m.phone || '-'}</TableCell>
                 <TableCell>{m.subject || '-'}</TableCell>
                 <TableCell sx={{ maxWidth: 280 }}>
@@ -95,7 +93,7 @@ export default function ContactMessagesTab() {
               </TableRow>
             ))}
             {items.length === 0 && (
-              <TableRow><TableCell colSpan={7} align="center">{t('website.contact.empty')}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} align="center">{t('website.contact.empty')}</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
