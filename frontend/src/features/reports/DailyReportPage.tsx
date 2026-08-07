@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Box, Button, TextField } from '@mui/material';
 import { Print, DownloadForOffline } from '@mui/icons-material';
-import html2pdf from 'html2pdf.js';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../services/api';
 import ReportsPage from './ReportsPage';
@@ -39,21 +40,52 @@ export default function DailyReportPage() {
 
       await new Promise<void>(resolve => {
         const check = () => {
-          if (idoc.readyState === 'complete' && idoc.fonts?.status === 'loaded') resolve();
-          else setTimeout(check, 200);
+          if (idoc.readyState === 'complete') resolve();
+          else setTimeout(check, 100);
         };
-        setTimeout(check, 200);
+        check();
         setTimeout(resolve, 5000);
       });
+      await idoc.fonts?.ready;
+      await new Promise(r => setTimeout(r, 300));
+
+      const style = idoc.createElement('style');
+      style.textContent = `.container{box-shadow:none;border-radius:0}`;
+      idoc.head.appendChild(style);
 
       const el = idoc.body.firstElementChild as HTMLElement;
-      await html2pdf().set({
-        margin: 0,
-        filename: `daily-report-${date}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      }).from(el).save();
+      const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+
+      const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+      const pw = pdf.internal.pageSize.getWidth();
+      const ph = pdf.internal.pageSize.getHeight();
+      const pageRatio = ph / pw;
+      const canvasRatio = canvas.height / canvas.width;
+      const chunkH = Math.round(canvas.width * pageRatio);
+
+      if (canvasRatio <= pageRatio) {
+        const h = pw * canvasRatio;
+        pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, pw, h);
+      } else {
+        let y = 0;
+        let page = 0;
+        while (y < canvas.height) {
+          const h = Math.min(chunkH, canvas.height - y);
+          const slice = document.createElement('canvas');
+          slice.width = canvas.width;
+          slice.height = h;
+          const ctx = slice.getContext('2d')!;
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, h);
+          ctx.drawImage(canvas, 0, y, canvas.width, h, 0, 0, canvas.width, h);
+          if (page > 0) pdf.addPage();
+          pdf.addImage(slice.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, pw, pw * (h / canvas.width));
+          y += h;
+          page++;
+        }
+      }
+
+      pdf.save(`daily-report-${date}.pdf`);
     } catch { /* ignore */ }
     iframe.remove();
   };
