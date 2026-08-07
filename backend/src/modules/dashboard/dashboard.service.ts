@@ -495,10 +495,11 @@ export async function getDailySummary(dateStr?: string) {
   const sumSubscriptions = subscriptions.reduce((s, x) => s + Number(x.subscription_amount || 0), 0);
   const sumExpenses = expenses.reduce((s, x) => s + Number(x.amount || 0), 0);
   const sumCoverages = coverages.reduce((s, x) => s + Number(x.amount || 0), 0);
+  const sumTherapistShares = coverages.reduce((s, x) => s + Number(x.therapistShare || 0), 0);
   const sumAdvances = advances.reduce((s, x) => s + Number(x.amount || 0), 0);
   const sumInvoices = invoices.reduce((s, x) => s + Number(x.amount || 0), 0);
   const incomeTotal = sumSessions + sumPatients + sumSubscriptions;
-  const netTotal = incomeTotal - (sumExpenses + sumCoverages + sumAdvances + sumInvoices);
+  const netTotal = incomeTotal - (sumExpenses + (sumCoverages - sumTherapistShares) + sumAdvances + sumInvoices);
   return { dateDisplay, incomeTotal, sumExpenses, sumAdvances, sumInvoices, netTotal };
 }
 
