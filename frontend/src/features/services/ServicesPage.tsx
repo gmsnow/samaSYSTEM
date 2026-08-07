@@ -11,6 +11,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 interface Service {
   id: string;
   name: string;
+  nameEn?: string | null;
   price: number;
   isActive: boolean;
   iconUrl?: string | null;
@@ -24,7 +25,7 @@ export default function ServicesPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: '', price: '' });
+  const [form, setForm] = useState({ name: '', nameEn: '', price: '' });
   const [editing, setEditing] = useState<Service | null>(null);
   const [iconUrl, setIconUrl] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -43,14 +44,14 @@ export default function ServicesPage() {
 
   const handleOpenAdd = () => {
     setEditing(null);
-    setForm({ name: '', price: '' });
+    setForm({ name: '', nameEn: '', price: '' });
     setIconUrl('');
     setDialogOpen(true);
   };
 
   const handleOpenEdit = (s: Service) => {
     setEditing(s);
-    setForm({ name: s.name, price: s.price.toString() });
+    setForm({ name: s.name, nameEn: s.nameEn || '', price: s.price.toString() });
     setIconUrl(s.iconUrl || '');
     setDialogOpen(true);
   };
@@ -108,6 +109,7 @@ export default function ServicesPage() {
             <TableRow>
               <TableCell>{t('services.col.icon')}</TableCell>
               <TableCell>{t('services.col.name')}</TableCell>
+              <TableCell>{t('services.col.nameEn')}</TableCell>
               <TableCell>{t('services.col.price')}</TableCell>
               <TableCell>{t('services.col.status')}</TableCell>
               <TableCell>{t('services.col.actions')}</TableCell>
@@ -126,6 +128,7 @@ export default function ServicesPage() {
                   )}
                 </TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>{s.name}</TableCell>
+                <TableCell>{s.nameEn || '—'}</TableCell>
                 <TableCell>{s.price.toLocaleString()} YER</TableCell>
                 <TableCell>
                   <Chip label={s.isActive ? t('services.active') : t('services.inactive')} size="small" color={s.isActive ? 'success' : 'default'} variant="outlined" />
@@ -141,7 +144,7 @@ export default function ServicesPage() {
               </TableRow>
             ))}
             {paginated.length === 0 && (
-              <TableRow><TableCell colSpan={5} align="center">{t('services.empty')}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} align="center">{t('services.empty')}</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
@@ -189,6 +192,7 @@ export default function ServicesPage() {
               </Stack>
             </Box>
             <TextField label={t('services.form.name')} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} fullWidth required />
+            <TextField label={t('services.form.nameEn')} value={form.nameEn} onChange={e => setForm(f => ({ ...f, nameEn: e.target.value }))} fullWidth />
             <TextField label={t('services.form.price')} type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} fullWidth required />
           </Stack>
         </DialogContent>

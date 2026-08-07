@@ -111,6 +111,7 @@ model Patient {
 model Service {
   id        String    @id @default(uuid())
   name      String    @unique @map("name")
+  nameEn    String?   @map("name_en")
   price     Float     @map("price")
   iconUrl   String?   @map("icon_url")
   isActive  Boolean   @default(true)
