@@ -177,14 +177,7 @@ export default function SessionsPage() {
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const value = e.target.value;
-    setForm(prev => {
-      const next = { ...prev, [field]: value };
-      if (field === 'session_type') {
-        const found = services.find(s => s.name === value);
-        next.price = found ? found.price.toString() : prev.price;
-      }
-      return next;
-    });
+    setForm(prev => ({ ...prev, [field]: value }));
   };
 
   const handlePeriodChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
