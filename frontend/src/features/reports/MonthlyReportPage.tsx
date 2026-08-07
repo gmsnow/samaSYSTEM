@@ -19,8 +19,9 @@ export default function MonthlyReportPage() {
 
   const year = Number(month.slice(0, 4));
   const monthNum = Number(month.slice(5, 7));
+  const monthIndex = monthNum - 1;
 
-  const printUrl = `${api.defaults.baseURL}/dashboard/monthly-report?token=${token}&month=${monthNum}&year=${year}`;
+  const printUrl = `${api.defaults.baseURL}/dashboard/monthly-report?token=${token}&month=${monthIndex}&year=${year}`;
 
   const downloadPdf = () => downloadReportPdf(`${printUrl}&autoprint=0`, `monthly-report-${year}-${monthNum}.pdf`);
 
