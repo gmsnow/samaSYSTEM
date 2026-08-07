@@ -371,7 +371,12 @@ export default function SessionsPage() {
             <Box component="form" onSubmit={handleSubmit} sx={{ '& .MuiTextField-root': { mb: 2.5 } }}>
               <TextField fullWidth label={t('patients.add.form.name')} value={form.fullname} onChange={handleChange('fullname')} required />
 
-              <TextField fullWidth label={t('sessions.type')} value={form.session_type} onChange={handleChange('session_type')} required />
+              <TextField select fullWidth label={t('sessions.type')} value={form.session_type} onChange={handleChange('session_type')} required>
+                <MenuItem value="" disabled>{t('sessions.type')}</MenuItem>
+                {services.map(svc => (
+                  <MenuItem key={svc.id} value={svc.name}>{svc.name}</MenuItem>
+                ))}
+              </TextField>
 
               <TextField select fullWidth label={t('sessions.therapist')} value={form.speacial} onChange={handleChange('speacial')}>
                 <MenuItem value="">{t('sessions.noTherapist')}</MenuItem>
