@@ -454,6 +454,7 @@
   "common.clear": "مسح",
   "common.print": "طباعة",
   "common.downloadPdf": "تحميل PDF",
+  "common.downloadExcel": "تحميل Excel",
   "common.total": "الإجمالي",
   "nav.users": "المستخدمين",
   "users.title": "إدارة المستخدمين",

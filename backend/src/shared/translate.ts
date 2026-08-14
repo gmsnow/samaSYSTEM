@@ -81,6 +81,14 @@ const ar: Record<string, string> = {
   'patients.report.price': 'السعر',
   'patients.report.paid': 'المدفوع',
   'patients.report.remaining': 'المتبقي',
+  'receivables.report.sheetName': 'كشف رواتب الموظفين',
+  'receivables.report.employee': 'الموظف',
+  'receivables.report.department': 'القسم',
+  'receivables.report.salary': 'الراتب',
+  'receivables.report.coverages': 'التغطيات (+)',
+  'receivables.report.advances': 'السلف (-)',
+  'receivables.report.net': 'الصافي',
+  'receivables.report.total': 'الإجمالي',
 };
 
 const en: Record<string, string> = {
@@ -166,6 +174,14 @@ const en: Record<string, string> = {
   'patients.report.price': 'Price',
   'patients.report.paid': 'Paid',
   'patients.report.remaining': 'Remaining',
+  'receivables.report.sheetName': 'Employee Salary Sheet',
+  'receivables.report.employee': 'Employee',
+  'receivables.report.department': 'Department',
+  'receivables.report.salary': 'Salary',
+  'receivables.report.coverages': 'Coverages (+)',
+  'receivables.report.advances': 'Advances (-)',
+  'receivables.report.net': 'Net',
+  'receivables.report.total': 'Total',
 };
 
 const locales: Record<string, Record<string, string>> = { ar, en };

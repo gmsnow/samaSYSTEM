@@ -3,7 +3,7 @@ import {
   Box, Button, TextField, Typography, Grid, Card, CardContent, Avatar,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, Stack,
 } from '@mui/material';
-import { Print, DownloadForOffline, Payments, AccountBalanceWallet, Receipt, Savings } from '@mui/icons-material';
+import { Print, DownloadForOffline, GridOn, Payments, AccountBalanceWallet, Receipt, Savings } from '@mui/icons-material';
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../services/api';
 import ReportsPage from './ReportsPage';
@@ -32,7 +32,7 @@ interface SalaryRow {
 }
 
 export default function ReceivablesReportPage() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const token = localStorage.getItem('accessToken');
   const [month, setMonth] = useState(() => toMonthInput(new Date()));
   const [summary, setSummary] = useState<Summary | null>(null);
@@ -40,7 +40,6 @@ export default function ReceivablesReportPage() {
 
   const year = Number(month.slice(0, 4));
   const monthNum = Number(month.slice(5, 7));
-  const monthIndex = monthNum - 1;
 
   useEffect(() => {
     api.get('/dashboard/receivables-summary').then(r => setSummary(r.data)).catch(() => {});
@@ -57,9 +56,23 @@ export default function ReceivablesReportPage() {
     net: acc.net + r.net,
   }), { salary: 0, coverages: 0, advances: 0, net: 0 }), [rows]);
 
-  const printUrl = `${api.defaults.baseURL}/dashboard/monthly-report?token=${token}&month=${monthIndex}&year=${year}`;
+  const printUrl = `${api.defaults.baseURL}/dashboard/receivables-report?token=${token}&month=${month}`;
 
   const downloadPdf = () => downloadReportPdf(`${printUrl}&autoprint=0`, `receivables-report-${year}-${monthNum}.pdf`);
+
+  const downloadExcel = async () => {
+    try {
+      const { data: blob } = await api.get('/dashboard/receivables-excel', { params: { month, lang: locale }, responseType: 'blob' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `receivables-report-${year}-${monthNum}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch { /* ignore */ }
+  };
 
   const sumNet = (summary?.sumSalaries ?? 0) + (summary?.sumCoverages ?? 0) - (summary?.sumAdvances ?? 0);
 
@@ -86,6 +99,9 @@ export default function ReceivablesReportPage() {
         </Button>
         <Button variant="contained" color="success" startIcon={<DownloadForOffline />} onClick={downloadPdf}>
           {t('common.downloadPdf')}
+        </Button>
+        <Button variant="contained" color="info" startIcon={<GridOn />} onClick={downloadExcel}>
+          {t('common.downloadExcel')}
         </Button>
       </Box>
 
