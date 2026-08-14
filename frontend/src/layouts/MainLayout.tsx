@@ -31,8 +31,8 @@ interface NotifItem {
   readAt: string | null;
 }
 
-interface SubMenuItem { text: string; path: string }
-interface MenuItem { text: string; icon: React.ReactNode; path?: string; children?: SubMenuItem[] }
+interface SubMenuItem { text: string; path: string; permission?: string }
+interface MenuItem { text: string; icon: React.ReactNode; path?: string; permission?: string; children?: SubMenuItem[] }
 
 const SIDEBAR_BG: Record<string, string> = {
   light: '#f5f5f5',
@@ -194,13 +194,18 @@ export default function MainLayout() {
           { text: t('nav.dailyReport'), path: '/reports/daily' },
           { text: t('nav.weeklyReport'), path: '/reports/weekly' },
           { text: t('nav.monthlyReport'), path: '/reports/monthly' },
-          { text: t('nav.receivables'), path: '/reports/receivables' },
+          { text: t('nav.receivables'), path: '/reports/receivables', permission: 'receivables' },
         ],
       },
     ];
     const perms = user?.permissions ?? [];
     const isAdmin = user?.role === 'ADMIN';
-    return all.filter(item => isAdmin || !item.permission || perms.includes(item.permission));
+    const canAccess = (p?: string) => isAdmin || !p || perms.includes(p);
+    return all
+      .filter(item => canAccess(item.permission) || (item.children && item.children.some(c => canAccess(c.permission))))
+      .map(item => item.children
+        ? { ...item, children: item.children.filter(c => canAccess(c.permission)) }
+        : item);
   }, [t, user]);
 
   const sidebarContent = (

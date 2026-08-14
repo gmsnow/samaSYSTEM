@@ -15,7 +15,7 @@ const ALL_PERMISSIONS = [
   'dashboard', 'patients', 'sessions', 'appointments', 'calendar',
   'services', 'coverages', 'invoices', 'website', 'subscribers',
   'wallet-transfers', 'advances', 'expenses', 'employees', 'users',
-  'reports', 'notifications', 'chat',
+  'reports', 'receivables', 'notifications', 'chat',
 ];
 
 interface User {
