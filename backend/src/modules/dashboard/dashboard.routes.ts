@@ -15,9 +15,9 @@ router.get('/receivables-summary', requirePermission('receivables'), controller.
 router.get('/receivables-table', requirePermission('receivables'), controller.receivablesTable);
 router.get('/receivables-report', requirePermission('receivables'), controller.receivablesReport);
 router.get('/receivables-excel', requirePermission('receivables'), controller.receivablesExcel);
-router.get('/financial-summary', requirePermission('reports'), controller.financialSummary);
-router.get('/financial-summary-report', requirePermission('reports'), controller.financialSummaryReport);
-router.get('/financial-summary-excel', requirePermission('reports'), controller.financialSummaryExcel);
+router.get('/financial-summary', requirePermission('financial-summary'), controller.financialSummary);
+router.get('/financial-summary-report', requirePermission('financial-summary'), controller.financialSummaryReport);
+router.get('/financial-summary-excel', requirePermission('financial-summary'), controller.financialSummaryExcel);
 router.get('/daily-report', requirePermission('reports'), controller.dailyReport);
 router.get('/weekly-report', requirePermission('reports'), controller.weeklyReport);
 router.get('/monthly-report', requirePermission('reports'), controller.monthlyReport);
