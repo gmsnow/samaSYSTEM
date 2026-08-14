@@ -151,6 +151,117 @@ export async function receivablesExcel(req: Request, res: Response, next: NextFu
   } catch (err) { next(err); }
 }
 
+export async function financialSummary(req: Request, res: Response, next: NextFunction) {
+  try {
+    const from = req.query.from as string | undefined;
+    const to = req.query.to as string | undefined;
+    const data = await dashboardService.getFinancialSummary({ from, to });
+    res.json(data);
+  } catch (err) { next(err); }
+}
+
+export async function financialSummaryReport(req: Request, res: Response, next: NextFunction) {
+  try {
+    const from = req.query.from as string | undefined;
+    const to = req.query.to as string | undefined;
+    const autoprint = req.query.autoprint !== '0';
+    const data = await dashboardService.getFinancialSummary({ from, to });
+    const fromKsa = getKsaDateParts(data.from);
+    const toKsa = getKsaDateParts(data.to);
+    const periodLabel = `${fromKsa.day} ${MONTHS_AR[fromKsa.month]} ${fromKsa.year} — ${toKsa.day} ${MONTHS_AR[toKsa.month]} ${toKsa.year}`;
+    res.render('financial-summary', { ...data, periodLabel, autoprint });
+  } catch (err) { next(err); }
+}
+
+function getKsaDateParts(dateStr: string) {
+  const y = Number(dateStr.slice(0, 4));
+  const m = Number(dateStr.slice(5, 7)) - 1;
+  const d = Number(dateStr.slice(8, 10));
+  const ksa = new Date(Date.UTC(y, m, d) + 3 * 60 * 60 * 1000);
+  return { year: ksa.getUTCFullYear(), month: ksa.getUTCMonth(), day: ksa.getUTCDate() };
+}
+
+export async function financialSummaryExcel(req: Request, res: Response, next: NextFunction) {
+  try {
+    const lang = (req.query.lang as string) || 'ar';
+    const from = req.query.from as string | undefined;
+    const to = req.query.to as string | undefined;
+    const data = await dashboardService.getFinancialSummary({ from, to });
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'SAMA Center';
+    const sheet = workbook.addWorksheet(t('financial.report.sheetName', lang), {
+      views: [{ rightToLeft: lang === 'ar' }],
+    });
+
+    sheet.columns = [
+      { header: t('financial.report.date', lang), key: 'date', width: 12 },
+      { header: t('financial.report.day', lang), key: 'day', width: 12 },
+      { header: t('financial.report.income', lang), key: 'income', width: 16 },
+      { header: t('financial.report.advances', lang), key: 'advances', width: 16 },
+      { header: t('financial.report.expenses', lang), key: 'expenses', width: 16 },
+      { header: t('financial.report.net', lang), key: 'net', width: 16 },
+      { header: t('financial.report.notes', lang), key: 'notes', width: 50 },
+    ];
+
+    const headerRow = sheet.getRow(1);
+    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF3E5679' } };
+    headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
+    headerRow.height = 22;
+
+    for (const week of data.weeks) {
+      for (const d of week.days) {
+        sheet.addRow({
+          date: d.date,
+          day: d.dayName,
+          income: d.income,
+          advances: d.advances,
+          expenses: d.expenses,
+          net: d.net,
+          notes: d.notes === '—' ? '' : d.notes,
+        });
+      }
+      const weekRow = sheet.addRow({
+        date: t('financial.report.weekTotal', lang),
+        day: `${week.startDate} / ${week.endDate}`,
+        income: week.totals.income,
+        advances: week.totals.advances,
+        expenses: week.totals.expenses,
+        net: week.totals.net,
+        notes: '',
+      });
+      weekRow.font = { bold: true };
+      weekRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEDE9FE' } };
+    }
+
+    const totalRow = sheet.addRow({
+      date: t('financial.report.grandTotal', lang),
+      day: '',
+      income: data.totals.income,
+      advances: data.totals.advances,
+      expenses: data.totals.expenses,
+      net: data.totals.net,
+      notes: '',
+    });
+    totalRow.font = { bold: true };
+    totalRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE3E8F5' } };
+
+    sheet.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return;
+      row.alignment = { vertical: 'middle' };
+      if (rowNumber % 2 === 0 && rowNumber !== sheet.rowCount) {
+        row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF4F6F9' } };
+      }
+    });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="financial-summary.xlsx"');
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (err) { next(err); }
+}
+
 export async function monthlyReport(req: Request, res: Response, next: NextFunction) {
   try {
     const month = req.query.month ? parseInt(req.query.month as string) : undefined;

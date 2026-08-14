@@ -195,6 +195,7 @@ export default function MainLayout() {
           { text: t('nav.weeklyReport'), path: '/reports/weekly' },
           { text: t('nav.monthlyReport'), path: '/reports/monthly' },
           { text: t('nav.receivables'), path: '/reports/receivables', permission: 'receivables' },
+          { text: t('nav.financialSummary'), path: '/reports/financial-summary', permission: 'reports' },
         ],
       },
     ];

@@ -866,6 +866,173 @@ async function getPeriodChart(period: 'daily' | 'weekly', locale: string, ksaYea
   return order.map(dow => ({ label: dayNames[dow], revenue: weekBuckets[dow] || 0 }));
 }
 
+const FINANCIAL_DAY_NAMES = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+
+export async function getFinancialSummary(opts: { from?: string; to?: string } = {}) {
+  const now = getKsaDate();
+  const todayStr = `${now.year}-${pad(now.month + 1)}-${pad(now.day)}`;
+  const fromStr = opts.from || `${now.year}-${pad(now.month + 1)}-01`;
+  const toStr = opts.to && opts.to >= fromStr ? opts.to : todayStr;
+
+  const startDate = ksaMidnight(Number(fromStr.slice(0, 4)), Number(fromStr.slice(5, 7)) - 1, Number(fromStr.slice(8, 10)));
+  const endDate = ksaMidnight(Number(toStr.slice(0, 4)), Number(toStr.slice(5, 7)) - 1, Number(toStr.slice(8, 10)) + 1);
+
+  const [regularSessions, patientRows, subRows, coverages, expenses, advances, invoices, employees] = await Promise.all([
+    prisma.session.findMany({
+      where: { deletedAt: null, status: 'complete', subscriptionPeriod: null, prepaid: { not: true }, OR: [{ subscriptionAmount: null }, { subscriptionAmount: 0 }], sessionDate: { gte: startDate, lt: endDate } },
+      select: { sessionDate: true, price: true },
+    }),
+    prisma.patient.findMany({
+      where: { deletedAt: null, createdAt: { gte: startDate, lt: endDate } },
+      select: { createdAt: true, price: true },
+    }),
+    prisma.session.findMany({
+      where: { deletedAt: null, OR: [{ subscriptionPeriod: { not: null } }, { subscriptionAmount: { gt: 0 } }, { prepaid: true }], sessionDate: { gte: startDate, lt: endDate } },
+      select: { sessionDate: true, installments: true, price: true, prepaid: true },
+    }),
+    prisma.coverage.findMany({
+      where: { deletedAt: null, date: { gte: fromStr, lte: `${toStr}T23:59` } },
+    }),
+    prisma.expense.findMany({
+      where: { deletedAt: null, date: { gte: fromStr, lte: toStr } },
+    }),
+    prisma.salaryAdvance.findMany({
+      where: { deletedAt: null, date: { gte: fromStr, lte: toStr } },
+    }),
+    prisma.invoice.findMany({
+      where: { deletedAt: null, date: { gte: fromStr, lte: toStr } },
+    }),
+    prisma.employee.findMany({
+      where: { deletedAt: null, isActive: true },
+    }),
+  ]);
+
+  const dayKey = (d: Date) => {
+    const k = getKsaDate(d);
+    return `${k.year}-${pad(k.month + 1)}-${pad(k.day)}`;
+  };
+
+  const incomeMap: Record<string, number> = {};
+  const advanceMap: Record<string, number> = {};
+  const expenseMap: Record<string, number> = {};
+  const notesMap: Record<string, string[]> = {};
+
+  const add = (map: Record<string, number>, k: string, v: number | null | undefined) => {
+    const val = Number(v) || 0;
+    if (!val) return;
+    map[k] = (map[k] || 0) + val;
+  };
+  const note = (k: string, txt: string) => {
+    if (!txt) return;
+    if (!notesMap[k]) notesMap[k] = [];
+    notesMap[k].push(txt);
+  };
+
+  for (const s of regularSessions) { if (s.sessionDate) add(incomeMap, dayKey(s.sessionDate), s.price); }
+  for (const p of patientRows) { if (p.createdAt) add(incomeMap, dayKey(p.createdAt), p.price); }
+  for (const s of subRows) {
+    if (!s.sessionDate) continue;
+    add(incomeMap, dayKey(s.sessionDate), s.prepaid ? s.price : paidInstallments(s.installments));
+  }
+  for (const c of coverages) {
+    const k = c.date.slice(0, 10);
+    if (c.sessionType === 'hijama') {
+      add(incomeMap, k, c.price);
+    } else {
+      add(expenseMap, k, c.price);
+      note(k, `تغطية ${c.name || ''}: ${c.price || 0}`);
+    }
+    if (c.therapistShare) {
+      add(expenseMap, k, c.therapistShare);
+      note(k, `نسبة معالج (${c.name || ''}): ${c.therapistShare}`);
+    }
+  }
+  for (const e of expenses) {
+    add(expenseMap, e.date, e.amount);
+    note(e.date, `${e.category || 'مصروف'}: ${e.amount || 0}${e.notes ? ` (${e.notes})` : ''}`);
+  }
+  for (const a of advances) {
+    add(advanceMap, a.date, a.amount);
+    note(a.date, `سلفة ${a.employee || ''}: ${a.amount || 0}${a.notes ? ` (${a.notes})` : ''}`);
+  }
+  for (const inv of invoices) {
+    add(expenseMap, inv.date, inv.amount);
+    note(inv.date, `${inv.type === 'water' ? 'فاتورة ماء' : 'فاتورة كهرباء'}: ${inv.amount || 0}${inv.notes ? ` (${inv.notes})` : ''}`);
+  }
+
+  const totalDays = Math.round((endDate.getTime() - startDate.getTime()) / 86400000);
+  const days: any[] = [];
+  for (let i = 0; i < totalDays; i++) {
+    const d = new Date(startDate.getTime() + i * 86400000);
+    const key = dayKey(d);
+    const ksa = getKsaDate(d);
+    const income = incomeMap[key] || 0;
+    const advancesAmt = advanceMap[key] || 0;
+    const expensesAmt = expenseMap[key] || 0;
+    days.push({
+      date: key,
+      dayNumber: ksa.day,
+      dayName: FINANCIAL_DAY_NAMES[ksa.dayOfWeek],
+      income,
+      advances: advancesAmt,
+      expenses: expensesAmt,
+      net: income - advancesAmt - expensesAmt,
+      notes: (notesMap[key] || []).join('، ') || '—',
+    });
+  }
+
+  const weeks: any[] = [];
+  let current: any = null;
+  for (const day of days) {
+    const d = ksaMidnight(Number(day.date.slice(0, 4)), Number(day.date.slice(5, 7)) - 1, Number(day.date.slice(8, 10)));
+    const dow = getKsaDate(d).dayOfWeek;
+    if (dow === 6 || !current) {
+      if (current) weeks.push(current);
+      current = {
+        weekNumber: weeks.length + 1,
+        startDate: day.date,
+        endDate: day.date,
+        days: [],
+        totals: { income: 0, advances: 0, expenses: 0, net: 0 },
+      };
+    }
+    current.days.push(day);
+    current.endDate = day.date;
+    current.totals.income += day.income;
+    current.totals.advances += day.advances;
+    current.totals.expenses += day.expenses;
+    current.totals.net += day.net;
+  }
+  if (current) weeks.push(current);
+
+  const totals = days.reduce(
+    (acc, d) => ({
+      income: acc.income + d.income,
+      advances: acc.advances + d.advances,
+      expenses: acc.expenses + d.expenses,
+      net: acc.net + d.net,
+    }),
+    { income: 0, advances: 0, expenses: 0, net: 0 },
+  );
+
+  const salaries = employees.reduce((sum, e) => sum + (e.salary || 0), 0);
+  const obligations = 0;
+  const debtPayment = 0;
+  const financialStatus = totals.net - salaries - obligations - debtPayment;
+
+  return {
+    from: fromStr,
+    to: toStr,
+    days,
+    weeks,
+    totals,
+    salaries,
+    obligations,
+    debtPayment,
+    financialStatus,
+  };
+}
+
 async function getMonthlyRevenue(year: number) {
   const results = [];
   for (let m = 0; m < 12; m++) {

@@ -89,6 +89,16 @@ const ar: Record<string, string> = {
   'receivables.report.advances': 'السلف (-)',
   'receivables.report.net': 'الصافي',
   'receivables.report.total': 'الإجمالي',
+  'financial.report.sheetName': 'الملخص المالي',
+  'financial.report.date': 'التاريخ',
+  'financial.report.day': 'اليوم',
+  'financial.report.income': 'إجمالي الوارد',
+  'financial.report.advances': 'الصادر (السلف)',
+  'financial.report.expenses': 'المصروفات',
+  'financial.report.net': 'الصافي',
+  'financial.report.notes': 'ملاحظات',
+  'financial.report.weekTotal': 'إجمالي الأسبوع',
+  'financial.report.grandTotal': 'الإجمالي العام',
 };
 
 const en: Record<string, string> = {
@@ -182,6 +192,16 @@ const en: Record<string, string> = {
   'receivables.report.advances': 'Advances (-)',
   'receivables.report.net': 'Net',
   'receivables.report.total': 'Total',
+  'financial.report.sheetName': 'Financial Summary',
+  'financial.report.date': 'Date',
+  'financial.report.day': 'Day',
+  'financial.report.income': 'Total Income',
+  'financial.report.advances': 'Outgoing (Advances)',
+  'financial.report.expenses': 'Expenses',
+  'financial.report.net': 'Net',
+  'financial.report.notes': 'Notes',
+  'financial.report.weekTotal': 'Weekly Total',
+  'financial.report.grandTotal': 'Grand Total',
 };
 
 const locales: Record<string, Record<string, string>> = { ar, en };
