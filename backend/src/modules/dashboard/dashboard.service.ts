@@ -630,6 +630,45 @@ export async function getReceivablesSummary() {
   };
 }
 
+export async function getReceivablesTable(month?: string) {
+  const employees = await prisma.employee.findMany({
+    where: { deletedAt: null, isActive: true },
+    orderBy: { name: 'asc' },
+  });
+  const coverageWhere: any = { deletedAt: null };
+  const advanceWhere: any = { deletedAt: null };
+  if (month) {
+    coverageWhere.date = { startsWith: month };
+    advanceWhere.date = { startsWith: month };
+  }
+
+  const [coverages, advances] = await Promise.all([
+    prisma.coverage.findMany({ where: coverageWhere }),
+    prisma.salaryAdvance.findMany({ where: advanceWhere }),
+  ]);
+
+  const coverageByEmployee: Record<string, number> = {};
+  for (const c of coverages) coverageByEmployee[c.name] = (coverageByEmployee[c.name] || 0) + (c.price || 0);
+
+  const advanceByEmployee: Record<string, number> = {};
+  for (const a of advances) advanceByEmployee[a.employee] = (advanceByEmployee[a.employee] || 0) + (a.amount || 0);
+
+  return employees.map(emp => {
+    const salary = emp.salary ?? 0;
+    const coverages = coverageByEmployee[emp.name] || 0;
+    const advances = advanceByEmployee[emp.name] || 0;
+    return {
+      id: emp.id,
+      name: emp.name,
+      department: emp.department,
+      salary,
+      coverages,
+      advances,
+      net: salary + coverages - advances,
+    };
+  });
+}
+
 export async function getMonthlyReportData(month?: number, year?: number) {
   const now = new Date();
   const ksa = getKsaDate(now);

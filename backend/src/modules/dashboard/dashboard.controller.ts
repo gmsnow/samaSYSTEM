@@ -60,6 +60,14 @@ export async function receivablesSummary(req: Request, res: Response, next: Next
   } catch (err) { next(err); }
 }
 
+export async function receivablesTable(req: Request, res: Response, next: NextFunction) {
+  try {
+    const month = req.query.month as string | undefined;
+    const data = await dashboardService.getReceivablesTable(month);
+    res.json(data);
+  } catch (err) { next(err); }
+}
+
 export async function monthlyReport(req: Request, res: Response, next: NextFunction) {
   try {
     const month = req.query.month ? parseInt(req.query.month as string) : undefined;

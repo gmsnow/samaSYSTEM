@@ -1,5 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Box, Button, TextField, Typography, Grid, Card, CardContent, Avatar } from '@mui/material';
+import { useState, useEffect, useMemo } from 'react';
+import {
+  Box, Button, TextField, Typography, Grid, Card, CardContent, Avatar,
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, Stack,
+} from '@mui/material';
 import { Print, DownloadForOffline, Payments, AccountBalanceWallet, Receipt, Savings } from '@mui/icons-material';
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../services/api';
@@ -18,11 +21,22 @@ interface Summary {
   sumAdvances: number;
 }
 
+interface SalaryRow {
+  id: string;
+  name: string;
+  department: string | null;
+  salary: number;
+  coverages: number;
+  advances: number;
+  net: number;
+}
+
 export default function ReceivablesReportPage() {
   const { t } = useLanguage();
   const token = localStorage.getItem('accessToken');
   const [month, setMonth] = useState(() => toMonthInput(new Date()));
   const [summary, setSummary] = useState<Summary | null>(null);
+  const [rows, setRows] = useState<SalaryRow[]>([]);
 
   const year = Number(month.slice(0, 4));
   const monthNum = Number(month.slice(5, 7));
@@ -31,6 +45,17 @@ export default function ReceivablesReportPage() {
   useEffect(() => {
     api.get('/dashboard/receivables-summary').then(r => setSummary(r.data)).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    api.get('/dashboard/receivables-table', { params: { month } }).then(r => setRows(r.data)).catch(() => {});
+  }, [month]);
+
+  const totals = useMemo(() => rows.reduce((acc, r) => ({
+    salary: acc.salary + r.salary,
+    coverages: acc.coverages + r.coverages,
+    advances: acc.advances + r.advances,
+    net: acc.net + r.net,
+  }), { salary: 0, coverages: 0, advances: 0, net: 0 }), [rows]);
 
   const printUrl = `${api.defaults.baseURL}/dashboard/monthly-report?token=${token}&month=${monthIndex}&year=${year}`;
 
@@ -77,6 +102,52 @@ export default function ReceivablesReportPage() {
           ))}
         </Grid>
       )}
+
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>{t('receivables.table.title')}</Typography>
+            <Chip label={`${t('receivables.sumNet')}: ${totals.net.toLocaleString()} YER`} color="secondary" variant="outlined" sx={{ fontWeight: 600 }} />
+          </Stack>
+          <TableContainer component={Paper} variant="outlined">
+            <Table dir="rtl" size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 700 }}>{t('receivables.table.employee')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t('receivables.table.department')}</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 700 }}>{t('receivables.table.salary')}</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 700, color: '#2e7d32' }}>{t('receivables.table.coverages')}</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 700, color: '#e65100' }}>{t('receivables.table.advances')}</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 700 }}>{t('receivables.table.net')}</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {rows.map(r => (
+                  <TableRow key={r.id}>
+                    <TableCell sx={{ fontWeight: 600 }}>{r.name}</TableCell>
+                    <TableCell>{r.department || '-'}</TableCell>
+                    <TableCell align="center">{r.salary.toLocaleString()} YER</TableCell>
+                    <TableCell align="center" sx={{ color: '#2e7d32' }}>{r.coverages ? `+${r.coverages.toLocaleString()}` : '-'}</TableCell>
+                    <TableCell align="center" sx={{ color: '#e65100' }}>{r.advances ? `-${r.advances.toLocaleString()}` : '-'}</TableCell>
+                    <TableCell align="center" sx={{ fontWeight: 700 }}>{r.net.toLocaleString()} YER</TableCell>
+                  </TableRow>
+                ))}
+                <TableRow sx={{ bgcolor: 'action.hover' }}>
+                  <TableCell sx={{ fontWeight: 800 }}>{t('common.total')}</TableCell>
+                  <TableCell />
+                  <TableCell align="center" sx={{ fontWeight: 800 }}>{totals.salary.toLocaleString()}</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 800, color: '#2e7d32' }}>+{totals.coverages.toLocaleString()}</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 800, color: '#e65100' }}>-{totals.advances.toLocaleString()}</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 800 }}>{totals.net.toLocaleString()} YER</TableCell>
+                </TableRow>
+                {rows.length === 0 && (
+                  <TableRow><TableCell colSpan={6} align="center">{t('receivables.table.empty')}</TableCell></TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </CardContent>
+      </Card>
 
       <ReportsPage period="monthly" />
     </Box>
