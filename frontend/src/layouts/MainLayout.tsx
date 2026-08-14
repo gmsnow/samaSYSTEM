@@ -194,6 +194,7 @@ export default function MainLayout() {
           { text: t('nav.dailyReport'), path: '/reports/daily' },
           { text: t('nav.weeklyReport'), path: '/reports/weekly' },
           { text: t('nav.monthlyReport'), path: '/reports/monthly' },
+          { text: t('nav.receivables'), path: '/reports/receivables' },
         ],
       },
     ];

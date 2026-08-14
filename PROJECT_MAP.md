@@ -1,7 +1,7 @@
 # PROJECT_MAP — SAMA CENTER (Physical Therapy Management System)
 
 > **Generated:** 2026-07-05 (initial)  
-> **Last Updated:** 2026-07-14
+> **Last Updated:** 2026-08-14
 > **Node:** v22 | **npm:** 10
 > **Platform:** Vercel (serverless monorepo)
 
@@ -235,6 +235,7 @@ Staff logs in → Dashboard shows stats
 | 5 | **Receptionist permissions** | 🔲 Not seeded | Receptionist has no permissions in seed; must be added manually or via UI |
 | 6 | **AGENTS.md outdated** | 🔲 Needs update | Says "only User model + auth" but project has 13 modules |
 | 7 | **Frontend employee fetch** has no error handling | 🔲 Silent failure | `api.get('/employees')` has no `.catch()` — errors silently swallowed |
+| 8 | **Receivables report** | 🔲 Placeholder | `ReceivablesReportPage` mirrors monthly report (`/reports/receivables`); real content (patient/session/subscription dues) pending user spec |
 
 ### Next Steps
 1. Deploy backend change (employees GET permission removed) so receptionist can see employee list
