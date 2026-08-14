@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Box, Button, TextField, Typography, Grid, Card, CardContent, Avatar } from '@mui/material';
-import { Print, DownloadForOffline, Payments, AccountBalanceWallet, Receipt } from '@mui/icons-material';
+import { Print, DownloadForOffline, Payments, AccountBalanceWallet, Receipt, Savings } from '@mui/icons-material';
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../services/api';
 import ReportsPage from './ReportsPage';
@@ -36,10 +36,13 @@ export default function ReceivablesReportPage() {
 
   const downloadPdf = () => downloadReportPdf(`${printUrl}&autoprint=0`, `receivables-report-${year}-${monthNum}.pdf`);
 
+  const sumNet = (summary?.sumSalaries ?? 0) + (summary?.sumCoverages ?? 0) - (summary?.sumAdvances ?? 0);
+
   const cards = summary ? [
     { label: t('receivables.sumSalaries'), value: summary.sumSalaries, color: '#3e5679', icon: <Payments /> },
     { label: t('receivables.sumCoverages'), value: summary.sumCoverages, color: '#2e7d32', icon: <Receipt /> },
     { label: t('receivables.sumAdvances'), value: summary.sumAdvances, color: '#e65100', icon: <AccountBalanceWallet /> },
+    { label: t('receivables.sumNet'), value: sumNet, color: '#7c4dff', icon: <Savings /> },
   ] : [];
 
   return (
@@ -64,7 +67,7 @@ export default function ReceivablesReportPage() {
       {cards.length > 0 && (
         <Grid container spacing={3} sx={{ mb: 3 }}>
           {cards.map((c, i) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={i}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={i}>
               <Card><CardContent sx={{ textAlign: 'center', py: 3 }}>
                 <Avatar sx={{ width: 48, height: 48, bgcolor: `${c.color}15`, color: c.color, mx: 'auto', mb: 1 }}>{c.icon}</Avatar>
                 <Typography variant="h4" sx={{ fontWeight: 800 }}>YER {c.value.toLocaleString()}</Typography>

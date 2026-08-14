@@ -487,6 +487,7 @@
   "receivables.sumSalaries": "Total Salaries",
   "receivables.sumCoverages": "Total Coverages",
   "receivables.sumAdvances": "Total Advances",
+  "receivables.sumNet": "Net Receivables",
   "nav.coverages": "Coverages",
   "nav.invoices": "Invoices",
   "invoices.title": "Invoices",

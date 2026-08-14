@@ -487,6 +487,7 @@
   "receivables.sumSalaries": "مجموع الرواتب",
   "receivables.sumCoverages": "مجموع التغطيات",
   "receivables.sumAdvances": "مجموع السلف",
+  "receivables.sumNet": "صافي الاستحقاقات",
   "nav.coverages": "التغطية",
   "nav.invoices": "الفواتير",
   "invoices.title": "الفواتير",
