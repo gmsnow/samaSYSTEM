@@ -7,7 +7,6 @@ import {
 import { Print, DownloadForOffline, GridOn, Payments, AccountBalanceWallet, Receipt, Savings, TrendingDown, Paid, Search, RestartAlt } from '@mui/icons-material';
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../services/api';
-import ReportsPage from './ReportsPage';
 import { downloadReportPdf } from './reportPdf';
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -298,8 +297,6 @@ export default function FinancialSummaryPage() {
           </Card>
         </>
       )}
-
-      <ReportsPage period="monthly" />
     </Box>
   );
 }
