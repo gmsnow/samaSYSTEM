@@ -11,6 +11,7 @@ router.get('/stats', controller.stats);
 router.get('/daily-summary', controller.dailySummary);
 router.get('/weekly-summary', controller.weeklySummary);
 router.get('/monthly-summary', controller.monthlySummary);
+router.get('/receivables-summary', requirePermission('receivables'), controller.receivablesSummary);
 router.get('/daily-report', requirePermission('reports'), controller.dailyReport);
 router.get('/weekly-report', requirePermission('reports'), controller.weeklyReport);
 router.get('/monthly-report', requirePermission('reports'), controller.monthlyReport);

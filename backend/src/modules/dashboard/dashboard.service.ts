@@ -607,6 +607,29 @@ export async function getMonthlySummary(month?: number, year?: number) {
   return { incomeTotal, sumExpenses, sumAdvances, sumInvoices, netTotal };
 }
 
+export async function getReceivablesSummary() {
+  const [sumSalaries, sumCoverages, sumAdvances] = await Promise.all([
+    prisma.employee.aggregate({
+      where: { deletedAt: null, isActive: true },
+      _sum: { salary: true },
+    }),
+    prisma.coverage.aggregate({
+      where: { deletedAt: null },
+      _sum: { price: true },
+    }),
+    prisma.salaryAdvance.aggregate({
+      where: { deletedAt: null },
+      _sum: { amount: true },
+    }),
+  ]);
+
+  return {
+    sumSalaries: sumSalaries._sum.salary ?? 0,
+    sumCoverages: sumCoverages._sum.price ?? 0,
+    sumAdvances: sumAdvances._sum.amount ?? 0,
+  };
+}
+
 export async function getMonthlyReportData(month?: number, year?: number) {
   const now = new Date();
   const ksa = getKsaDate(now);
