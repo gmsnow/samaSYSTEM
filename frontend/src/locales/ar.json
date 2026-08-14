@@ -531,6 +531,8 @@
   "receivables.table.advances": "السلف (-)",
   "receivables.table.net": "الصافي",
   "receivables.table.empty": "لا يوجد موظفون",
+  "receivables.goFinancialSummary": "عرض الملخص المالي",
+  "receivables.goFinancialSummaryDesc": "الاطلاع على الوضع المالي الكامل للمركز (الوارد، السلف، المصروفات، الصافي)",
   "nav.coverages": "التغطية",
   "nav.invoices": "الفواتير",
   "invoices.title": "الفواتير",

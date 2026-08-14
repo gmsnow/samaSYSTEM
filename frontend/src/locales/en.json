@@ -531,6 +531,8 @@
   "receivables.table.advances": "Advances (-)",
   "receivables.table.net": "Net",
   "receivables.table.empty": "No employees found",
+  "receivables.goFinancialSummary": "View Financial Summary",
+  "receivables.goFinancialSummaryDesc": "View the center's full financial status (income, advances, expenses, net)",
   "nav.coverages": "Coverages",
   "nav.invoices": "Invoices",
   "invoices.title": "Invoices",

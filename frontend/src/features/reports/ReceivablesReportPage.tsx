@@ -3,10 +3,10 @@ import {
   Box, Button, TextField, Typography, Grid, Card, CardContent, Avatar,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, Stack,
 } from '@mui/material';
-import { Print, DownloadForOffline, GridOn, Payments, AccountBalanceWallet, Receipt, Savings } from '@mui/icons-material';
+import { Print, DownloadForOffline, GridOn, Payments, AccountBalanceWallet, Receipt, Savings, BarChart } from '@mui/icons-material';
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../services/api';
-import ReportsPage from './ReportsPage';
+import { Link } from 'react-router-dom';
 import { downloadReportPdf } from './reportPdf';
 
 const toMonthInput = (d: Date) => {
@@ -165,7 +165,30 @@ export default function ReceivablesReportPage() {
         </CardContent>
       </Card>
 
-      <ReportsPage period="monthly" />
+      <Card sx={{ mb: 3 }}>
+        <CardContent
+          component={Link}
+          to="/reports/financial-summary"
+          sx={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2,
+            textDecoration: 'none', cursor: 'pointer', p: 3,
+            background: 'linear-gradient(135deg, #7c3aed, #8b5cf6, #a78bfa)',
+            color: '#fff',
+            '&:hover': { boxShadow: 6 },
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar sx={{ width: 52, height: 52, bgcolor: 'rgba(255,255,255,0.2)', color: '#fff' }}>
+              <BarChart />
+            </Avatar>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 800 }}>{t('receivables.goFinancialSummary')}</Typography>
+              <Typography variant="body2" sx={{ opacity: 0.9 }}>{t('receivables.goFinancialSummaryDesc')}</Typography>
+            </Box>
+          </Box>
+          <Typography sx={{ fontWeight: 900, fontSize: 28 }}>←</Typography>
+        </CardContent>
+      </Card>
     </Box>
   );
 }
