@@ -88,7 +88,9 @@ export default function GalleryTab() {
       else await api.post('/website/gallery', payload);
       setDialogOpen(false);
       fetchData();
-    } catch { /* ignore */ }
+    } catch (err: any) {
+      alert(err?.response?.data?.message || err.message || 'Save failed');
+    }
   };
 
   const handleDelete = async (img: GalleryImage) => {
