@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton, Tooltip,
-  Stack, Chip,
+  Stack, Chip, CircularProgress,
 } from '@mui/material';
-import { Add, Delete, Edit, Visibility, VisibilityOff } from '@mui/icons-material';
+import { Add, Delete, Edit, Visibility, VisibilityOff, CloudUpload } from '@mui/icons-material';
 import api from '../../services/api';
 import { useLanguage } from '../../contexts/LanguageContext';
 
@@ -36,6 +36,8 @@ export default function BlogTab() {
   const [form, setForm] = useState({ ...emptyForm });
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchData = () => {
     api.get('/website/blog').then(({ data }) => setItems(data)).catch(() => {});
@@ -64,6 +66,19 @@ export default function BlogTab() {
     const tg = tagInput.trim();
     if (tg && !tags.includes(tg)) setTags(prev => [...prev, tg]);
     setTagInput('');
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const { data } = await api.post('/website/upload', fd);
+      setForm(f => ({ ...f, coverUrl: data.url }));
+    } catch { /* ignore */ }
+    finally { setUploading(false); if (e.target) e.target.value = ''; }
   };
 
   const handleSave = async () => {
@@ -174,8 +189,38 @@ export default function BlogTab() {
                 onChange={e => setForm(f => ({ ...f, contentAr: e.target.value }))} fullWidth multiline rows={4} />
             </Stack>
             <Stack direction="row" spacing={2}>
-              <TextField label={t('website.blog.coverUrl')} value={form.coverUrl}
-                onChange={e => setForm(f => ({ ...f, coverUrl: e.target.value }))} fullWidth />
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="body2" sx={{ mb: 1 }}>{t('website.blog.coverUrl')}</Typography>
+                <input type="file" ref={fileInputRef} onChange={handleFileSelect} hidden accept="image/*" />
+                {form.coverUrl ? (
+                  <Box sx={{ position: 'relative', display: 'inline-block' }}>
+                    <Box
+                      component="img"
+                      src={form.coverUrl}
+                      alt="Cover"
+                      sx={{ width: '100%', maxHeight: 180, objectFit: 'cover', borderRadius: 1, border: '1px solid #e0e0e0' }}
+                    />
+                    <IconButton
+                      size="small"
+                      sx={{ position: 'absolute', top: 4, left: 4, bgcolor: 'rgba(0,0,0,0.5)', color: '#fff', '&:hover': { bgcolor: 'rgba(0,0,0,0.7)' } }}
+                      onClick={() => setForm(f => ({ ...f, coverUrl: '' }))}
+                    >
+                      <Delete fontSize="small" />
+                    </IconButton>
+                  </Box>
+                ) : (
+                  <Button
+                    variant="outlined"
+                    startIcon={uploading ? <CircularProgress size={18} /> : <CloudUpload />}
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    fullWidth
+                    sx={{ height: 120, borderStyle: 'dashed', fontSize: 13 }}
+                  >
+                    {uploading ? '...' : t('website.uploadImage')}
+                  </Button>
+                )}
+              </Box>
               <TextField label={t('website.blog.category')} value={form.category}
                 onChange={e => setForm(f => ({ ...f, category: e.target.value }))} fullWidth />
             </Stack>

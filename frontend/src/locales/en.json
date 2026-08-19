@@ -667,6 +667,7 @@
   "website.blog.contentEn": "Content (English)",
   "website.blog.contentAr": "Content (Arabic)",
   "website.blog.coverUrl": "Cover URL",
+  "website.blog.uploadImage": "Choose image from device",
   "website.blog.category": "Category",
   "website.blog.tags": "Tags",
   "website.blog.tags.placeholder": "Type a tag and press Enter",

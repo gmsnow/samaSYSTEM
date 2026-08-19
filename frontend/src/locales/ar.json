@@ -667,6 +667,7 @@
   "website.blog.contentEn": "المحتوى (إنجليزي)",
   "website.blog.contentAr": "المحتوى (عربي)",
   "website.blog.coverUrl": "رابط الصورة",
+  "website.blog.uploadImage": "اختر صورة من الجهاز",
   "website.blog.category": "الفئة",
   "website.blog.tags": "الوسوم",
   "website.blog.tags.placeholder": "اكتب وسماً واضغط Enter",
