@@ -690,5 +690,19 @@
   "website.newsletter.empty": "No subscribers",
   "website.newsletter.email": "Email",
   "website.newsletter.date": "Subscribed On",
-  "website.newsletter.delete.confirm": "Are you sure you want to delete this subscriber?"
+  "website.newsletter.delete.confirm": "Are you sure you want to delete this subscriber?",
+  "website.tab.gallery": "Gallery",
+  "website.gallery.title": "Gallery Images",
+  "website.gallery.add": "Add Image",
+  "website.gallery.edit": "Edit Image",
+  "website.gallery.image": "Image",
+  "website.gallery.titleEn": "Title (English)",
+  "website.gallery.titleAr": "Title (Arabic)",
+  "website.gallery.categoryEn": "Category (English)",
+  "website.gallery.categoryAr": "Category (Arabic)",
+  "website.gallery.description": "Description",
+  "website.gallery.ratio": "Aspect Ratio",
+  "website.gallery.sortOrder": "Sort Order",
+  "website.gallery.delete.confirm": "Are you sure you want to delete this image?",
+  "website.gallery.empty": "No images found"
 }

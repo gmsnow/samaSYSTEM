@@ -9,6 +9,7 @@ import blogRoutes from './blog.routes.js';
 import contactMessagesRoutes from './contact-messages.routes.js';
 import newsletterRoutes from './newsletter.routes.js';
 import insuranceCompaniesRoutes from './insurance-companies.routes.js';
+import galleryRoutes from './gallery.routes.js';
 import * as uploadController from './upload.controller.js';
 
 const router = Router();
@@ -25,5 +26,6 @@ router.use('/blog', blogRoutes);
 router.use('/contact-messages', contactMessagesRoutes);
 router.use('/newsletter', newsletterRoutes);
 router.use('/insurance-companies', insuranceCompaniesRoutes);
+router.use('/gallery', galleryRoutes);
 
 export default router;

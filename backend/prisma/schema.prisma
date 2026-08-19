@@ -363,3 +363,19 @@ model InsuranceCompany {
 
   @@map("insurance_companies")
 }
+
+model GalleryImage {
+  id          String    @id @default(dbgenerated("gen_random_uuid()"))
+  url         String
+  titleEn     String    @map("title_en")
+  titleAr     String?   @map("title_ar")
+  categoryEn  String?   @map("category_en")
+  categoryAr  String?   @map("category_ar")
+  description String?
+  ratio       String    @default("aspect-[4/3]")
+  sortOrder   Int       @default(0) @map("sort_order")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  @@map("gallery_images")
+}

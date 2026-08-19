@@ -690,5 +690,19 @@
   "website.newsletter.empty": "لا يوجد مشتركون",
   "website.newsletter.email": "البريد الإلكتروني",
   "website.newsletter.date": "تاريخ الاشتراك",
-  "website.newsletter.delete.confirm": "هل أنت متأكد من حذف هذا المشترك؟"
+  "website.newsletter.delete.confirm": "هل أنت متأكد من حذف هذا المشترك؟",
+  "website.tab.gallery": "المعرض",
+  "website.gallery.title": "صور المعرض",
+  "website.gallery.add": "إضافة صورة",
+  "website.gallery.edit": "تعديل الصورة",
+  "website.gallery.image": "الصورة",
+  "website.gallery.titleEn": "العنوان (إنجليزي)",
+  "website.gallery.titleAr": "العنوان (عربي)",
+  "website.gallery.categoryEn": "الفئة (إنجليزي)",
+  "website.gallery.categoryAr": "الفئة (عربي)",
+  "website.gallery.description": "الوصف",
+  "website.gallery.ratio": "نسبة العرض",
+  "website.gallery.sortOrder": "ترتيب العرض",
+  "website.gallery.delete.confirm": "هل أنت متأكد من حذف هذه الصورة؟",
+  "website.gallery.empty": "لا توجد صور"
 }
